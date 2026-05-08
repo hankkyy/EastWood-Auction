@@ -21,13 +21,14 @@ import {
   readImageAsDataUrl,
   searchSimilarArtworks,
 } from "@/features/image-search/imageSearch";
-import type { Artwork } from "@/data/artworks";
+import type { Artwork, ArtworkListingType } from "@/data/artworks";
 import type {
   FeatureInsight,
   ImageFeature,
   ImageSearchResult,
 } from "@/features/image-search/imageSearch";
 import { useI18n } from "@/i18n";
+import type { Locale } from "@/i18n";
 import {
   Alert,
   Badge,
@@ -63,6 +64,23 @@ import {
 import { useState } from "react";
 
 const isObjectUrl = (url: string) => url.startsWith("blob:");
+
+const getArtworkTitle = (artwork: Artwork, locale: Locale) =>
+  locale === "zh" && artwork.titleZh ? artwork.titleZh : artwork.title;
+
+const getArtworkCategory = (artwork: Artwork, locale: Locale) =>
+  locale === "zh" && artwork.categoryZh ? artwork.categoryZh : artwork.category;
+
+const getArtworkPeriod = (artwork: Artwork, locale: Locale) =>
+  locale === "zh" && artwork.periodZh ? artwork.periodZh : artwork.period;
+
+const getArtworkDescription = (artwork: Artwork, locale: Locale) =>
+  locale === "zh" && artwork.descriptionZh
+    ? artwork.descriptionZh
+    : artwork.description;
+
+const getListingType = (artwork: Artwork): ArtworkListingType =>
+  artwork.listingType ?? "product";
 
 const useStyles = createStyles((theme) => ({
   shell: {
@@ -120,7 +138,7 @@ const useStyles = createStyles((theme) => ({
 
 export default function ImageSearchExperience() {
   const { classes, theme } = useStyles();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [mode, setMode] = useState<"match" | "manage">("match");
   const [adminSession, setAdminSession] = useState<AdminSession | null>(
     () => getAdminSession()
@@ -154,7 +172,15 @@ export default function ImageSearchExperience() {
   const [adminCategory, setAdminCategory] = useState("");
   const [adminPeriod, setAdminPeriod] = useState("");
   const [adminDescription, setAdminDescription] = useState("");
+  const [adminListingType, setAdminListingType] =
+    useState<ArtworkListingType>("product");
 
+  const productKnowledgeBase = knowledgeBase.filter(
+    (artwork) => getListingType(artwork) === "product"
+  );
+  const collectionKnowledgeBase = knowledgeBase.filter(
+    (artwork) => getListingType(artwork) === "collection"
+  );
   const featureInsights: FeatureInsight[] = feature
     ? getFeatureInsights(feature.vector)
     : [];
@@ -165,10 +191,57 @@ export default function ImageSearchExperience() {
   );
   const resultList = results.length
     ? results
-    : knowledgeBase.map((artwork) => ({
+    : productKnowledgeBase.map((artwork) => ({
         artwork,
         score: 0,
       }));
+
+  const getFeatureInsightText = (label: string) => {
+    switch (label) {
+      case "Red":
+        return {
+          label: t("image.featureRed"),
+          description: t("image.featureRedDescription"),
+        };
+      case "Green":
+        return {
+          label: t("image.featureGreen"),
+          description: t("image.featureGreenDescription"),
+        };
+      case "Blue":
+        return {
+          label: t("image.featureBlue"),
+          description: t("image.featureBlueDescription"),
+        };
+      case "Brightness":
+        return {
+          label: t("image.featureBrightness"),
+          description: t("image.featureBrightnessDescription"),
+        };
+      case "Saturation":
+        return {
+          label: t("image.featureSaturation"),
+          description: t("image.featureSaturationDescription"),
+        };
+      case "Warmth":
+        return {
+          label: t("image.featureWarmth"),
+          description: t("image.featureWarmthDescription"),
+        };
+      case "Coolness":
+        return {
+          label: t("image.featureCoolness"),
+          description: t("image.featureCoolnessDescription"),
+        };
+      case "Contrast":
+        return {
+          label: t("image.featureContrast"),
+          description: t("image.featureContrastDescription"),
+        };
+      default:
+        return { label, description: "" };
+    }
+  };
 
   const refreshKnowledgeBase = () => {
     setKnowledgeBase(getKnowledgeBase());
@@ -238,12 +311,12 @@ export default function ImageSearchExperience() {
       setPreviewUrl(feature.previewUrl);
       setFileName(file.name);
       setFeature(feature);
-      setResults(searchSimilarArtworks(feature.vector, knowledgeBase));
+      setResults(searchSimilarArtworks(feature.vector, productKnowledgeBase));
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Unable to analyze this image."
+          : t("image.analyzeFallback")
       );
     } finally {
       setIsSearching(false);
@@ -251,7 +324,7 @@ export default function ImageSearchExperience() {
   };
 
   const handleDemoSearch = (artworkId: string) => {
-    const artwork = knowledgeBase.find((item) => item.id === artworkId);
+    const artwork = productKnowledgeBase.find((item) => item.id === artworkId);
 
     if (!artwork) {
       return;
@@ -267,10 +340,10 @@ export default function ImageSearchExperience() {
     };
 
     setError(null);
-    setFileName(`${artwork.title} sample`);
+    setFileName(`${getArtworkTitle(artwork, locale)} ${t("image.sampleSuffix")}`);
     setPreviewUrl(demoFeature.previewUrl);
     setFeature(demoFeature);
-    setResults(searchSimilarArtworks(demoFeature.vector, knowledgeBase));
+    setResults(searchSimilarArtworks(demoFeature.vector, productKnowledgeBase));
   };
 
   const handleAdminUpload = async (file: File | null) => {
@@ -300,26 +373,27 @@ export default function ImageSearchExperience() {
       setAdminError(
         uploadError instanceof Error
           ? uploadError.message
-          : "Unable to import this image."
+          : t("image.importFallback")
       );
     }
   };
 
   const handleSaveToKnowledgeBase = () => {
     if (!adminPreviewUrl || !adminFeature) {
-      setAdminError("Please upload an image before importing.");
+      setAdminError(t("image.uploadBeforeImport"));
       return;
     }
 
     const nextArtwork: Artwork = {
       id: `imported-${Date.now()}`,
-      title: adminTitle || "Untitled artwork",
-      category: adminCategory || "Uncategorized",
-      period: adminPeriod || "Unknown period",
+      title: adminTitle || t("image.untitledArtwork"),
+      category: adminCategory || t("image.uncategorized"),
+      period: adminPeriod || t("image.unknownPeriod"),
       image: adminPreviewUrl,
       description:
         adminDescription ||
-        "Imported by an administrator for local image matching.",
+        t("image.importedDescription"),
+      listingType: adminListingType,
       featureVector: adminFeature.vector,
     };
 
@@ -331,6 +405,7 @@ export default function ImageSearchExperience() {
     setAdminCategory("");
     setAdminPeriod("");
     setAdminDescription("");
+    setAdminListingType("product");
     setAdminError(null);
   };
 
@@ -362,6 +437,9 @@ export default function ImageSearchExperience() {
           <Title size={56}>{t("image.title")}</Title>
           <Text size="lg" color="dark.1">
             {t("image.description")}
+          </Text>
+          <Text size="sm" color="dark.1">
+            {t("image.matchScope")}
           </Text>
           <SegmentedControl
             value={mode}
@@ -502,6 +580,22 @@ export default function ImageSearchExperience() {
                   )}
                 </Box>
 
+                <SegmentedControl
+                  value={adminListingType}
+                  onChange={(value) =>
+                    setAdminListingType(value as ArtworkListingType)
+                  }
+                  data={[
+                    { label: t("image.listingProduct"), value: "product" },
+                    { label: t("image.listingCollection"), value: "collection" },
+                  ]}
+                />
+                <Text size="sm" color="dark.1">
+                  {adminListingType === "product"
+                    ? t("image.listingProductHelp")
+                    : t("image.listingCollectionHelp")}
+                </Text>
+
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <TextInput
                     label={t("image.fieldTitle")}
@@ -612,6 +706,12 @@ export default function ImageSearchExperience() {
                 <Stack spacing="xs">
                   <Text weight={700}>{t("image.currentIndex")}</Text>
                   <Text color="dark.1">
+                    {productKnowledgeBase.length} {t("image.productCount")}
+                  </Text>
+                  <Text color="dark.1">
+                    {collectionKnowledgeBase.length} {t("image.collectionCount")}
+                  </Text>
+                  <Text color="dark.1">
                     {importedArtworks.length} {t("image.adminImported")}
                   </Text>
                   <Text color="dark.1">
@@ -624,7 +724,7 @@ export default function ImageSearchExperience() {
                   <Group align="center" noWrap>
                     <Image
                       src={artwork.image}
-                      alt={artwork.title}
+                      alt={getArtworkTitle(artwork, locale)}
                       width={112}
                       height={88}
                       radius="sm"
@@ -633,15 +733,20 @@ export default function ImageSearchExperience() {
                     <Stack spacing={4}>
                       <Group spacing="xs">
                         <Badge color="violet.7" variant="outline">
-                          {artwork.category}
+                          {getArtworkCategory(artwork, locale)}
+                        </Badge>
+                        <Badge color={getListingType(artwork) === "product" ? "green" : "blue"}>
+                          {getListingType(artwork) === "product"
+                            ? t("image.productBadge")
+                            : t("image.collectionBadge")}
                         </Badge>
                         {artwork.id.startsWith("imported-") ? (
                           <Badge color="violet.9">{t("image.imported")}</Badge>
                         ) : null}
                       </Group>
-                      <Text weight={700}>{artwork.title}</Text>
+                      <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
                       <Text size="sm" color="dark.1">
-                        {artwork.period}
+                        {getArtworkPeriod(artwork, locale)}
                       </Text>
                     </Stack>
                   </Group>
@@ -708,7 +813,9 @@ export default function ImageSearchExperience() {
               <Group position="apart">
                 <Text size="sm" color="dark.1">
                   {strongestInsight
-                    ? `${t("image.dominantSignal")}: ${strongestInsight.label.toLowerCase()}`
+                    ? `${t("image.dominantSignal")}: ${getFeatureInsightText(
+                        strongestInsight.label
+                      ).label}`
                     : t("image.localMatching")}
                 </Text>
                 <Button
@@ -726,14 +833,14 @@ export default function ImageSearchExperience() {
                   {t("image.trySample")}
                 </Text>
                 <Group spacing="xs">
-                  {knowledgeBase.slice(0, 4).map((artwork) => (
+                  {productKnowledgeBase.slice(0, 4).map((artwork) => (
                     <Button
                       key={artwork.id}
                       variant="light"
                       size="xs"
                       onClick={() => handleDemoSearch(artwork.id)}
                     >
-                      {artwork.category}
+                      {getArtworkCategory(artwork, locale)}
                     </Button>
                   ))}
                 </Group>
@@ -757,7 +864,7 @@ export default function ImageSearchExperience() {
                         <Stack spacing={4}>
                           <Group position="apart">
                             <Text size="sm" weight={600}>
-                              {insight.label}
+                              {getFeatureInsightText(insight.label).label}
                             </Text>
                             <Text size="sm" color="violet.7" weight={700}>
                               {insight.value}
@@ -765,7 +872,7 @@ export default function ImageSearchExperience() {
                           </Group>
                           <Progress value={insight.value} color="violet.7" />
                           <Text size="xs" color="dark.1">
-                            {insight.description}
+                            {getFeatureInsightText(insight.label).description}
                           </Text>
                         </Stack>
                       </Paper>
@@ -788,7 +895,7 @@ export default function ImageSearchExperience() {
               <Badge variant="filled" color="violet.9">
                 {results.length
                   ? t("image.ranked")
-                  : `${knowledgeBase.length} ${t("image.indexed")}`}
+                  : `${productKnowledgeBase.length} ${t("image.indexed")}`}
               </Badge>
             </Group>
 
@@ -798,8 +905,7 @@ export default function ImageSearchExperience() {
                   <IconSparkles size={18} color={theme.colors.violet[7]} />
                   <Text weight={700}>{t("image.bestMatch")}</Text>
                   <Text color="dark.1">
-                    {results[0].artwork.title} at {results[0].score}%
-                    similarity
+                    {getArtworkTitle(results[0].artwork, locale)} · {results[0].score}% {t("image.similarity")}
                   </Text>
                 </Group>
               </Paper>
@@ -814,7 +920,7 @@ export default function ImageSearchExperience() {
                 >
                   <Image
                     src={artwork.image}
-                    alt={artwork.title}
+                    alt={getArtworkTitle(artwork, locale)}
                     height={190}
                     radius="sm"
                     fit="cover"
@@ -823,7 +929,7 @@ export default function ImageSearchExperience() {
                     <Group spacing="xs" position="apart">
                       <Group spacing="xs">
                         <Badge color="violet.7" variant="outline">
-                          {artwork.category}
+                          {getArtworkCategory(artwork, locale)}
                         </Badge>
                         {score ? (
                           <Badge color="violet.9">
@@ -832,12 +938,12 @@ export default function ImageSearchExperience() {
                         ) : null}
                       </Group>
                       <Text size="sm" color="dark.1">
-                        {artwork.period}
+                        {getArtworkPeriod(artwork, locale)}
                       </Text>
                     </Group>
-                    <Title order={3}>{artwork.title}</Title>
+                    <Title order={3}>{getArtworkTitle(artwork, locale)}</Title>
                     <Text size="sm" color="dark.1">
-                      {artwork.description}
+                      {getArtworkDescription(artwork, locale)}
                     </Text>
                     <Box>
                       <Group position="apart" mb={4}>

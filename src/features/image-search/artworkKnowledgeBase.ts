@@ -3,42 +3,41 @@ import type { Artwork } from "@/data/artworks";
 
 const KNOWLEDGE_BASE_KEY = "museum-art-image-knowledge-base";
 
+const normalizeArtwork = (artwork: Artwork): Artwork => ({
+  ...artwork,
+  listingType: artwork.listingType ?? "product",
+});
+
+const readImportedArtworks = (): Artwork[] => {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const stored = window.localStorage.getItem(KNOWLEDGE_BASE_KEY);
+
+  if (!stored) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as Artwork[];
+    return Array.isArray(parsed) ? parsed.map(normalizeArtwork) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const getKnowledgeBase = (): Artwork[] => {
+  const seededArtworks = artworks.map(normalizeArtwork);
+
   if (typeof window === "undefined") {
-    return artworks;
+    return seededArtworks;
   }
 
-  const stored = window.localStorage.getItem(KNOWLEDGE_BASE_KEY);
-
-  if (!stored) {
-    return artworks;
-  }
-
-  try {
-    const importedArtworks = JSON.parse(stored) as Artwork[];
-    return [...artworks, ...importedArtworks];
-  } catch {
-    return artworks;
-  }
+  return [...seededArtworks, ...readImportedArtworks()];
 };
 
-export const getImportedArtworks = (): Artwork[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  const stored = window.localStorage.getItem(KNOWLEDGE_BASE_KEY);
-
-  if (!stored) {
-    return [];
-  }
-
-  try {
-    return JSON.parse(stored) as Artwork[];
-  } catch {
-    return [];
-  }
-};
+export const getImportedArtworks = (): Artwork[] => readImportedArtworks();
 
 export const saveImportedArtwork = (artwork: Artwork) => {
   if (typeof window === "undefined") {
@@ -48,7 +47,7 @@ export const saveImportedArtwork = (artwork: Artwork) => {
   const importedArtworks = getImportedArtworks();
   window.localStorage.setItem(
     KNOWLEDGE_BASE_KEY,
-    JSON.stringify([artwork, ...importedArtworks])
+    JSON.stringify([normalizeArtwork(artwork), ...importedArtworks])
   );
 };
 

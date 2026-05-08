@@ -9,81 +9,175 @@ export type ArtworkFeatureVector = [
   contrast: number
 ];
 
+export type ArtworkListingType = "product" | "collection";
+
 export type Artwork = {
   id: string;
   title: string;
+  titleZh?: string;
   category: string;
+  categoryZh?: string;
   period: string;
+  periodZh?: string;
   image: string;
   description: string;
+  descriptionZh?: string;
+  listingType: ArtworkListingType;
   featureVector: ArtworkFeatureVector;
 };
 
 export const artworks: Artwork[] = [
   {
-    id: "jade-pendant",
-    title: "Qing Jade Pendant",
-    category: "Jade",
+    id: "qing-blue-glaze-vase",
+    title: "Qing Blue Glazed Porcelain Vase",
+    titleZh: "清 蓝釉瓷瓶",
+    category: "Porcelain Vase",
+    categoryZh: "瓷器花瓶",
+    period: "Qing Dynasty, 18th century",
+    periodZh: "清代，18 世纪",
+    listingType: "product",
+    image:
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/42216/1782226/main-image",
+    description:
+      "A small Qing porcelain vase with a deep blue glaze and compact rounded form, suitable for matching blue ceramic vase references.",
+    descriptionZh:
+      "一件清代蓝釉瓷瓶，器形小巧圆润，适合匹配蓝色瓷瓶、古董花瓶一类参考图片。",
+    featureVector: [0.42, 0.5, 0.72, 0.55, 0.42, 0.18, 0.68, 0.3],
+  },
+  {
+    id: "qing-nine-peaches-vase",
+    title: "Qing Porcelain Vase with Nine Peaches",
+    titleZh: "清 粉彩九桃瓷瓶",
+    category: "Porcelain Vase",
+    categoryZh: "瓷器花瓶",
     period: "Qing Dynasty",
+    periodZh: "清代",
+    listingType: "product",
     image:
-      "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=900&q=80",
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/42317/preview",
     description:
-      "A luminous green jade ornament selected for its translucent color and fine carved surface.",
-    featureVector: [0.24, 0.68, 0.28, 0.52, 0.62, 0.28, 0.44, 0.38],
+      "A tall Chinese porcelain vase decorated with peach motifs and soft famille-rose colors, useful for matching floral antique vase photos.",
+    descriptionZh:
+      "一件带有桃纹装饰的清代粉彩瓷瓶，适合匹配花卉纹饰、彩瓷和古董花瓶照片。",
+    featureVector: [0.72, 0.58, 0.5, 0.62, 0.44, 0.58, 0.24, 0.32],
   },
   {
-    id: "blue-white-porcelain",
-    title: "Blue and White Porcelain Jar",
-    category: "Porcelain",
-    period: "Ming Style",
+    id: "qing-bottle-vase",
+    title: "Qing Bottle Vase",
+    titleZh: "清 长颈瓶",
+    category: "Porcelain Vase",
+    categoryZh: "瓷器花瓶",
+    period: "Qing Dynasty",
+    periodZh: "清代",
+    listingType: "product",
     image:
-      "https://images.unsplash.com/photo-1578926288207-a90a5366759d?auto=format&fit=crop&w=900&q=80",
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/51041/preview",
     description:
-      "Porcelain with cobalt decoration, balanced by a bright ceramic ground and cool blue patterning.",
-    featureVector: [0.68, 0.73, 0.88, 0.72, 0.36, 0.18, 0.78, 0.26],
+      "A slender antique bottle vase with a narrow neck and balanced ceramic silhouette, intended for matching vase-shaped uploads.",
+    descriptionZh:
+      "一件细长颈古董瓶，轮廓清晰，适合匹配长颈瓶、赏瓶和相近器形的上传图片。",
+    featureVector: [0.62, 0.58, 0.52, 0.58, 0.24, 0.42, 0.28, 0.28],
   },
   {
-    id: "bronze-ritual-vessel",
-    title: "Bronze Ritual Vessel",
+    id: "cui-zifan-lotus-scroll",
+    title: "Cui Zifan Lotus Hanging Scroll",
+    titleZh: "崔子范 荷花立轴",
+    category: "Chinese Painting",
+    categoryZh: "中国字画",
+    period: "20th century",
+    periodZh: "20 世纪",
+    listingType: "product",
+    image:
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/36413/2224688/thumbnail",
+    description:
+      "A Chinese lotus painting in ink and color on paper, selected as a reference for matching flower, ink, and hanging-scroll images.",
+    descriptionZh:
+      "一幅纸本设色荷花立轴，适合匹配花鸟画、水墨字画和卷轴类参考图片。",
+    featureVector: [0.58, 0.56, 0.52, 0.55, 0.16, 0.3, 0.24, 0.36],
+  },
+  {
+    id: "xiao-zhunxian-ink-lotus",
+    title: "Xiao Zhunxian Ink Lotus Painting",
+    titleZh: "萧俊贤 水墨荷花图",
+    category: "Chinese Painting",
+    categoryZh: "中国字画",
+    period: "Dated 1932",
+    periodZh: "1932 年作",
+    listingType: "product",
+    image:
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/36248/preview",
+    description:
+      "A monochrome ink lotus hanging scroll with bold brushwork and gray tonal variation, useful for matching black-and-white Chinese paintings.",
+    descriptionZh:
+      "一幅水墨荷花立轴，笔墨层次明显，适合匹配黑白水墨画、荷花题材和传统字画。",
+    featureVector: [0.5, 0.49, 0.47, 0.49, 0.08, 0.2, 0.18, 0.42],
+  },
+  {
+    id: "qing-jade-pendant",
+    title: "Qing Jade Pendant",
+    titleZh: "清 玉佩",
+    category: "Jade",
+    categoryZh: "玉器",
+    period: "Qing Dynasty, 18th-19th century",
+    periodZh: "清代，18 至 19 世纪",
+    listingType: "collection",
+    image:
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/43932/1742061/main-image",
+    description:
+      "A pale nephrite jade pendant with carved surface detail, suitable for representing the house collection and jade expertise.",
+    descriptionZh:
+      "一件浅色玉佩，带有雕刻细节，用作展示型藏品，体现玉器收藏和鉴赏方向。",
+    featureVector: [0.46, 0.64, 0.48, 0.53, 0.28, 0.22, 0.48, 0.34],
+  },
+  {
+    id: "carved-jade-brush-washer",
+    title: "Carved Jade Brush Washer",
+    titleZh: "雕玉笔洗",
+    category: "Jade",
+    categoryZh: "玉器",
+    period: "Qing Dynasty",
+    periodZh: "清代",
+    listingType: "collection",
+    image:
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/42060/preview",
+    description:
+      "A dark green carved jade vessel with dense relief decoration, included as a display collection item rather than a sale listing.",
+    descriptionZh:
+      "一件深绿色雕玉文房器，纹饰细密，作为展示型藏品，不进入用户可售商品匹配。",
+    featureVector: [0.28, 0.45, 0.34, 0.34, 0.38, 0.18, 0.42, 0.5],
+  },
+  {
+    id: "shang-bronze-wine-container",
+    title: "Shang Bronze Wine Container",
+    titleZh: "商 青铜酒器",
     category: "Bronze",
-    period: "Archaic Revival",
+    categoryZh: "铜器",
+    period: "Shang Dynasty, 13th century BCE",
+    periodZh: "商代，公元前 13 世纪",
+    listingType: "collection",
     image:
-      "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?auto=format&fit=crop&w=900&q=80",
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/52617/150063/main-image",
     description:
-      "A dark bronze vessel with aged patina, dense relief details, and a warm metallic undertone.",
-    featureVector: [0.42, 0.34, 0.25, 0.28, 0.31, 0.58, 0.16, 0.46],
+      "A large archaic bronze wine vessel with dark patina and raised surface patterns, included as a display collection reference.",
+    descriptionZh:
+      "一件大型高古青铜酒器，包浆深沉、纹饰突出，用作展示型藏品参考。",
+    featureVector: [0.34, 0.34, 0.32, 0.33, 0.12, 0.34, 0.22, 0.48],
   },
   {
-    id: "ink-landscape",
-    title: "Ink Landscape Scroll",
-    category: "Painting",
-    period: "Modern Ink",
+    id: "ming-gilt-bronze-ding",
+    title: "Ming Gilt Bronze Tripod Censer",
+    titleZh: "明 铜鎏金三足炉",
+    category: "Bronze",
+    categoryZh: "铜器",
+    period: "Ming Dynasty, 17th century",
+    periodZh: "明代，17 世纪",
+    listingType: "collection",
     image:
-      "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=900&q=80",
+      "https://collectionapi.metmuseum.org/api/collection/v1/iiif/823596/1925259/main-image",
     description:
-      "A restrained monochrome composition with misty tonal transitions and soft paper texture.",
-    featureVector: [0.56, 0.55, 0.53, 0.55, 0.08, 0.24, 0.2, 0.34],
-  },
-  {
-    id: "red-lacquer-box",
-    title: "Carved Red Lacquer Box",
-    category: "Lacquer",
-    period: "Late Imperial",
-    image:
-      "https://images.unsplash.com/photo-1611308013843-a639168ef025?auto=format&fit=crop&w=900&q=80",
-    description:
-      "A red lacquer object with layered carving, polished highlights, and a deep warm surface.",
-    featureVector: [0.72, 0.2, 0.14, 0.42, 0.68, 0.84, 0.08, 0.4],
-  },
-  {
-    id: "gilt-figure",
-    title: "Gilt Bronze Figure",
-    category: "Sculpture",
-    period: "Buddhist Art",
-    image:
-      "https://images.unsplash.com/photo-1608303588026-884930af2559?auto=format&fit=crop&w=900&q=80",
-    description:
-      "A gilded devotional figure whose reflective gold surface produces a bright, warm profile.",
-    featureVector: [0.82, 0.62, 0.28, 0.66, 0.52, 0.78, 0.12, 0.36],
+      "A parcel-gilt tripod censer with warm gold tones and archaistic decoration, used to show bronze and incense-burner collecting strength.",
+    descriptionZh:
+      "一件铜鎏金三足炉，色泽温润、带仿古纹饰，用于展示铜器和香炉类收藏实力。",
+    featureVector: [0.72, 0.56, 0.28, 0.52, 0.5, 0.78, 0.12, 0.44],
   },
 ];
