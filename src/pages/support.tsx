@@ -1,24 +1,17 @@
 import { AnimatedBox, Wrapper } from "@/layout";
 import Head from "next/head";
-import { HeroSection, InfoSection, LinksSection } from "@/section/Support";
-import { SupportSection } from "@/section/shared";
+import { CasesSection, HeroSection } from "@/section/Support";
 
 export default function Support() {
   return (
     <>
       <Head>
-        <title>Eastwood Auction - Support</title>
+        <title>Eastwood Auction - Return Cases</title>
       </Head>
       <Wrapper>
         <HeroSection />
         <AnimatedBox>
-          <InfoSection />
-        </AnimatedBox>
-        <AnimatedBox>
-          <SupportSection />
-        </AnimatedBox>
-        <AnimatedBox>
-          <LinksSection />
+          <CasesSection />
         </AnimatedBox>
       </Wrapper>
     </>

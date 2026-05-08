@@ -21,8 +21,19 @@ export type ArtworkImageSignature = {
   texture: number;
 };
 
-export type Artwork = {
-  id: string;
+
+export type ArtworkCaseRecord = {
+  salePrice: string;
+  saleTime: string;
+  salePlatform: string;
+  clientRegion: string;
+  logisticsCost: string;
+  purchaseChannel: string;
+  purchaseCost: string;
+  riskAdvice: string;
+};
+
+export type Artwork = {  id: string;
   title: string;
   titleZh?: string;
   category: string;
@@ -35,6 +46,7 @@ export type Artwork = {
   listingType: ArtworkListingType;
   featureVector: ArtworkFeatureVector;
   imageSignature?: ArtworkImageSignature;
+  caseRecord?: ArtworkCaseRecord;
 };
 
 export const artworks: Artwork[] = [
