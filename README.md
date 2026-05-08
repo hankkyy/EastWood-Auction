@@ -1,83 +1,114 @@
-![Artboard 1](https://github.com/design-sparx/museum-art/assets/26582923/3c5fd77f-6031-448a-8670-ef7fd18a6316)
-
 # Eastwood Auction
 
-[Online Demo](https://eastwood-auction.netlify.app/ "Online Demo")
+Eastwood Auction is a Next.js web application for presenting antique and auction items online. The site is being adapted from a museum-style template into an antique auction experience where customers can browse curated objects, view auction previews, submit inquiries, and use image search to find visually similar items from the catalog.
 
-### About:
+## Current Focus
 
-This is a web application built using Next Js, template - Typescript.
+- Antique and auction item presentation
+- English and Chinese built-in localization
+- Dark visual theme for a gallery and auction-house feel
+- Customer image search for matching uploaded reference photos against catalog items
+- Admin-only workflow for importing item photos into the local image-search knowledge base
+- Foundation for future ordering, inquiry, or checkout features
 
-#### Available Pages
+## Available Pages
 
-1. Home
-2. Visit
-3. Exhibitions
-4. Collections
-5. Support
-6. Donate
+- Home
+- Browse
+- Auctions
+- Antiques / Catalog
+- Image Search
+- Services
+- Consignment
 
-### Tech Stack:
+Some routes still use their original template paths internally, such as `/visit`, `/collections`, and `/donation`, but the visible site copy has been updated for the Eastwood Auction antique business direction.
 
-- embla-carousel-react v7 - https://www.embla-carousel.com/get-started/
-- mantine v6 - https://mantine.dev/pages/getting-started/
-- nextjs v13 - https://reactjs.org/docs/getting-started.html
-- tabler-icons v2- https://react-icons.github.io/react-icons/
-- framer-motion v10 - https://www.framer.com/motion/
+## Image Search
 
-**Dev dependencies**
+The image search feature is designed like a lightweight “photo search” experience:
 
-- eslint v8 - https://eslint.org/docs/latest/user-guide/getting-started
+- Customers upload a reference image of an antique or object they are interested in.
+- The browser analyzes visual signals locally.
+- The app compares the upload against seeded examples and admin-imported item photos.
+- Results are ranked by visual similarity.
 
-### Screenshot
-![image](https://user-images.githubusercontent.com/26582923/232856644-981faea4-f76b-467a-9d07-3f2f720c7f6c.png)
+Admin import is protected by a local demo login. The current implementation stores demo admin accounts and imported items in browser storage, so it is suitable for prototyping but should be replaced with a real backend before production use.
 
-### Software
+Default demo admin account:
 
-Before proceeding, please ensure you have the following software installed on your computer.
+```text
+Username: admin
+Password: admin123
+```
 
-- Node
-- Yarn (optional but recommended)
-- Git command line tools
+## Localization
 
-### Useful links
+The site supports two built-in languages:
 
-- Download Git cli -
-  - Windows: https://git-scm.com/download/windows
-  - Mac: https://git-scm.com/download/mac
-- Download Node - https://nodejs.org/en/
-- Download Yarn cli - https://yarnpkg.com/lang/en/docs/install/
-- Download VSCode - https://code.visualstudio.com/
+- English
+- 中文
 
-### Getting started
+The language picker uses a small flag icon plus the language label. Translation is handled inside the app instead of relying on Google Translate, which makes the visible UI more consistent.
 
-Please fork a copy of this repository. Forking a repository allows you to freely experiment with changes without affecting the original project. Alternatively download or clone the master branch.
+## Tech Stack
 
-##### Download & Install Dependencies on your machine
+- Next.js 13
+- TypeScript
+- Mantine 6
+- Embla Carousel
+- Tabler Icons
+- Framer Motion
+- ESLint
 
-Clone the repo to your machine
-`git clone <CloneURL>`
+## Getting Started
 
-##### Launch the frontend
+Install dependencies:
 
-1. Open a new terminal window and navigate in your root folder
-   `cd <../root>`
-   `yarn install OR npm install`
-2. Run the start script
-   `yarn run start OR npm run start`
+```bash
+npm install
+```
 
-Your app should be running on: http://localhost:3000
+Run the development server:
 
-### Versions
+```bash
+npm run dev
+```
 
-v1.0
+The app will usually run at:
 
-- Default project implementation
+```text
+http://localhost:3000
+```
 
-### Authors
+For the local development setup used during recent work, the app was run on port `3002`:
 
-1. Kelvin Kiptum Kiprop - https://github.com/kelvink96
+```bash
+npm run dev -- -p 3002
+```
 
-### License
+## Quality Checks
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/kelvink96ltd/flick-city/blob/master/LICENSE.md) file for details
+Run TypeScript checks:
+
+```bash
+npx tsc --noEmit
+```
+
+Run lint:
+
+```bash
+npm run lint
+```
+
+## Project Notes
+
+This project is actively being customized for an antique auction business. The next structural improvements should likely include:
+
+- Renaming legacy routes to business-aligned paths such as `/catalog`, `/auctions`, and `/consign`
+- Replacing browser-storage admin/demo data with a real database and authentication layer
+- Adding item detail pages with price, availability, provenance, condition, and inquiry actions
+- Adding order, cart, or checkout support when the sales workflow is ready
+
+## License
+
+MIT
