@@ -20,8 +20,11 @@ const { Col } = Grid;
 
 const useStyles = createStyles((theme) => ({
   card: {
+    minHeight: 142,
     backgroundColor: theme.colors.violet[0],
     padding: theme.spacing.md,
+    display: "flex",
+    alignItems: "center",
   },
 }));
 

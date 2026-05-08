@@ -11,7 +11,7 @@ import {
   rem,
   ScrollArea,
   Stack,
-  Title,
+  Text,
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -66,6 +66,34 @@ const useStyles = createStyles((theme) => ({
   hiddenDesktop: {
     [theme.fn.largerThan("md")]: {
       display: "none",
+    },
+  },
+  brandButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    minWidth: 0,
+  },
+  brandMark: {
+    width: rem(38),
+    height: rem(38),
+    flex: "0 0 auto",
+    objectFit: "cover",
+    borderRadius: theme.radius.sm,
+    border: "1px solid rgba(216, 183, 109, 0.24)",
+    [theme.fn.smallerThan("sm")]: {
+      width: rem(32),
+      height: rem(32),
+    },
+  },
+  brandText: {
+    color: theme.white,
+    fontSize: rem(28),
+    fontWeight: 800,
+    lineHeight: 1,
+    whiteSpace: "nowrap",
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: rem(21),
     },
   },
 }));
@@ -129,8 +157,21 @@ export default function TopNav({ handleOpenSearch }: IProps) {
     <Box>
       <Header height="100%" px="md" className={classes.header}>
         <Group position="apart" sx={{ height: "100%" }}>
-          <UnstyledButton component={Link} href="/">
-            <Title order={2}>{t("common.brand")}</Title>
+          <UnstyledButton
+            component={Link}
+            href="/"
+            className={classes.brandButton}
+            aria-label={t("common.brand")}
+          >
+            <Box
+              component="img"
+              src="/eastwood-logo-mark.png"
+              alt=""
+              className={classes.brandMark}
+            />
+            <Text component="span" className={classes.brandText}>
+              {t("common.brand")}
+            </Text>
           </UnstyledButton>
 
           <Group

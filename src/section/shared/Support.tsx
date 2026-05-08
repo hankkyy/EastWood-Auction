@@ -12,6 +12,8 @@ import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   card: {
+    minHeight: 168,
+    height: "100%",
     backgroundColor: theme.colors.violet[9],
     color: theme.white,
 

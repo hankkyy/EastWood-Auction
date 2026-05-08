@@ -48,6 +48,35 @@ const useStyles = createStyles((theme) => ({
       paddingBottom: 0,
     },
   },
+  heroPanel: {
+    width: "min(100%, 860px)",
+    minHeight: rem(220),
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(32, 38, 46, 0.96)",
+    border: "1px solid rgba(216, 183, 109, 0.18)",
+
+    [theme.fn.smallerThan("sm")]: {
+      minHeight: rem(240),
+    },
+  },
+  heroDescription: {
+    maxWidth: rem(760),
+    minHeight: rem(58),
+    marginLeft: "auto",
+    marginRight: "auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+
+    [theme.fn.smallerThan("sm")]: {
+      minHeight: rem(84),
+    },
+  },
+  heroAction: {
+    minWidth: rem(170),
+  },
 }));
 export default function HeroSection() {
   const videoRef = useRef<any>(null);
@@ -80,7 +109,11 @@ export default function HeroSection() {
       </video>
       <Container className={classes.content}>
         <Stack align="center" justify="end" pb="xl" sx={{ height: "100%" }}>
-          <Paper p={smallerThan ? "md" : "lg"} shadow="md">
+          <Paper
+            p={smallerThan ? "md" : "lg"}
+            shadow="md"
+            className={classes.heroPanel}
+          >
             <Text
               size={smallerThan ? 24 : 36}
               weight={600}
@@ -89,7 +122,12 @@ export default function HeroSection() {
             >
               {t("home.heroTitle")}
             </Text>
-            <Text mb="md" size={smallerThan ? "md" : "lg"} align="center">
+            <Text
+              mb="md"
+              size={smallerThan ? "md" : "lg"}
+              align="center"
+              className={classes.heroDescription}
+            >
               {t("home.heroDescription")}
             </Text>
             <Flex
@@ -98,7 +136,11 @@ export default function HeroSection() {
               direction={{ base: "column", sm: "row" }}
               gap={{ base: "sm", sm: "lg" }}
             >
-              <Button size="lg" fullWidth={smallerThan}>
+              <Button
+                size="lg"
+                fullWidth={smallerThan}
+                className={classes.heroAction}
+              >
                 {t("home.learnMore")}
               </Button>
               <Button
@@ -112,6 +154,7 @@ export default function HeroSection() {
                 }
                 onClick={pauseVideo}
                 fullWidth={smallerThan}
+                className={classes.heroAction}
               >
                 {pause ? t("home.playVideo") : t("home.pauseVideo")}
               </Button>
