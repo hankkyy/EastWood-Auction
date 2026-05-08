@@ -15,7 +15,6 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { IconSearch } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
@@ -100,32 +99,24 @@ const useStyles = createStyles((theme) => ({
 
 const mockdata = [
   {
-    labelKey: "nav.visit",
-    link: "/visit",
-  },
-  {
     labelKey: "nav.exhibitions",
     link: "/exhibitions",
+  },
+  {
+    labelKey: "nav.support",
+    link: "/support",
   },
   {
     labelKey: "nav.collections",
     link: "/collections",
   },
   {
-    labelKey: "nav.imageSearch",
-    link: "/image-search",
-  },
-  {
-    labelKey: "nav.support",
-    link: "/support",
+    labelKey: "nav.search",
+    link: "/search",
   },
 ] as const;
 
-interface IProps {
-  handleOpenSearch: () => void;
-}
-
-export default function TopNav({ handleOpenSearch }: IProps) {
+export default function TopNav() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
   const { classes, cx, theme } = useStyles();
@@ -180,18 +171,6 @@ export default function TopNav({ handleOpenSearch }: IProps) {
             className={classes.hiddenTablet}
           >
             {links}
-            <Button
-              className={classes.link}
-              key="search button"
-              leftIcon={<IconSearch size={18} />}
-              onClick={handleOpenSearch}
-              {...buttonProps}
-            >
-              {t("nav.search")}
-            </Button>
-            <Button size="md" component={Link} href="/donation">
-              {t("nav.donate")}
-            </Button>
           </Group>
 
           <Burger
@@ -219,21 +198,6 @@ export default function TopNav({ handleOpenSearch }: IProps) {
           />
           <Stack spacing="sm" px="sm" mb="sm">
             {links}
-            <Button
-              className={classes.link}
-              key="search small button"
-              leftIcon={<IconSearch size={18} />}
-              onClick={() => {
-                closeDrawer();
-                handleOpenSearch();
-              }}
-              {...buttonProps}
-            >
-              {t("nav.search")}
-            </Button>
-            <Button size="md" component={Link} href="/donation">
-              {t("nav.donate")}
-            </Button>
           </Stack>
           <Divider
             my="sm"

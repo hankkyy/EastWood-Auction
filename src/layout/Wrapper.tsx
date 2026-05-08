@@ -3,9 +3,7 @@ import { ReactNode } from "react";
 import AppFooter from "@/components/AppFooter";
 import FooterData from "@/data/footer.json";
 import TopBar from "@/components/TopBar";
-import { Box, rem, useMantineTheme } from "@mantine/core";
-import { useDisclosure, useMediaQuery } from "@mantine/hooks";
-import SearchModal from "@/components/SearchModal";
+import { Box, rem } from "@mantine/core";
 import { motion } from "framer-motion";
 
 interface IProps {
@@ -13,10 +11,6 @@ interface IProps {
 }
 
 export default function Wrapper({ children }: IProps) {
-  const theme = useMantineTheme();
-  const [opened, { open, close }] = useDisclosure(false);
-  const smallerThan = useMediaQuery("(max-width: 769px)");
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -34,11 +28,10 @@ export default function Wrapper({ children }: IProps) {
         }}
       >
         <TopBar />
-        <TopNav handleOpenSearch={open} />
+        <TopNav />
       </Box>
       <Box sx={{ marginTop: rem(104) }}>{children}</Box>
       <AppFooter data={FooterData.data} />
-      <SearchModal opened={opened} close={close} />
     </motion.div>
   );
 }
