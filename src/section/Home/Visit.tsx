@@ -58,14 +58,26 @@ export default function VisitSection() {
         {data.map((item, i) => (
           <Paper
             key={`visit-item-${i}`}
-            sx={{ backgroundColor: theme.colors.violet[0] }}
+            sx={{
+              backgroundColor: theme.colors.violet[0],
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
           >
             <Image src={item.image} alt={t(item.titleKey)} height={320} radius="sm" />
-            <Box p="md">
+            <Box
+              p="md"
+              sx={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <Text size="xl" weight={600} pt="md">
                 {t(item.titleKey)}
               </Text>
-              <Text my="sm">{t(item.textKey)}</Text>
+              <Text my="sm" sx={{ flex: 1 }}>{t(item.textKey)}</Text>
               <Button variant="outline" fullWidth={smallerThan}>
                 {t("visit.learnMore")}
               </Button>

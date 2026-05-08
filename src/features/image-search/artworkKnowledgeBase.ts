@@ -39,16 +39,34 @@ export const getKnowledgeBase = (): Artwork[] => {
 
 export const getImportedArtworks = (): Artwork[] => readImportedArtworks();
 
-export const saveImportedArtwork = (artwork: Artwork) => {
+const writeImportedArtworks = (artworks: Artwork[]) => {
   if (typeof window === "undefined") {
     return;
   }
 
-  const importedArtworks = getImportedArtworks();
   window.localStorage.setItem(
     KNOWLEDGE_BASE_KEY,
-    JSON.stringify([normalizeArtwork(artwork), ...importedArtworks])
+    JSON.stringify(artworks.map(normalizeArtwork))
   );
+};
+
+export const saveImportedArtwork = (artwork: Artwork) => {
+  const importedArtworks = getImportedArtworks();
+  writeImportedArtworks([normalizeArtwork(artwork), ...importedArtworks]);
+};
+
+export const updateImportedArtwork = (artwork: Artwork) => {
+  const importedArtworks = getImportedArtworks();
+  writeImportedArtworks(
+    importedArtworks.map((item) =>
+      item.id === artwork.id ? normalizeArtwork(artwork) : item
+    )
+  );
+};
+
+export const deleteImportedArtwork = (artworkId: string) => {
+  const importedArtworks = getImportedArtworks();
+  writeImportedArtworks(importedArtworks.filter((item) => item.id !== artworkId));
 };
 
 export const clearImportedArtworks = () => {

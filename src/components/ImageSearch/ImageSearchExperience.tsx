@@ -1,8 +1,10 @@
 import {
   clearImportedArtworks,
+  deleteImportedArtwork,
   getImportedArtworks,
   getKnowledgeBase,
   saveImportedArtwork,
+  updateImportedArtwork,
 } from "@/features/image-search/artworkKnowledgeBase";
 import {
   createAdminAccount,
@@ -52,14 +54,18 @@ import {
   Title,
 } from "@mantine/core";
 import {
+  IconCheck,
   IconChartBar,
   IconDatabaseImport,
+  IconEdit,
   IconLock,
   IconLogout,
   IconPhotoSearch,
   IconRefresh,
   IconSparkles,
+  IconTrash,
   IconUpload,
+  IconX,
 } from "@tabler/icons-react";
 import { useState } from "react";
 
@@ -174,6 +180,14 @@ export default function ImageSearchExperience() {
   const [adminDescription, setAdminDescription] = useState("");
   const [adminListingType, setAdminListingType] =
     useState<ArtworkListingType>("product");
+  const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editPeriod, setEditPeriod] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editListingType, setEditListingType] =
+    useState<ArtworkListingType>("product");
+  const [manageMessage, setManageMessage] = useState<string | null>(null);
 
   const productKnowledgeBase = knowledgeBase.filter(
     (artwork) => getListingType(artwork) === "product"
@@ -246,6 +260,48 @@ export default function ImageSearchExperience() {
   const refreshKnowledgeBase = () => {
     setKnowledgeBase(getKnowledgeBase());
     setImportedArtworks(getImportedArtworks());
+  };
+
+  const resetEditForm = () => {
+    setEditingArtworkId(null);
+    setEditTitle("");
+    setEditCategory("");
+    setEditPeriod("");
+    setEditDescription("");
+    setEditListingType("product");
+  };
+
+  const handleStartEdit = (artwork: Artwork) => {
+    setEditingArtworkId(artwork.id);
+    setEditTitle(artwork.title);
+    setEditCategory(artwork.category);
+    setEditPeriod(artwork.period);
+    setEditDescription(artwork.description);
+    setEditListingType(getListingType(artwork));
+    setManageMessage(null);
+  };
+
+  const handleSaveEdit = (artwork: Artwork) => {
+    updateImportedArtwork({
+      ...artwork,
+      title: editTitle || artwork.title,
+      category: editCategory || artwork.category,
+      period: editPeriod || artwork.period,
+      description: editDescription || artwork.description,
+      listingType: editListingType,
+    });
+    refreshKnowledgeBase();
+    resetEditForm();
+    setResults([]);
+    setManageMessage(t("image.itemUpdated"));
+  };
+
+  const handleDeleteImportedArtwork = (artworkId: string) => {
+    deleteImportedArtwork(artworkId);
+    refreshKnowledgeBase();
+    resetEditForm();
+    setResults([]);
+    setManageMessage(t("image.itemDeleted"));
   };
 
   const handleAdminLogin = () => {
@@ -399,20 +455,24 @@ export default function ImageSearchExperience() {
 
     saveImportedArtwork(nextArtwork);
     refreshKnowledgeBase();
-    setMode("match");
     setResults([]);
     setAdminTitle("");
     setAdminCategory("");
     setAdminPeriod("");
     setAdminDescription("");
     setAdminListingType("product");
+    setAdminPreviewUrl(null);
+    setAdminFeature(null);
     setAdminError(null);
+    setManageMessage(t("image.itemImported"));
   };
 
   const handleClearImportedArtworks = () => {
     clearImportedArtworks();
     refreshKnowledgeBase();
+    resetEditForm();
     setResults([]);
+    setManageMessage(t("image.itemsCleared"));
   };
 
   const handleReset = () => {
@@ -719,39 +779,149 @@ export default function ImageSearchExperience() {
                   </Text>
                 </Stack>
               </Paper>
-              {knowledgeBase.map((artwork) => (
-                <Paper key={artwork.id} p="md" className={classes.resultCard}>
-                  <Group align="center" noWrap>
-                    <Image
-                      src={artwork.image}
-                      alt={getArtworkTitle(artwork, locale)}
-                      width={112}
-                      height={88}
-                      radius="sm"
-                      fit="cover"
-                    />
-                    <Stack spacing={4}>
-                      <Group spacing="xs">
-                        <Badge color="violet.7" variant="outline">
-                          {getArtworkCategory(artwork, locale)}
-                        </Badge>
-                        <Badge color={getListingType(artwork) === "product" ? "green" : "blue"}>
-                          {getListingType(artwork) === "product"
-                            ? t("image.productBadge")
-                            : t("image.collectionBadge")}
-                        </Badge>
-                        {artwork.id.startsWith("imported-") ? (
-                          <Badge color="violet.9">{t("image.imported")}</Badge>
-                        ) : null}
+              {manageMessage ? (
+                <Alert color="violet" title={t("image.manageNotice")}>
+                  {manageMessage}
+                </Alert>
+              ) : null}
+              {knowledgeBase.map((artwork) => {
+                const isImported = artwork.id.startsWith("imported-");
+                const isEditing = editingArtworkId === artwork.id;
+
+                return (
+                  <Paper key={artwork.id} p="md" className={classes.resultCard}>
+                    <Stack spacing="md">
+                      <Group align="center" position="apart" noWrap>
+                        <Group align="center" noWrap>
+                          <Image
+                            src={artwork.image}
+                            alt={getArtworkTitle(artwork, locale)}
+                            width={112}
+                            height={88}
+                            radius="sm"
+                            fit="cover"
+                          />
+                          <Stack spacing={4}>
+                            <Group spacing="xs">
+                              <Badge color="violet.7" variant="outline">
+                                {getArtworkCategory(artwork, locale)}
+                              </Badge>
+                              <Badge
+                                color={
+                                  getListingType(artwork) === "product"
+                                    ? "green"
+                                    : "blue"
+                                }
+                              >
+                                {getListingType(artwork) === "product"
+                                  ? t("image.productBadge")
+                                  : t("image.collectionBadge")}
+                              </Badge>
+                              {isImported ? (
+                                <Badge color="violet.9">{t("image.imported")}</Badge>
+                              ) : (
+                                <Badge color="gray">{t("image.seeded")}</Badge>
+                              )}
+                            </Group>
+                            <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
+                            <Text size="sm" color="dark.1">
+                              {getArtworkPeriod(artwork, locale)}
+                            </Text>
+                          </Stack>
+                        </Group>
+                        <Group spacing="xs" noWrap>
+                          <Button
+                            size="xs"
+                            variant="light"
+                            leftIcon={<IconEdit size={14} />}
+                            onClick={() => handleStartEdit(artwork)}
+                            disabled={!isImported}
+                          >
+                            {t("image.editItem")}
+                          </Button>
+                          <Button
+                            size="xs"
+                            color="red"
+                            variant="outline"
+                            leftIcon={<IconTrash size={14} />}
+                            onClick={() => handleDeleteImportedArtwork(artwork.id)}
+                            disabled={!isImported}
+                          >
+                            {t("image.deleteItem")}
+                          </Button>
+                        </Group>
                       </Group>
-                      <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
-                      <Text size="sm" color="dark.1">
-                        {getArtworkPeriod(artwork, locale)}
-                      </Text>
+
+                      {isEditing ? (
+                        <Stack spacing="sm">
+                          <SegmentedControl
+                            value={editListingType}
+                            onChange={(value) =>
+                              setEditListingType(value as ArtworkListingType)
+                            }
+                            data={[
+                              { label: t("image.listingProduct"), value: "product" },
+                              {
+                                label: t("image.listingCollection"),
+                                value: "collection",
+                              },
+                            ]}
+                          />
+                          <SimpleGrid
+                            cols={2}
+                            breakpoints={[{ maxWidth: "sm", cols: 1 }]}
+                          >
+                            <TextInput
+                              label={t("image.fieldTitle")}
+                              value={editTitle}
+                              onChange={(event) =>
+                                setEditTitle(event.currentTarget.value)
+                              }
+                            />
+                            <TextInput
+                              label={t("image.fieldCategory")}
+                              value={editCategory}
+                              onChange={(event) =>
+                                setEditCategory(event.currentTarget.value)
+                              }
+                            />
+                            <TextInput
+                              label={t("image.fieldPeriod")}
+                              value={editPeriod}
+                              onChange={(event) =>
+                                setEditPeriod(event.currentTarget.value)
+                              }
+                            />
+                          </SimpleGrid>
+                          <Textarea
+                            label={t("image.fieldDescription")}
+                            value={editDescription}
+                            onChange={(event) =>
+                              setEditDescription(event.currentTarget.value)
+                            }
+                            minRows={2}
+                          />
+                          <Group position="right">
+                            <Button
+                              variant="subtle"
+                              leftIcon={<IconX size={16} />}
+                              onClick={resetEditForm}
+                            >
+                              {t("image.cancelEdit")}
+                            </Button>
+                            <Button
+                              leftIcon={<IconCheck size={16} />}
+                              onClick={() => handleSaveEdit(artwork)}
+                            >
+                              {t("image.saveEdit")}
+                            </Button>
+                          </Group>
+                        </Stack>
+                      ) : null}
                     </Stack>
-                  </Group>
-                </Paper>
-              ))}
+                  </Paper>
+                );
+              })}
             </Stack>
           </SimpleGrid>
         ) : (

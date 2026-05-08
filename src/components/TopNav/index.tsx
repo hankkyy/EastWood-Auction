@@ -8,10 +8,10 @@ import {
   Drawer,
   Group,
   Header,
-  Image,
   rem,
   ScrollArea,
   Stack,
+  Text,
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -71,16 +71,29 @@ const useStyles = createStyles((theme) => ({
   brandButton: {
     display: "flex",
     alignItems: "center",
+    gap: theme.spacing.sm,
     minWidth: 0,
   },
-  brandLogo: {
-    width: 188,
-    height: 52,
-    objectFit: "contain",
-    borderRadius: theme.radius.xs,
+  brandMark: {
+    width: rem(38),
+    height: rem(38),
+    flex: "0 0 auto",
+    objectFit: "cover",
+    borderRadius: theme.radius.sm,
+    border: "1px solid rgba(216, 183, 109, 0.24)",
     [theme.fn.smallerThan("sm")]: {
-      width: 142,
-      height: 42,
+      width: rem(32),
+      height: rem(32),
+    },
+  },
+  brandText: {
+    color: theme.white,
+    fontSize: rem(28),
+    fontWeight: 800,
+    lineHeight: 1,
+    whiteSpace: "nowrap",
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: rem(21),
     },
   },
 }));
@@ -150,12 +163,15 @@ export default function TopNav({ handleOpenSearch }: IProps) {
             className={classes.brandButton}
             aria-label={t("common.brand")}
           >
-            <Image
-              src="/eastwood-logo.png"
-              alt={t("common.brand")}
-              className={classes.brandLogo}
-              fit="contain"
+            <Box
+              component="img"
+              src="/eastwood-logo-mark.png"
+              alt=""
+              className={classes.brandMark}
             />
+            <Text component="span" className={classes.brandText}>
+              {t("common.brand")}
+            </Text>
           </UnstyledButton>
 
           <Group
