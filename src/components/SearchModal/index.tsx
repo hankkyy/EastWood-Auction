@@ -97,7 +97,7 @@ export default function SearchModal({ opened, close }: IProps) {
                 </Flex>
                 <Button
                   component={Link}
-                  href="/image-search"
+                  href="/search"
                   onClick={close}
                   leftIcon={<IconPhotoSearch size={18} />}
                   fullWidth={smallerThan}
@@ -119,43 +119,6 @@ export default function SearchModal({ opened, close }: IProps) {
             <Button size="lg" sx={{ width: "fit-content" }}>
               {t("search.submit")}
             </Button>
-            <SimpleGrid
-              cols={3}
-              spacing="lg"
-              breakpoints={[
-                { maxWidth: "md", cols: 1, spacing: "md" },
-                { maxWidth: "sm", cols: 1, spacing: "sm" },
-                { maxWidth: "xs", cols: 1, spacing: "sm" },
-              ]}
-            >
-              <Paper {...paperProps}>
-                <Text {...titleTextProps}>
-                  Best forests to visit in North America
-                </Text>
-                <Flex gap="xs" align="center">
-                  <IconCalendarTime size={14} />
-                  <Text {...textProps}>{t("search.ongoing")}</Text>
-                </Flex>
-              </Paper>
-              <Paper {...paperProps}>
-                <Text {...titleTextProps}>
-                  Hawaii beaches review: better than you think
-                </Text>
-                <Flex gap="xs" align="center">
-                  <IconCalendarTime size={14} />
-                  <Text {...textProps}>16 August</Text>
-                </Flex>
-              </Paper>
-              <Paper {...paperProps}>
-                <Text {...titleTextProps}>
-                  Mountains at night: 12 best locations to enjoy the view
-                </Text>
-                <Flex gap="xs" align="center">
-                  <IconCalendarTime size={14} />
-                  <Text {...textProps}>17 August – 31 October</Text>
-                </Flex>
-              </Paper>
-            </SimpleGrid>
           </Stack>
         </Center>
       </Container>

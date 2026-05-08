@@ -7,7 +7,7 @@ Eastwood Auction is a Next.js web application for presenting antique and auction
 - Antique and auction item presentation
 - English and Chinese built-in localization
 - Dark visual theme for a gallery and auction-house feel
-- Customer image search for matching uploaded reference photos against sale products
+- Unified keyword and image search for matching customer queries against sale products
 - Admin-only workflow for importing either sale products or display-only collection pieces into the local image-search knowledge base
 - Foundation for future ordering, inquiry, or checkout features
 
@@ -28,10 +28,12 @@ Some routes still use their original template paths internally, such as `/visit`
 The image search feature is designed like a lightweight “photo search” experience:
 
 - Customers upload a reference image of an antique or object they are interested in.
-- The browser analyzes visual signals locally.
+- The browser analyzes visual signals locally using a stronger multi-feature signature: color histogram, edge layout, perceptual hashes, approximate object shape, edge density, and texture.
 - The app compares the upload against sale products only, including seeded examples and admin-imported sale listings.
+- Admin-imported images store the stronger visual signature and are used for higher-confidence matching; older seeded examples without signatures are capped to avoid fake high-confidence results.
 - Results are ranked by visual similarity so the customer sees the closest matching item you can offer.
 - Admins can import two listing types: `product` for public sale items and `collection` for display-only pieces that show Eastwood Auction's inventory strength but are not matched to customers as sellable products.
+- A Taobao-level production workflow should replace the browser-only matcher with a visual embedding model plus vector database search.
 
 Admin import is protected by a local demo login. The current implementation stores demo admin accounts and imported items in browser storage, so it is suitable for prototyping but should be replaced with a real backend before production use.
 

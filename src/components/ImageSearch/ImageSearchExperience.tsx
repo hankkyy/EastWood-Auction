@@ -180,6 +180,7 @@ export default function ImageSearchExperience() {
   const [adminDescription, setAdminDescription] = useState("");
   const [adminListingType, setAdminListingType] =
     useState<ArtworkListingType>("product");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState("");
@@ -189,9 +190,29 @@ export default function ImageSearchExperience() {
     useState<ArtworkListingType>("product");
   const [manageMessage, setManageMessage] = useState<string | null>(null);
 
-  const productKnowledgeBase = knowledgeBase.filter(
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const allProductArtworks = knowledgeBase.filter(
     (artwork) => getListingType(artwork) === "product"
   );
+  const productKnowledgeBase = normalizedSearchQuery
+    ? allProductArtworks.filter((artwork) => {
+        const searchableText = [
+          artwork.title,
+          artwork.titleZh,
+          artwork.category,
+          artwork.categoryZh,
+          artwork.period,
+          artwork.periodZh,
+          artwork.description,
+          artwork.descriptionZh,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(normalizedSearchQuery);
+      })
+    : allProductArtworks;
   const collectionKnowledgeBase = knowledgeBase.filter(
     (artwork) => getListingType(artwork) === "collection"
   );
@@ -367,7 +388,7 @@ export default function ImageSearchExperience() {
       setPreviewUrl(feature.previewUrl);
       setFileName(file.name);
       setFeature(feature);
-      setResults(searchSimilarArtworks(feature.vector, productKnowledgeBase));
+      setResults(searchSimilarArtworks(feature, productKnowledgeBase));
     } catch (uploadError) {
       setError(
         uploadError instanceof Error
@@ -399,7 +420,7 @@ export default function ImageSearchExperience() {
     setFileName(`${getArtworkTitle(artwork, locale)} ${t("image.sampleSuffix")}`);
     setPreviewUrl(demoFeature.previewUrl);
     setFeature(demoFeature);
-    setResults(searchSimilarArtworks(demoFeature.vector, productKnowledgeBase));
+    setResults(searchSimilarArtworks(demoFeature, productKnowledgeBase));
   };
 
   const handleAdminUpload = async (file: File | null) => {
@@ -451,6 +472,7 @@ export default function ImageSearchExperience() {
         t("image.importedDescription"),
       listingType: adminListingType,
       featureVector: adminFeature.vector,
+      imageSignature: adminFeature.signature,
     };
 
     saveImportedArtwork(nextArtwork);
@@ -501,6 +523,13 @@ export default function ImageSearchExperience() {
           <Text size="sm" color="dark.1">
             {t("image.matchScope")}
           </Text>
+          <TextInput
+            size="lg"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            placeholder={t("image.keywordPlaceholder")}
+            aria-label={t("image.keywordSearch")}
+          />
           <SegmentedControl
             value={mode}
             onChange={(value) => setMode(value as "match" | "manage")}
@@ -766,7 +795,7 @@ export default function ImageSearchExperience() {
                 <Stack spacing="xs">
                   <Text weight={700}>{t("image.currentIndex")}</Text>
                   <Text color="dark.1">
-                    {productKnowledgeBase.length} {t("image.productCount")}
+                    {allProductArtworks.length} {t("image.productCount")}
                   </Text>
                   <Text color="dark.1">
                     {collectionKnowledgeBase.length} {t("image.collectionCount")}

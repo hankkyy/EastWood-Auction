@@ -11,6 +11,16 @@ export type ArtworkFeatureVector = [
 
 export type ArtworkListingType = "product" | "collection";
 
+export type ArtworkImageSignature = {
+  colorHistogram: number[];
+  edgeHistogram: number[];
+  averageHash: string;
+  differenceHash: string;
+  objectAspectRatio: number;
+  edgeDensity: number;
+  texture: number;
+};
+
 export type Artwork = {
   id: string;
   title: string;
@@ -24,6 +34,7 @@ export type Artwork = {
   descriptionZh?: string;
   listingType: ArtworkListingType;
   featureVector: ArtworkFeatureVector;
+  imageSignature?: ArtworkImageSignature;
 };
 
 export const artworks: Artwork[] = [
