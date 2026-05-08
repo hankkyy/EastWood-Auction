@@ -20,36 +20,37 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import LanguagePicker from "@/components/LanguagePicker";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   header: {
     border: "none",
     padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
+    backgroundColor: "rgba(15, 18, 22, 0.96)",
+    color: theme.white,
+    backdropFilter: "blur(12px)",
   },
   link: {
+    color: theme.colors.dark[0],
     [theme.fn.smallerThan("sm")]: {},
 
     ...theme.fn.hover({
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
+      backgroundColor: theme.colors.dark[6],
+      color: theme.colors.violet[7],
     }),
   },
   activeLink: {
-    backgroundColor: theme.colors.violet[0],
-    borderBottom: `2px solid ${theme.colors.violet[9]}`,
+    color: theme.colors.violet[7],
+    backgroundColor: "rgba(216, 183, 109, 0.12)",
+    borderBottom: `2px solid ${theme.colors.violet[7]}`,
 
     ...theme.fn.hover({
       borderRadius: theme.radius.sm,
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
+      backgroundColor: "rgba(216, 183, 109, 0.16)",
     }),
 
     [theme.fn.smallerThan("md")]: {
-      color: theme.colors.violet[9],
+      color: theme.colors.violet[7],
     },
   },
   hiddenMobile: {
@@ -71,22 +72,26 @@ const useStyles = createStyles((theme) => ({
 
 const mockdata = [
   {
-    label: "Visit",
+    labelKey: "nav.visit",
     link: "/visit",
   },
   {
-    label: "Exhibitions",
+    labelKey: "nav.exhibitions",
     link: "/exhibitions",
   },
   {
-    label: "Collections",
+    labelKey: "nav.collections",
     link: "/collections",
   },
   {
-    label: "Support",
+    labelKey: "nav.imageSearch",
+    link: "/image-search",
+  },
+  {
+    labelKey: "nav.support",
     link: "/support",
   },
-];
+] as const;
 
 interface IProps {
   handleOpenSearch: () => void;
@@ -97,9 +102,10 @@ export default function TopNav({ handleOpenSearch }: IProps) {
     useDisclosure(false);
   const { classes, cx, theme } = useStyles();
   const router = useRouter();
+  const { t } = useI18n();
 
   const urlResolver = (url: string): boolean => {
-    return router.pathname.includes(url.toLowerCase());
+    return router.pathname === url;
   };
 
   const buttonProps: ButtonProps = {
@@ -109,13 +115,13 @@ export default function TopNav({ handleOpenSearch }: IProps) {
 
   const links = mockdata.map((item) => (
     <Button
-      className={urlResolver(item.label) ? classes.activeLink : classes.link}
-      key={item.label}
+      className={urlResolver(item.link) ? classes.activeLink : classes.link}
+      key={item.link}
       component={Link}
       href={item.link}
       {...buttonProps}
     >
-      {item.label}
+      {t(item.labelKey)}
     </Button>
   ));
 
@@ -124,7 +130,7 @@ export default function TopNav({ handleOpenSearch }: IProps) {
       <Header height="100%" px="md" className={classes.header}>
         <Group position="apart" sx={{ height: "100%" }}>
           <UnstyledButton component={Link} href="/">
-            <Title order={2}>Museum & Art</Title>
+            <Title order={2}>{t("common.brand")}</Title>
           </UnstyledButton>
 
           <Group
@@ -140,10 +146,10 @@ export default function TopNav({ handleOpenSearch }: IProps) {
               onClick={handleOpenSearch}
               {...buttonProps}
             >
-              Search
+              {t("nav.search")}
             </Button>
             <Button size="md" component={Link} href="/donation">
-              Donate
+              {t("nav.donate")}
             </Button>
           </Group>
 
@@ -151,7 +157,7 @@ export default function TopNav({ handleOpenSearch }: IProps) {
             opened={drawerOpened}
             onClick={toggleDrawer}
             className={classes.hiddenDesktop}
-            title="Open menu navigation"
+            title={t("nav.openMenu")}
           />
         </Group>
       </Header>
@@ -161,7 +167,7 @@ export default function TopNav({ handleOpenSearch }: IProps) {
         onClose={closeDrawer}
         size="100%"
         padding="md"
-        title="Museum & Art"
+        title={t("common.brand")}
         className={classes.hiddenDesktop}
         zIndex={1000000}
       >
@@ -182,10 +188,10 @@ export default function TopNav({ handleOpenSearch }: IProps) {
               }}
               {...buttonProps}
             >
-              Search
+              {t("nav.search")}
             </Button>
             <Button size="md" component={Link} href="/donation">
-              Donate
+              {t("nav.donate")}
             </Button>
           </Stack>
           <Divider
@@ -193,8 +199,8 @@ export default function TopNav({ handleOpenSearch }: IProps) {
             color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
           />{" "}
           <Stack align="center" spacing="sm" px="sm" mb="sm">
-            <Button variant="subtle">Join & Give</Button>
-            <Button variant="subtle">Museum Shop</Button>
+            <Button variant="subtle">{t("top.joinGive")}</Button>
+            <Button variant="subtle">{t("top.shop")}</Button>
             <LanguagePicker />
           </Stack>
         </ScrollArea>

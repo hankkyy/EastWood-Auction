@@ -16,6 +16,7 @@ import React, { useRef } from "react";
 import Autoplay from "embla-carousel-autoplay";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const { Slide } = Carousel;
 
@@ -27,7 +28,9 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     flexWrap: "nowrap",
     padding: `${theme.spacing.xs} ${theme.spacing.xl}`,
-    borderBottom: `1px solid ${theme.colors.gray[3]}`,
+    backgroundColor: "#0f1216",
+    color: theme.colors.dark[0],
+    borderBottom: `1px solid rgba(216, 183, 109, 0.18)`,
 
     [theme.fn.smallerThan("md")]: {
       justifyContent: "space-between",
@@ -60,15 +63,12 @@ const useStyles = createStyles((theme) => ({
     color:
       theme.colorScheme === "dark"
         ? theme.colors.dark[0]
-        : theme.colors.gray[7],
+        : theme.colors.dark[0],
     fontSize: theme.fontSizes.sm,
     fontWeight: 500,
 
     "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
+      backgroundColor: theme.colors.dark[6],
     },
   },
 
@@ -77,8 +77,9 @@ const useStyles = createStyles((theme) => ({
   },
 
   announcementCard: {
-    backgroundColor: theme.colors.violet[0],
-    color: theme.black,
+    backgroundColor: "rgba(216, 183, 109, 0.12)",
+    color: theme.colors.dark[0],
+    border: `1px solid rgba(216, 183, 109, 0.22)`,
     textAlign: "center",
     padding: rem(8),
 
@@ -106,13 +107,14 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const announcementsData = [
-  "Announcements from Museum",
-  "Tickets available for 2023 auction event",
-  "Our COVID-19 Policy",
-];
+  "top.announcementMuseum",
+  "top.announcementTickets",
+  "top.announcementCovid",
+] as const;
 
 export default function TopBar() {
   const { classes } = useStyles();
+  const { t } = useI18n();
   const autoplay = useRef(Autoplay({ delay: 15000 }));
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
@@ -125,7 +127,7 @@ export default function TopBar() {
       <Container className={classes.inner} fluid>
         <Flex gap="sm" align="center" className={classes.leftSection}>
           <Text size={smallerThan ? "xs" : "sm"} weight={600}>
-            OPEN TODAY AT 12 P.M.
+            {t("top.openToday")}
           </Text>
           <Divider orientation="vertical" className={classes.hiddenTablet} />
           <Carousel
@@ -149,7 +151,7 @@ export default function TopBar() {
                     weight={500}
                     transform="uppercase"
                   >
-                    {a}
+                    {t(a)}
                   </Text>
                 </Paper>
               </Slide>
@@ -157,8 +159,8 @@ export default function TopBar() {
           </Carousel>
         </Flex>
         <Group spacing="sm" className={classes.hiddenTablet}>
-          <Button {...buttonProps}>Join & Give</Button>
-          <Button {...buttonProps}>Museum Shop</Button>
+          <Button {...buttonProps}>{t("top.joinGive")}</Button>
+          <Button {...buttonProps}>{t("top.shop")}</Button>
           <LanguagePicker />
         </Group>
       </Container>

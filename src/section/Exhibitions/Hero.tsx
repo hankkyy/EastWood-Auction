@@ -8,6 +8,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -70,6 +71,7 @@ const useStyles = createStyles((theme) => ({
 }));
 export default function HeroSection() {
   const { classes } = useStyles();
+  const { t } = useI18n();
 
   return (
     <div className={classes.wrapper}>
@@ -81,13 +83,13 @@ export default function HeroSection() {
         />
         <Container className={classes.container}>
           <Title className={classes.title}>
-            Film Screening: When the time comes
+            {t("exhibitions.heroTitle")}
           </Title>
           <Text className={classes.description} size="xl" mt="xl">
-            Saturday, April 15, 2023
+            {t("exhibitions.heroDate")}
           </Text>
           <Button mt="xl" size="lg" variant="filled">
-            RSVP Now
+            {t("exhibitions.rsvp")}
           </Button>
         </Container>
       </div>

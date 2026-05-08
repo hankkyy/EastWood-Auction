@@ -6,7 +6,7 @@ export default function Donation() {
   return (
     <>
       <Head>
-        <title>Museum Art - Donation</title>
+        <title>Eastwood Auction - Donation</title>
       </Head>
       <Wrapper>
         <HeroSection />

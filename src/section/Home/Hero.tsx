@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -52,6 +53,7 @@ export default function HeroSection() {
   const videoRef = useRef<any>(null);
   const [pause, setPause] = useState(false);
   const { classes } = useStyles();
+  const { t } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
   const pauseVideo = (): void => {
@@ -85,13 +87,10 @@ export default function HeroSection() {
               mb="md"
               align="center"
             >
-              Welcome to the Lorem Ipsum Museum
+              {t("home.heroTitle")}
             </Text>
             <Text mb="md" size={smallerThan ? "md" : "lg"} align="center">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
-              cupidatat non proident, sunt in culpa qui officia deserunt mollit
-              anim id est laborum.
+              {t("home.heroDescription")}
             </Text>
             <Flex
               justify="space-between"
@@ -100,7 +99,7 @@ export default function HeroSection() {
               gap={{ base: "sm", sm: "lg" }}
             >
               <Button size="lg" fullWidth={smallerThan}>
-                Learn More
+                {t("home.learnMore")}
               </Button>
               <Button
                 variant="white"
@@ -114,7 +113,7 @@ export default function HeroSection() {
                 onClick={pauseVideo}
                 fullWidth={smallerThan}
               >
-                {pause ? "Play" : "Pause"} background video
+                {pause ? t("home.playVideo") : t("home.pauseVideo")}
               </Button>
             </Flex>
           </Paper>

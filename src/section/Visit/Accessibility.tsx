@@ -8,8 +8,10 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 export default function AccessibilitySection() {
+  const { t } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
   return (
@@ -25,14 +27,13 @@ export default function AccessibilitySection() {
         ]}
       >
         <Stack align="start">
-          <Title size={smallerThan ? 32 : 48}>Accessibility</Title>
-          <Text>We have a wide range of services for disabled visitors.</Text>
-          <Text>
-            Find out how to make the most of your visit and plan your trip in
-            advance on our Accessibility at the Museum page.
-          </Text>
+          <Title size={smallerThan ? 32 : 48}>
+            {t("visit.accessibilityTitle")}
+          </Title>
+          <Text>{t("visit.accessibilityOne")}</Text>
+          <Text>{t("visit.accessibilityTwo")}</Text>
           <Button size="md" variant="light" fullWidth={smallerThan}>
-            Learn more
+            {t("visit.learnMore")}
           </Button>
         </Stack>
         {!smallerThan && (

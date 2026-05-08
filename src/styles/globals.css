@@ -11,6 +11,24 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   font-family: "Poppins", sans-serif !important;
+  background:
+    radial-gradient(circle at top left, rgba(59, 65, 74, 0.55), transparent 32rem),
+    linear-gradient(180deg, #171b21 0%, #12161b 44%, #0f1216 100%);
+  color: #f6efe3;
+}
+
+body {
+  top: 0 !important;
+}
+
+#__next {
+  min-height: 100vh;
+  background-color: #15191f;
+}
+
+::selection {
+  background-color: rgba(216, 183, 109, 0.35);
+  color: #fff7e8;
 }
 
 .mantine-UnstyledButton-root,
@@ -27,6 +45,44 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.mantine-Header-root,
+.mantine-Drawer-content,
+.mantine-Modal-content {
+  background-color: #15191f !important;
+  color: #f6efe3 !important;
+}
+
+.mantine-Paper-root {
+  background-color: #20262e;
+  border-color: rgba(216, 183, 109, 0.18);
+  color: #f6efe3;
+}
+
+.mantine-TextInput-input {
+  background-color: #10141a !important;
+  border-color: rgba(216, 183, 109, 0.28) !important;
+  color: #f6efe3 !important;
+}
+
+.mantine-TextInput-input::placeholder {
+  color: #928b84 !important;
+}
+
+.mantine-Accordion-item {
+  background-color: #20262e;
+  border-color: rgba(216, 183, 109, 0.18) !important;
+}
+
+.mantine-Accordion-control:hover,
+.mantine-Menu-dropdown {
+  background-color: #252b33 !important;
+}
+
+.mantine-Menu-dropdown {
+  border-color: rgba(216, 183, 109, 0.24) !important;
+  color: #f6efe3 !important;
 }
 
 .shape-blob {

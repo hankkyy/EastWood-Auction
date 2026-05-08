@@ -1,38 +1,29 @@
-import { useState } from "react";
-import {
-  createStyles,
-  Group,
-  Image,
-  Menu,
-  UnstyledButton,
-} from "@mantine/core";
+import { useI18n } from "@/i18n";
+import type { Locale } from "@/i18n";
+import { createStyles, Group, Image, Menu, UnstyledButton } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
+import { useState } from "react";
 
-const data = [
+type LanguageOption = {
+  code: Locale;
+  label: string;
+  nativeLabel: string;
+  image: string;
+};
+
+const data: LanguageOption[] = [
   {
+    code: "en",
     label: "English",
+    nativeLabel: "English",
     image:
       "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/english_njrlxm.png",
   },
   {
-    label: "German",
-    image:
-      "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/german_a90o3b.png",
-  },
-  {
-    label: "Italian",
-    image:
-      "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/italian_ruxfnn.png",
-  },
-  {
-    label: "French",
-    image:
-      "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/french_yek0eo.png",
-  },
-  {
-    label: "Polish",
-    image:
-      "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/polish_wjp2xh.png",
+    code: "zh",
+    label: "Chinese",
+    nativeLabel: "中文",
+    image: "https://flagcdn.com/w40/cn.png",
   },
 ];
 
@@ -44,13 +35,10 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
     padding: `.4rem 1rem`,
     borderRadius: theme.radius.sm,
     transition: "background-color 150ms ease",
-    color: theme.colors.violet[9],
+    color: theme.colors.dark[0],
 
     "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[5]
-          : theme.colors.gray[1],
+      backgroundColor: theme.colors.dark[6],
     },
   },
 
@@ -67,15 +55,17 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
 
 export default function LanguagePicker() {
   const [opened, setOpened] = useState(false);
+  const { locale, setLocale } = useI18n();
   const { classes } = useStyles({ opened });
-  const [selected, setSelected] = useState(data[0]);
+  const selected = data.find((language) => language.code === locale) ?? data[0];
+
   const items = data.map((item) => (
     <Menu.Item
-      icon={<Image src={item.image} width={18} height={18} alt="flag" />}
-      onClick={() => setSelected(item)}
-      key={item.label}
+      icon={<Image src={item.image} width={18} height={18} alt="" />}
+      onClick={() => setLocale(item.code)}
+      key={item.code}
     >
-      {item.label}
+      {item.label} ({item.nativeLabel})
     </Menu.Item>
   ));
 
@@ -90,8 +80,8 @@ export default function LanguagePicker() {
       <Menu.Target>
         <UnstyledButton className={classes.control}>
           <Group spacing="xs">
-            <Image src={selected.image} width={22} height={22} alt="flag" />
-            <span className={classes.label}>{selected.label}</span>
+            <Image src={selected.image} width={22} height={22} alt="" />
+            <span className={classes.label}>{selected.nativeLabel}</span>
           </Group>
           <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
         </UnstyledButton>

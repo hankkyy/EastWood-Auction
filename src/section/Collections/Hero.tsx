@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -74,6 +75,7 @@ const useStyles = createStyles((theme) => ({
 }));
 export default function HeroSection() {
   const { classes, theme } = useStyles();
+  const { t } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
   return (
@@ -85,11 +87,9 @@ export default function HeroSection() {
           zIndex={0}
         />
         <Container className={classes.container}>
-          <Title className={classes.title}>Explore the collection</Title>
+          <Title className={classes.title}>{t("collections.heroTitle")}</Title>
           <Text className={classes.description}>
-            Welcome to the new version of Collection online. Find out more about
-            ongoing improvements. For help and further information read our
-            online guide.
+            {t("collections.heroDescription")}
           </Text>
           <TextInput
             icon={<IconSearch size="1.1rem" stroke={1.5} />}
@@ -97,10 +97,10 @@ export default function HeroSection() {
             size={smallerThan ? "lg" : "xl"}
             rightSection={
               <Button leftIcon={<IconSearch />} size="md" variant="white">
-                Search
+                {t("nav.search")}
               </Button>
             }
-            placeholder="Enter a keyword, person, place"
+            placeholder={t("collections.searchPlaceholder")}
             rightSectionWidth={136}
             sx={{ width: smallerThan ? "100%" : 720 }}
           />

@@ -8,6 +8,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -70,6 +71,7 @@ const useStyles = createStyles((theme) => ({
 }));
 export default function HeroSection() {
   const { classes } = useStyles();
+  const { t } = useI18n();
 
   return (
     <div className={classes.wrapper}>
@@ -80,13 +82,12 @@ export default function HeroSection() {
           zIndex={0}
         />
         <Container className={classes.container}>
-          <Title className={classes.title}>Plan your visit</Title>
+          <Title className={classes.title}>{t("visit.heroTitle")}</Title>
           <Text className={classes.description} size="xl" mt="xl">
-            For the latest updates about reopening, booking tickets and
-            what&apos;s happening at the Museum, sign up to our newsletter
+            {t("visit.heroDescription")}
           </Text>
           <Button mt="xl" size="lg" variant="filled">
-            Book Now
+            {t("visit.bookNow")}
           </Button>
         </Container>
       </div>

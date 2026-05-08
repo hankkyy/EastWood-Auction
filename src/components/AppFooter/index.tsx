@@ -31,13 +31,9 @@ import { useMediaQuery } from "@mantine/hooks";
 const useStyles = createStyles((theme) => ({
   footer: {
     marginTop: rem(120),
-    backgroundColor:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[6]
-        : theme.colors.gray[0],
-    borderTop: `${rem(1)} solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.gray[2]
-    }`,
+    backgroundColor: "#0f1216",
+    color: theme.colors.dark[0],
+    borderTop: `${rem(1)} solid rgba(216, 183, 109, 0.18)`,
   },
 
   container: {
@@ -92,7 +88,7 @@ const useStyles = createStyles((theme) => ({
     color:
       theme.colorScheme === "dark"
         ? theme.colors.dark[1]
-        : theme.colors.dark[8],
+        : theme.colors.dark[0],
     fontSize: theme.fontSizes.md,
     paddingTop: rem(4),
     paddingBottom: rem(4),
@@ -106,7 +102,7 @@ const useStyles = createStyles((theme) => ({
     fontSize: theme.fontSizes.lg,
     fontWeight: 700,
     marginBottom: `calc(${theme.spacing.xs} / 2)`,
-    color: theme.colorScheme === "dark" ? theme.white : theme.black,
+    color: theme.white,
   },
 
   afterFooter: {
@@ -116,9 +112,7 @@ const useStyles = createStyles((theme) => ({
     marginTop: theme.spacing.xl,
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing.xl,
-    borderTop: `${rem(1)} solid ${
-      theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gray[2]
-    }`,
+    borderTop: `${rem(1)} solid rgba(216, 183, 109, 0.18)`,
 
     [theme.fn.smallerThan("sm")]: {
       flexDirection: "column",
@@ -154,7 +148,8 @@ export default function AppFooter({ data }: FooterLinksProps) {
     p: theme.spacing.md,
     spacing: 6,
     sx: {
-      backgroundColor: theme.colors.gray[2],
+      backgroundColor: theme.colors.dark[6],
+      border: `1px solid rgba(216, 183, 109, 0.18)`,
       borderRadius: theme.radius.sm,
     },
   };
@@ -281,13 +276,13 @@ export default function AppFooter({ data }: FooterLinksProps) {
           gap={{ base: "sm", sm: "lg" }}
         >
           <Flex gap="sm" justify="center" align="center">
-            <Anchor weight={500} color="black">
+            <Anchor weight={500} color="violet.7">
               Privacy Policy
             </Anchor>
-            <Anchor weight={500} color="black">
+            <Anchor weight={500} color="violet.7">
               Cookies
             </Anchor>
-            <Anchor weight={500} color="black">
+            <Anchor weight={500} color="violet.7">
               Terms of Use
             </Anchor>
           </Flex>
@@ -300,7 +295,7 @@ export default function AppFooter({ data }: FooterLinksProps) {
               href="https://github.com/kelvink96"
               variant="subtle"
               weight={500}
-              color="black"
+              color="violet.7"
             >
               Kelvin
             </Anchor>

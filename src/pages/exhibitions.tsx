@@ -9,7 +9,7 @@ export default function Exhibitions() {
   return (
     <>
       <Head>
-        <title>Museum Art - Exhibitions</title>
+        <title>Eastwood Auction - Exhibitions</title>
       </Head>
       <Wrapper>
         <HeroSection />

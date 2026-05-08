@@ -22,6 +22,7 @@ export default function Wrapper({ children }: IProps) {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
+      style={{ backgroundColor: "#15191f", color: "#f6efe3", minHeight: "100vh" }}
     >
       <Box
         sx={{
@@ -29,7 +30,7 @@ export default function Wrapper({ children }: IProps) {
           top: 0,
           zIndex: 2,
           width: "100%",
-          boxShadow: theme.shadows.sm,
+          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.36)",
         }}
       >
         <TopBar />

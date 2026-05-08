@@ -7,7 +7,7 @@ export default function Support() {
   return (
     <>
       <Head>
-        <title>Museum Art - Support</title>
+        <title>Eastwood Auction - Support</title>
       </Head>
       <Wrapper>
         <HeroSection />

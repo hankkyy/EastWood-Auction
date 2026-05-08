@@ -13,7 +13,7 @@ export default function Collections() {
   return (
     <>
       <Head>
-        <title>Museum Art - Collections</title>
+        <title>Eastwood Auction - Collections</title>
       </Head>
       <Wrapper>
         <HeroSection />

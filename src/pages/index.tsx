@@ -12,8 +12,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Museum Art</title>
-        <meta name="description" content="Museum art" />
+        <title>Eastwood Auction</title>
+        <meta name="description" content="Eastwood Auction" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

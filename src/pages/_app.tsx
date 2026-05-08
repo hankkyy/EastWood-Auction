@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { MantineProvider } from "@mantine/core";
 import { theme } from "@/theme";
 import { RouterTransition } from "@/components/RouterTransition";
+import { I18nProvider } from "@/i18n";
 
 import "@/styles/globals.css";
 
@@ -24,8 +25,10 @@ if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS theme={theme}>
-      <RouterTransition />
-      <Component {...pageProps} />
+      <I18nProvider>
+        <RouterTransition />
+        <Component {...pageProps} />
+      </I18nProvider>
     </MantineProvider>
   );
 }

@@ -14,7 +14,7 @@ export default function Visit() {
   return (
     <>
       <Head>
-        <title>Museum Art - Visit</title>
+        <title>Eastwood Auction - Visit</title>
       </Head>
       <Wrapper>
         <HeroSection />
