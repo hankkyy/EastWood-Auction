@@ -23,7 +23,7 @@ import {
   readImageAsDataUrl,
   searchSimilarArtworks,
 } from "@/features/image-search/imageSearch";
-import type { Artwork, ArtworkListingType } from "@/data/artworks";
+import type { Artwork, ArtworkCaseRecord, ArtworkListingType } from "@/data/artworks";
 import type {
   FeatureInsight,
   ImageFeature,
@@ -178,6 +178,14 @@ export default function ImageSearchExperience() {
   const [adminCategory, setAdminCategory] = useState("");
   const [adminPeriod, setAdminPeriod] = useState("");
   const [adminDescription, setAdminDescription] = useState("");
+  const [adminSalePrice, setAdminSalePrice] = useState("");
+  const [adminSaleTime, setAdminSaleTime] = useState("");
+  const [adminSalePlatform, setAdminSalePlatform] = useState("");
+  const [adminClientRegion, setAdminClientRegion] = useState("");
+  const [adminLogisticsCost, setAdminLogisticsCost] = useState("");
+  const [adminPurchaseChannel, setAdminPurchaseChannel] = useState("");
+  const [adminPurchaseCost, setAdminPurchaseCost] = useState("");
+  const [adminRiskAdvice, setAdminRiskAdvice] = useState("");
   const [adminListingType, setAdminListingType] =
     useState<ArtworkListingType>("product");
   const [searchQuery, setSearchQuery] = useState("");
@@ -186,6 +194,14 @@ export default function ImageSearchExperience() {
   const [editCategory, setEditCategory] = useState("");
   const [editPeriod, setEditPeriod] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editSalePrice, setEditSalePrice] = useState("");
+  const [editSaleTime, setEditSaleTime] = useState("");
+  const [editSalePlatform, setEditSalePlatform] = useState("");
+  const [editClientRegion, setEditClientRegion] = useState("");
+  const [editLogisticsCost, setEditLogisticsCost] = useState("");
+  const [editPurchaseChannel, setEditPurchaseChannel] = useState("");
+  const [editPurchaseCost, setEditPurchaseCost] = useState("");
+  const [editRiskAdvice, setEditRiskAdvice] = useState("");
   const [editListingType, setEditListingType] =
     useState<ArtworkListingType>("product");
   const [manageMessage, setManageMessage] = useState<string | null>(null);
@@ -290,6 +306,14 @@ export default function ImageSearchExperience() {
     setEditPeriod("");
     setEditDescription("");
     setEditListingType("product");
+    setEditSalePrice("");
+    setEditSaleTime("");
+    setEditSalePlatform("");
+    setEditClientRegion("");
+    setEditLogisticsCost("");
+    setEditPurchaseChannel("");
+    setEditPurchaseCost("");
+    setEditRiskAdvice("");
   };
 
   const handleStartEdit = (artwork: Artwork) => {
@@ -299,6 +323,14 @@ export default function ImageSearchExperience() {
     setEditPeriod(artwork.period);
     setEditDescription(artwork.description);
     setEditListingType(getListingType(artwork));
+    setEditSalePrice(artwork.caseRecord?.salePrice ?? "");
+    setEditSaleTime(artwork.caseRecord?.saleTime ?? "");
+    setEditSalePlatform(artwork.caseRecord?.salePlatform ?? "");
+    setEditClientRegion(artwork.caseRecord?.clientRegion ?? "");
+    setEditLogisticsCost(artwork.caseRecord?.logisticsCost ?? "");
+    setEditPurchaseChannel(artwork.caseRecord?.purchaseChannel ?? "");
+    setEditPurchaseCost(artwork.caseRecord?.purchaseCost ?? "");
+    setEditRiskAdvice(artwork.caseRecord?.riskAdvice ?? "");
     setManageMessage(null);
   };
 
@@ -310,6 +342,16 @@ export default function ImageSearchExperience() {
       period: editPeriod || artwork.period,
       description: editDescription || artwork.description,
       listingType: editListingType,
+      caseRecord: {
+        salePrice: editSalePrice,
+        saleTime: editSaleTime,
+        salePlatform: editSalePlatform,
+        clientRegion: editClientRegion,
+        logisticsCost: editLogisticsCost,
+        purchaseChannel: editPurchaseChannel,
+        purchaseCost: editPurchaseCost,
+        riskAdvice: editRiskAdvice,
+      },
     });
     refreshKnowledgeBase();
     resetEditForm();
@@ -461,6 +503,17 @@ export default function ImageSearchExperience() {
       return;
     }
 
+    const nextCaseRecord: ArtworkCaseRecord = {
+      salePrice: adminSalePrice,
+      saleTime: adminSaleTime,
+      salePlatform: adminSalePlatform,
+      clientRegion: adminClientRegion,
+      logisticsCost: adminLogisticsCost,
+      purchaseChannel: adminPurchaseChannel,
+      purchaseCost: adminPurchaseCost,
+      riskAdvice: adminRiskAdvice,
+    };
+
     const nextArtwork: Artwork = {
       id: `imported-${Date.now()}`,
       title: adminTitle || t("image.untitledArtwork"),
@@ -473,6 +526,7 @@ export default function ImageSearchExperience() {
       listingType: adminListingType,
       featureVector: adminFeature.vector,
       imageSignature: adminFeature.signature,
+      caseRecord: nextCaseRecord,
     };
 
     saveImportedArtwork(nextArtwork);
@@ -482,6 +536,14 @@ export default function ImageSearchExperience() {
     setAdminCategory("");
     setAdminPeriod("");
     setAdminDescription("");
+    setAdminSalePrice("");
+    setAdminSaleTime("");
+    setAdminSalePlatform("");
+    setAdminClientRegion("");
+    setAdminLogisticsCost("");
+    setAdminPurchaseChannel("");
+    setAdminPurchaseCost("");
+    setAdminRiskAdvice("");
     setAdminListingType("product");
     setAdminPreviewUrl(null);
     setAdminFeature(null);
@@ -669,22 +731,6 @@ export default function ImageSearchExperience() {
                   )}
                 </Box>
 
-                <SegmentedControl
-                  value={adminListingType}
-                  onChange={(value) =>
-                    setAdminListingType(value as ArtworkListingType)
-                  }
-                  data={[
-                    { label: t("image.listingProduct"), value: "product" },
-                    { label: t("image.listingCollection"), value: "collection" },
-                  ]}
-                />
-                <Text size="sm" color="dark.1">
-                  {adminListingType === "product"
-                    ? t("image.listingProductHelp")
-                    : t("image.listingCollectionHelp")}
-                </Text>
-
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <TextInput
                     label={t("image.fieldTitle")}
@@ -721,6 +767,50 @@ export default function ImageSearchExperience() {
                   }
                   placeholder={t("image.placeholderDescription")}
                   minRows={3}
+                />
+
+                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
+                  <TextInput
+                    label={t("image.caseSalePrice")}
+                    value={adminSalePrice}
+                    onChange={(event) => setAdminSalePrice(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.caseSaleTime")}
+                    value={adminSaleTime}
+                    onChange={(event) => setAdminSaleTime(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.casePlatform")}
+                    value={adminSalePlatform}
+                    onChange={(event) => setAdminSalePlatform(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.caseClientRegion")}
+                    value={adminClientRegion}
+                    onChange={(event) => setAdminClientRegion(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.caseLogisticsCost")}
+                    value={adminLogisticsCost}
+                    onChange={(event) => setAdminLogisticsCost(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.casePurchaseChannel")}
+                    value={adminPurchaseChannel}
+                    onChange={(event) => setAdminPurchaseChannel(event.currentTarget.value)}
+                  />
+                  <TextInput
+                    label={t("image.casePurchaseCost")}
+                    value={adminPurchaseCost}
+                    onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)}
+                  />
+                </SimpleGrid>
+                <Textarea
+                  label={t("image.caseRiskAdvice")}
+                  value={adminRiskAdvice}
+                  onChange={(event) => setAdminRiskAdvice(event.currentTarget.value)}
+                  minRows={2}
                 />
 
                 <Group position="apart">
@@ -883,19 +973,6 @@ export default function ImageSearchExperience() {
 
                       {isEditing ? (
                         <Stack spacing="sm">
-                          <SegmentedControl
-                            value={editListingType}
-                            onChange={(value) =>
-                              setEditListingType(value as ArtworkListingType)
-                            }
-                            data={[
-                              { label: t("image.listingProduct"), value: "product" },
-                              {
-                                label: t("image.listingCollection"),
-                                value: "collection",
-                              },
-                            ]}
-                          />
                           <SimpleGrid
                             cols={2}
                             breakpoints={[{ maxWidth: "sm", cols: 1 }]}
@@ -930,6 +1007,16 @@ export default function ImageSearchExperience() {
                             }
                             minRows={2}
                           />
+                          <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
+                            <TextInput label={t("image.caseSalePrice")} value={editSalePrice} onChange={(event) => setEditSalePrice(event.currentTarget.value)} />
+                            <TextInput label={t("image.caseSaleTime")} value={editSaleTime} onChange={(event) => setEditSaleTime(event.currentTarget.value)} />
+                            <TextInput label={t("image.casePlatform")} value={editSalePlatform} onChange={(event) => setEditSalePlatform(event.currentTarget.value)} />
+                            <TextInput label={t("image.caseClientRegion")} value={editClientRegion} onChange={(event) => setEditClientRegion(event.currentTarget.value)} />
+                            <TextInput label={t("image.caseLogisticsCost")} value={editLogisticsCost} onChange={(event) => setEditLogisticsCost(event.currentTarget.value)} />
+                            <TextInput label={t("image.casePurchaseChannel")} value={editPurchaseChannel} onChange={(event) => setEditPurchaseChannel(event.currentTarget.value)} />
+                            <TextInput label={t("image.casePurchaseCost")} value={editPurchaseCost} onChange={(event) => setEditPurchaseCost(event.currentTarget.value)} />
+                          </SimpleGrid>
+                          <Textarea label={t("image.caseRiskAdvice")} value={editRiskAdvice} onChange={(event) => setEditRiskAdvice(event.currentTarget.value)} minRows={2} />
                           <Group position="right">
                             <Button
                               variant="subtle"
