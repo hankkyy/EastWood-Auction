@@ -7,15 +7,16 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const data = [
-  "donate",
-  "corporate solution",
-  "become a patron",
-  "support case studies",
-  "become a volunteer",
-  "leave a legacy",
-];
+  "support.linkDonate",
+  "support.linkCorporate",
+  "support.linkPatron",
+  "support.linkCaseStudies",
+  "support.linkVolunteer",
+  "support.linkLegacy",
+] as const;
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -34,11 +35,12 @@ const useStyles = createStyles((theme) => ({
 export default function LinksSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   const items = data.map((d) => (
-    <Paper key={`support-links-${d}`} px="sm" py="xl" className={classes.card}>
+    <Paper key={`support-links-${t(d)}`} px="sm" py="xl" className={classes.card}>
       <Text transform="capitalize" weight={500} align="center">
-        {d}
+        {t(d)}
       </Text>
     </Paper>
   ));
@@ -46,7 +48,7 @@ export default function LinksSection() {
   return (
     <Container pt={80} pb={120}>
       <Title size={smallerThan ? 32 : 48} mb="xl" align="center">
-        More ways to support us
+        {t("support.linksTitle")}
       </Title>
       <SimpleGrid
         cols={3}

@@ -1,11 +1,6 @@
 import Head from "next/head";
 import { AnimatedBox, Wrapper } from "@/layout";
-import {
-  CollectionsSection,
-  FeaturesSection,
-  HeroSection,
-  LinksSection,
-} from "@/section/Collections";
+import { CollectionsSection, LinksSection } from "@/section/Collections";
 import DonationSection from "@/section/shared/Donation";
 import SupportSection from "@/section/shared/Support";
 
@@ -16,10 +11,6 @@ export default function Collections() {
         <title>Eastwood Auction - Collections</title>
       </Head>
       <Wrapper>
-        <HeroSection />
-        <AnimatedBox>
-          <FeaturesSection />
-        </AnimatedBox>
         <AnimatedBox>
           <CollectionsSection />
         </AnimatedBox>

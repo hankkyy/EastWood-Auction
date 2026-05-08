@@ -15,71 +15,60 @@ import React, { useCallback, useEffect, useState } from "react";
 import { IconArrowLeftBar, IconArrowRightBar } from "@tabler/icons-react";
 import EventsCard from "@/components/EventsCard";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const data = [
   {
     image:
       "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Best forests to visit in North America",
-    category: "nature",
-    date: "ongoing",
-    type: "online",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardOneTitle",
+    dateKey: "events.dateOngoing",
+    typeKey: "events.onlineType",
+    descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1559494007-9f5847c49d94?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Hawaii beaches review: better than you think",
-    category: "beach",
-    date: "16 August",
-    type: "current",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardTwoTitle",
+    dateKey: "events.dateAugust16",
+    typeKey: "events.currentType",
+    descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1608481337062-4093bf3ed404?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Mountains at night: 12 best locations to enjoy the view",
-    category: "nature",
-    date: "17 August – 31 October",
-    type: "online",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardThreeTitle",
+    dateKey: "events.dateAugust17October31",
+    typeKey: "events.onlineType",
+    descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1507272931001-fc06c17e4f43?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Aurora in Norway: when to visit for best experience",
-    category: "nature",
-    date: "15 August – 31 October",
-    type: "current",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardFourTitle",
+    dateKey: "events.dateAugust15October31",
+    typeKey: "events.currentType",
+    descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1510798831971-661eb04b3739?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Best places to visit this winter",
-    category: "tourism",
-    date: "15 August – 31 October",
-    type: "current",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardFiveTitle",
+    dateKey: "events.dateAugust15October31",
+    typeKey: "events.currentType",
+    descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
-    title: "Active volcanos reviews: travel at your own risk",
-    category: "nature",
-    date: "15 August – 31 October",
-    type: "current",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    titleKey: "events.cardSixTitle",
+    dateKey: "events.dateAugust15October31",
+    typeKey: "events.currentType",
+    descriptionKey: "events.description",
   },
-];
+] as const;
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles(() => ({
   link: {
     "&:hover, &:focus": {
       textDecoration: "underline",
@@ -93,9 +82,11 @@ interface IProps {
 }
 
 export default function CarouselEventsSection({ title }: IProps) {
+  useStyles();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [embla, setEmbla] = useState<Embla | null>(null);
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   const actionIconProps: ActionIconProps = {
     size: "xl",
@@ -125,28 +116,34 @@ export default function CarouselEventsSection({ title }: IProps) {
   }, [embla, handleScroll]);
 
   const slides = data.map((item, i) => (
-    <Carousel.Slide key={`item.title-${i}`}>
-      <EventsCard item={item} />
+    <Carousel.Slide key={`event-item-${i}`}>
+      <EventsCard
+        item={{
+          image: item.image,
+          title: t(item.titleKey),
+          type: t(item.typeKey),
+          date: t(item.dateKey),
+          description: t(item.descriptionKey),
+        }}
+      />
     </Carousel.Slide>
   ));
 
   return (
     <Container fluid pt={80} pb={120} sx={{ overflow: "hidden" }}>
       <Flex justify="space-between" align={smallerThan ? "flex-end" : "center"}>
-        <Title size={smallerThan ? 32 : 48}>
-          {title ?? "Exhibitions and events"}
-        </Title>
+        <Title size={smallerThan ? 32 : 48}>{title ?? t("events.title")}</Title>
         <Flex gap="md">
           <ActionIcon
             onClick={handlePrevious}
-            title="previous slide"
+            title={t("events.previous")}
             {...actionIconProps}
           >
             <IconArrowLeftBar />
           </ActionIcon>
           <ActionIcon
             onClick={handleNext}
-            title="next slide"
+            title={t("events.next")}
             {...actionIconProps}
           >
             <IconArrowRightBar />
@@ -162,11 +159,11 @@ export default function CarouselEventsSection({ title }: IProps) {
         size="xs"
         mx="auto"
         my="lg"
-        aria-label="Events Progress Bar"
+        aria-label={t("events.progress")}
         {...{
-          "aria-labelledby": "Events Progress Bar",
+          "aria-labelledby": t("events.progress"),
           id: "eventProgressBar",
-          title: "Events Progress Bar",
+          title: t("events.progress"),
         }}
       />
       <Carousel
@@ -187,7 +184,7 @@ export default function CarouselEventsSection({ title }: IProps) {
       </Carousel>
       <Center mt={smallerThan ? 36 : "xl"}>
         <Button size="lg" variant="outline" fullWidth={smallerThan}>
-          View all Upcoming Events
+          {t("events.viewAll")}
         </Button>
       </Center>
     </Container>

@@ -10,9 +10,11 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 export default function DonationSection() {
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   return (
     <Box pt={80} pb={120}>
@@ -32,15 +34,14 @@ export default function DonationSection() {
             <Container>
               <Paper p="xl">
                 <Title align={smallerThan ? "center" : "start"}>
-                  We need your support
+                  {t("sharedDonation.title")}
                 </Title>
                 <Text my="sm">
-                  Your support is vital and helps the Museum to share the
-                  collection with the world.
+                  {t("sharedDonation.description")}
                 </Text>
                 <Center>
                   <Button size="md" fullWidth={smallerThan}>
-                    Make a donation
+                    {t("sharedDonation.button")}
                   </Button>
                 </Center>
               </Paper>

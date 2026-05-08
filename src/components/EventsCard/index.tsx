@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import React from "react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -42,6 +43,7 @@ interface IProps {
 const EventsCard = ({ item }: IProps) => {
   const { title, type, description, date, image } = item;
   const { classes, theme } = useStyles();
+  const { t } = useI18n();
 
   const buttonProps: ButtonProps = {
     mt: "xs",
@@ -68,7 +70,7 @@ const EventsCard = ({ item }: IProps) => {
       <Box p="md">
         <Stack align="start" spacing="xs">
           <Badge size="lg" variant="filled" radius="xs">
-            {type} exhibition
+            {type}
           </Badge>
           <Text size="xl" weight={600} component="a" className={classes.link}>
             {title}
@@ -84,13 +86,13 @@ const EventsCard = ({ item }: IProps) => {
             showLabel={
               <Group mt="sm" spacing="xs">
                 <IconChevronDown size={18} />
-                <Text weight={500}>Show More</Text>
+                <Text weight={500}>{t("events.showMore")}</Text>
               </Group>
             }
             hideLabel={
               <Group mt="sm" spacing="xs">
                 <IconChevronUp size={18} />
-                <Text weight={500}>Show Less</Text>
+                <Text weight={500}>{t("events.showLess")}</Text>
               </Group>
             }
           >

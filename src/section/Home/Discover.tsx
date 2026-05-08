@@ -15,6 +15,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -29,6 +30,7 @@ const useStyles = createStyles((theme) => ({
 export default function DiscoverSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   const buttonProps: ButtonProps = {
     variant: "outline",
@@ -39,9 +41,9 @@ export default function DiscoverSection() {
     <Container fluid pt={80} pb={120}>
       <Box mb="xl" sx={{ textAlign: "center" }}>
         <Title size={48} mb="md">
-          Discover
+          {t("home.discoverTitle")}
         </Title>
-        <Text size="lg">Get Latest Updates and News</Text>
+        <Text size="lg">{t("home.discoverSubtitle")}</Text>
       </Box>
       <Paper className={classes.card} p={smallerThan ? 8 : 6}>
         <Grid sx={{ alignItems: "center" }}>
@@ -56,29 +58,18 @@ export default function DiscoverSection() {
           </Grid.Col>
           <Grid.Col lg={6} p={0}>
             <Stack align="start" p={smallerThan ? "md" : "lg"}>
-              <Title size={24}>Lorem ipsum dolor sit amet</Title>
+              <Title size={24}>{t("home.discoverFeatureTitle")}</Title>
               <Text>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Facilisi nullam vehicula ipsum a arcu cursus vitae congue
-                mauris. Mauris in aliquam sem fringilla ut morbi tincidunt. Amet
-                venenatis urna cursus eget nunc scelerisque viverra mauris in.
-                Neque convallis a cras semper auctor neque.
+                {t("home.discoverFeatureP1")}
               </Text>
               <Text>
-                Duis convallis convallis tellus id interdum velit laoreet id
-                donec. Cras fermentum odio eu feugiat pretium. Tellus orci ac
-                auctor augue mauris augue neque gravida in.
+                {t("home.discoverFeatureP2")}
               </Text>
               <Text>
-                Et magnis dis parturient montes nascetur. Non tellus orci ac
-                auctor. Gravida quis blandit turpis cursus in hac. Nec nam
-                aliquam sem et tortor consequat id porta nibh. Netus et
-                malesuada fames ac. Faucibus ornare suspendisse sed nisi lacus.
-                Arcu dictum varius duis at. Porttitor rhoncus dolor purus non.
+                {t("home.discoverFeatureP3")}
               </Text>
               <Button {...buttonProps} size={smallerThan ? "sm" : "md"}>
-                Continue reading
+                {t("home.continueReading")}
               </Button>
             </Stack>
           </Grid.Col>
@@ -97,20 +88,18 @@ export default function DiscoverSection() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Paper key={`news-item-${i}`} className={classes.card} p="md">
             <Text size="lg" weight={600} mb="md">
-              Lorem ipsum dolor sit amet
+              {t("home.newsTitle")}
             </Text>
             <Text mb="md">
-              Nulla porttitor massa id neque. Ultrices vitae auctor eu augue ut
-              lectus. Lorem dolor sed viverra ipsum nunc aliquet. Vel risus
-              commodo viverra maecenas accumsan lacus vel facilisis volutpat.
+              {t("home.newsText")}
             </Text>
-            <Button {...buttonProps}>Read more</Button>
+            <Button {...buttonProps}>{t("home.readMore")}</Button>
           </Paper>
         ))}
       </SimpleGrid>
       <Center mt={smallerThan ? 36 : "xl"}>
         <Button size="xl" variant="outline" fullWidth={smallerThan}>
-          Discover more content
+          {t("home.discoverMore")}
         </Button>
       </Center>
     </Container>

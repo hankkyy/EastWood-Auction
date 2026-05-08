@@ -5,9 +5,15 @@ import {
   saveImportedArtwork,
 } from "@/features/image-search/artworkKnowledgeBase";
 import {
-  isAdminAuthenticated,
+  createAdminAccount,
+  getAdminAccounts,
+  getAdminSession,
   loginAdmin,
   logoutAdmin,
+} from "@/features/image-search/adminAuth";
+import type {
+  AdminAccount,
+  AdminSession,
 } from "@/features/image-search/adminAuth";
 import {
   extractImageFeature,
@@ -116,9 +122,19 @@ export default function ImageSearchExperience() {
   const { classes, theme } = useStyles();
   const { t } = useI18n();
   const [mode, setMode] = useState<"match" | "manage">("match");
-  const [isAdmin, setIsAdmin] = useState(() => isAdminAuthenticated());
+  const [adminSession, setAdminSession] = useState<AdminSession | null>(
+    () => getAdminSession()
+  );
+  const [adminAccounts, setAdminAccounts] = useState<AdminAccount[]>(
+    () => getAdminAccounts()
+  );
+  const [adminUsername, setAdminUsername] = useState("admin");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [newAdminUsername, setNewAdminUsername] = useState("");
+  const [newAdminDisplayName, setNewAdminDisplayName] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [accountMessage, setAccountMessage] = useState<string | null>(null);
   const [knowledgeBase, setKnowledgeBase] = useState<Artwork[]>(
     () => getKnowledgeBase()
   );
@@ -160,19 +176,46 @@ export default function ImageSearchExperience() {
   };
 
   const handleAdminLogin = () => {
-    if (loginAdmin(adminPassword)) {
-      setIsAdmin(true);
+    const session = loginAdmin(adminUsername, adminPassword);
+
+    if (session) {
+      setAdminSession(session);
       setAdminPassword("");
       setLoginError(null);
+      setAccountMessage(null);
       return;
     }
 
     setLoginError(t("image.loginError"));
   };
 
+  const handleCreateAdminAccount = () => {
+    const result = createAdminAccount({
+      username: newAdminUsername,
+      displayName: newAdminDisplayName,
+      password: newAdminPassword,
+    });
+
+    if (!result.ok) {
+      setAccountMessage(
+        result.reason === "duplicate-username"
+          ? t("image.accountDuplicate")
+          : t("image.accountMissing")
+      );
+      return;
+    }
+
+    setAdminAccounts(getAdminAccounts());
+    setNewAdminUsername("");
+    setNewAdminDisplayName("");
+    setNewAdminPassword("");
+    setAccountMessage(t("image.accountCreated"));
+  };
+
   const handleAdminLogout = () => {
     logoutAdmin();
-    setIsAdmin(false);
+    setAdminSession(null);
+    setAdminUsername("admin");
     setAdminPassword("");
     setLoginError(null);
   };
@@ -330,7 +373,7 @@ export default function ImageSearchExperience() {
           />
         </Stack>
 
-        {mode === "manage" && !isAdmin ? (
+        {mode === "manage" && !adminSession ? (
           <SimpleGrid
             cols={2}
             spacing="xl"
@@ -352,6 +395,14 @@ export default function ImageSearchExperience() {
                   </Alert>
                 ) : null}
                 <TextInput
+                  label={t("image.username")}
+                  value={adminUsername}
+                  onChange={(event) =>
+                    setAdminUsername(event.currentTarget.value)
+                  }
+                  placeholder={t("image.usernamePlaceholder")}
+                />
+                <TextInput
                   label={t("image.password")}
                   type="password"
                   value={adminPassword}
@@ -368,7 +419,7 @@ export default function ImageSearchExperience() {
                 <Button
                   leftIcon={<IconLock size={18} />}
                   onClick={handleAdminLogin}
-                  disabled={!adminPassword}
+                  disabled={!adminUsername || !adminPassword}
                 >
                   {t("image.loginButton")}
                 </Button>
@@ -410,7 +461,10 @@ export default function ImageSearchExperience() {
                     )}
                   </FileButton>
                 </Group>
-                <Group position="right">
+                <Group position="apart">
+                  <Text color="dark.1">
+                    {t("image.signedInAs")}: {adminSession?.displayName}
+                  </Text>
                   <Button
                     variant="subtle"
                     leftIcon={<IconLogout size={18} />}
@@ -499,6 +553,51 @@ export default function ImageSearchExperience() {
                     {t("image.importButton")}
                   </Button>
                 </Group>
+
+                <Divider />
+
+                <Stack spacing="sm">
+                  <Title order={3}>{t("image.adminAccounts")}</Title>
+                  {accountMessage ? (
+                    <Alert color="violet" title={t("image.accountNotice")}>
+                      {accountMessage}
+                    </Alert>
+                  ) : null}
+                  <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
+                    <TextInput
+                      label={t("image.username")}
+                      value={newAdminUsername}
+                      onChange={(event) =>
+                        setNewAdminUsername(event.currentTarget.value)
+                      }
+                      placeholder={t("image.usernamePlaceholder")}
+                    />
+                    <TextInput
+                      label={t("image.displayName")}
+                      value={newAdminDisplayName}
+                      onChange={(event) =>
+                        setNewAdminDisplayName(event.currentTarget.value)
+                      }
+                      placeholder={t("image.displayNamePlaceholder")}
+                    />
+                    <TextInput
+                      label={t("image.password")}
+                      type="password"
+                      value={newAdminPassword}
+                      onChange={(event) =>
+                        setNewAdminPassword(event.currentTarget.value)
+                      }
+                      placeholder={t("image.passwordPlaceholder")}
+                    />
+                  </SimpleGrid>
+                  <Button
+                    variant="light"
+                    onClick={handleCreateAdminAccount}
+                    disabled={!newAdminUsername || !newAdminPassword}
+                  >
+                    {t("image.createAdmin")}
+                  </Button>
+                </Stack>
               </Stack>
             </Paper>
 
@@ -514,6 +613,9 @@ export default function ImageSearchExperience() {
                   <Text weight={700}>{t("image.currentIndex")}</Text>
                   <Text color="dark.1">
                     {importedArtworks.length} {t("image.adminImported")}
+                  </Text>
+                  <Text color="dark.1">
+                    {adminAccounts.length} {t("image.adminAccountCount")}
                   </Text>
                 </Stack>
               </Paper>

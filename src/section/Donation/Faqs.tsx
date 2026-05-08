@@ -1,4 +1,5 @@
 import { Container, Title, Accordion, createStyles, rem } from "@mantine/core";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -20,42 +21,31 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-const placeholder =
-  "It can’t help but hear a pin drop from over half a mile away, so it lives deep in the mountains where there aren’t many people or Pokémon.It was born from sludge on the ocean floor. In a sterile environment, the germs within its body can’t multiply, and it dies.It has no eyeballs, so it can’t see. It checks its surroundings via the ultrasonic waves it emits from its mouth.";
+const methods = [
+  "donation.methodCreditPhone",
+  "donation.methodCheck",
+  "donation.methodTransfer",
+  "donation.methodStock",
+  "donation.methodDonorFund",
+] as const;
 
 export default function FaqsSection() {
   const { classes } = useStyles();
+  const { t } = useI18n();
+
   return (
     <Container size="sm" className={classes.wrapper}>
       <Title align="center" className={classes.title}>
-        Ways to Give
+        {t("donation.waysTitle")}
       </Title>
 
       <Accordion variant="separated">
-        <Accordion.Item className={classes.item} value="reset-password">
-          <Accordion.Control>Credit card by Phone</Accordion.Control>
-          <Accordion.Panel>{placeholder}</Accordion.Panel>
-        </Accordion.Item>
-
-        <Accordion.Item className={classes.item} value="another-account">
-          <Accordion.Control>Check</Accordion.Control>
-          <Accordion.Panel>{placeholder}</Accordion.Panel>
-        </Accordion.Item>
-
-        <Accordion.Item className={classes.item} value="newsletter">
-          <Accordion.Control>Electronic Transfer Funds (ETF)</Accordion.Control>
-          <Accordion.Panel>{placeholder}</Accordion.Panel>
-        </Accordion.Item>
-
-        <Accordion.Item className={classes.item} value="credit-card">
-          <Accordion.Control>Stock/Securities</Accordion.Control>
-          <Accordion.Panel>{placeholder}</Accordion.Panel>
-        </Accordion.Item>
-
-        <Accordion.Item className={classes.item} value="payment">
-          <Accordion.Control>Donor Advise Fund</Accordion.Control>
-          <Accordion.Panel>{placeholder}</Accordion.Panel>
-        </Accordion.Item>
+        {methods.map((method) => (
+          <Accordion.Item className={classes.item} value={method} key={method}>
+            <Accordion.Control>{t(method)}</Accordion.Control>
+            <Accordion.Panel>{t("donation.methodDescription")}</Accordion.Panel>
+          </Accordion.Item>
+        ))}
       </Accordion>
     </Container>
   );

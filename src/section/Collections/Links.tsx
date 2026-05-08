@@ -7,14 +7,15 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const data = [
-  "collection",
-  "collection online",
-  "galleries",
-  "blog",
-  "podcast",
-];
+  "collections.linkCollection",
+  "collections.linkCollectionOnline",
+  "collections.linkGalleries",
+  "collections.linkBlog",
+  "collections.linkPodcast",
+] as const;
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -33,11 +34,12 @@ const useStyles = createStyles((theme) => ({
 export default function LinksSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   const items = data.map((d) => (
-    <Paper key={d} px="sm" py="xl" className={classes.card}>
+    <Paper key={t(d)} px="sm" py="xl" className={classes.card}>
       <Text transform="capitalize" weight={500} align="center">
-        {d}
+        {t(d)}
       </Text>
     </Paper>
   ));
@@ -45,7 +47,7 @@ export default function LinksSection() {
   return (
     <Container pt={80} pb={120}>
       <Title size={smallerThan ? 32 : 48} align="center" mb="xl">
-        You may also be interested in
+        {t("collections.linksTitle")}
       </Title>
       <SimpleGrid
         cols={3}

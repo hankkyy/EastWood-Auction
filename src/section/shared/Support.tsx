@@ -8,6 +8,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const useStyles = createStyles((theme) => ({
   card: {
@@ -23,14 +24,15 @@ const useStyles = createStyles((theme) => ({
 export default function SupportSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   return (
     <Container pt={80} pb={120} sx={{ overflow: "hidden" }}>
       <Box mb="xl" sx={{ textAlign: "center" }}>
         <Title size={smallerThan ? 32 : 48} mb="md">
-          Support the Museum
+          {t("sharedSupport.title")}
         </Title>
-        <Text size="lg">Join today and Enjoy unlimited</Text>
+        <Text size="lg">{t("sharedSupport.subtitle")}</Text>
       </Box>
       <SimpleGrid
         cols={3}
@@ -41,29 +43,26 @@ export default function SupportSection() {
       >
         <Paper p="md" className={classes.card}>
           <Text size="xl" weight={600} mb="sm">
-            Become a member
+            {t("sharedSupport.memberTitle")}
           </Text>
           <Text>
-            Support us by becoming a Member today and get 10% off in our online
-            shop.
+            {t("sharedSupport.memberDescription")}
           </Text>
         </Paper>
         <Paper p="md" className={classes.card}>
           <Text size="xl" weight={600} mb="sm">
-            Donate
+            {t("sharedSupport.donateTitle")}
           </Text>
           <Text>
-            Your support is vital and helps the Museum to share the collection
-            with the world.
+            {t("sharedSupport.donateDescription")}
           </Text>
         </Paper>
         <Paper p="md" className={classes.card}>
           <Text size="xl" weight={600} mb="sm">
-            Shop Online
+            {t("sharedSupport.shopTitle")}
           </Text>
           <Text>
-            The Museum shop has a range of unique gifts, replicas, games and
-            more.
+            {t("sharedSupport.shopDescription")}
           </Text>
         </Paper>
       </SimpleGrid>

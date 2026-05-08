@@ -108,7 +108,6 @@ const useStyles = createStyles((theme) => ({
 
 const announcementsData = [
   "top.announcementMuseum",
-  "top.announcementTickets",
   "top.announcementCovid",
 ] as const;
 

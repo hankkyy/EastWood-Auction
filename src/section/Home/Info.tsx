@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { IconClock, IconMap2, IconTicket } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
+import { useI18n } from "@/i18n";
 
 const { Col } = Grid;
 
@@ -27,13 +28,14 @@ const useStyles = createStyles((theme) => ({
 export default function InfoSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { t } = useI18n();
 
   const iconSize = smallerThan ? 32 : 48;
 
   return (
     <Container pt={80} pb={120}>
       <Title mb="xl" size={smallerThan ? 32 : 48} align="center">
-        The world&apos;s leading museum of art
+        {t("home.infoTitle")}
       </Title>
       <Grid>
         <Col md={6} lg={7}>
@@ -54,10 +56,10 @@ export default function InfoSection() {
                 </Box>
                 <Stack spacing="sm">
                   <Text size="lg" weight={500}>
-                    Opening Times
+                    {t("home.openingTimes")}
                   </Text>
-                  <Text>From January 1</Text>
-                  <Text>Monday - Friday : 10.00–17.00</Text>
+                  <Text>{t("home.openingFrom")}</Text>
+                  <Text>{t("home.openingWeekday")}</Text>
                 </Stack>
               </Flex>
             </Paper>
@@ -68,13 +70,13 @@ export default function InfoSection() {
                 </Box>
                 <Stack spacing="sm" align="flex-start">
                   <Text size="lg" weight={500}>
-                    Book Online
+                    {t("home.bookOnline")}
                   </Text>
                   <Text>
-                    Some exhibitions and events carry a separate charge
+                    {t("home.bookDescription")}
                   </Text>
                   <Button size="md" fullWidth={smallerThan}>
-                    Join Now and Book Online
+                    {t("home.bookButton")}
                   </Button>
                 </Stack>
               </Flex>
@@ -86,10 +88,10 @@ export default function InfoSection() {
                 </Box>
                 <Stack spacing="sm">
                   <Text size="lg" weight={500}>
-                    Where You Visit
+                    {t("home.whereVisit")}
                   </Text>
-                  <Text>ABC 123 Street, Highway Drive</Text>
-                  <Text>Nairobi, XYZ Building</Text>
+                  <Text>{t("home.addressLineOne")}</Text>
+                  <Text>{t("home.addressLineTwo")}</Text>
                 </Stack>
               </Flex>
             </Paper>

@@ -1,13 +1,12 @@
 import { useI18n } from "@/i18n";
 import type { Locale } from "@/i18n";
-import { createStyles, Group, Image, Menu, UnstyledButton } from "@mantine/core";
+import { createStyles, Group, Menu, UnstyledButton } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useState } from "react";
 
 type LanguageOption = {
   code: Locale;
   label: string;
-  nativeLabel: string;
   image: string;
 };
 
@@ -15,14 +14,11 @@ const data: LanguageOption[] = [
   {
     code: "en",
     label: "English",
-    nativeLabel: "English",
-    image:
-      "https://res.cloudinary.com/ddh7hfzso/image/upload/v1677783783/meal%20mart/english_njrlxm.png",
+    image: "https://flagcdn.com/w40/us.png",
   },
   {
     code: "zh",
-    label: "Chinese",
-    nativeLabel: "中文",
+    label: "中文",
     image: "https://flagcdn.com/w40/cn.png",
   },
 ];
@@ -32,7 +28,8 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: `.4rem 1rem`,
+    gap: theme.spacing.xs,
+    padding: `.35rem .6rem`,
     borderRadius: theme.radius.sm,
     transition: "background-color 150ms ease",
     color: theme.colors.dark[0],
@@ -45,6 +42,27 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
   label: {
     fontWeight: 600,
     fontSize: theme.fontSizes.sm,
+  },
+
+  flag: {
+    display: "block",
+    flex: "0 0 auto",
+    width: 18,
+    height: 12,
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "contain",
+    borderRadius: 2,
+  },
+
+  menuFlag: {
+    display: "block",
+    width: 18,
+    height: 12,
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "contain",
+    borderRadius: 2,
   },
 
   icon: {
@@ -61,11 +79,11 @@ export default function LanguagePicker() {
 
   const items = data.map((item) => (
     <Menu.Item
-      icon={<Image src={item.image} width={18} height={18} alt="" />}
+      icon={<span className={classes.menuFlag} style={{ backgroundImage: `url(${item.image})` }} />}
       onClick={() => setLocale(item.code)}
       key={item.code}
     >
-      {item.label} ({item.nativeLabel})
+      {item.label}
     </Menu.Item>
   ));
 
@@ -80,8 +98,8 @@ export default function LanguagePicker() {
       <Menu.Target>
         <UnstyledButton className={classes.control}>
           <Group spacing="xs">
-            <Image src={selected.image} width={22} height={22} alt="" />
-            <span className={classes.label}>{selected.nativeLabel}</span>
+            <span className={classes.flag} style={{ backgroundImage: `url(${selected.image})` }} />
+            <span className={classes.label}>{selected.label}</span>
           </Group>
           <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
         </UnstyledButton>
