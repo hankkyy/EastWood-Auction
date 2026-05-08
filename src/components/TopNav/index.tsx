@@ -8,10 +8,10 @@ import {
   Drawer,
   Group,
   Header,
+  Image,
   rem,
   ScrollArea,
   Stack,
-  Title,
   UnstyledButton,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
@@ -66,6 +66,21 @@ const useStyles = createStyles((theme) => ({
   hiddenDesktop: {
     [theme.fn.largerThan("md")]: {
       display: "none",
+    },
+  },
+  brandButton: {
+    display: "flex",
+    alignItems: "center",
+    minWidth: 0,
+  },
+  brandLogo: {
+    width: 188,
+    height: 52,
+    objectFit: "contain",
+    borderRadius: theme.radius.xs,
+    [theme.fn.smallerThan("sm")]: {
+      width: 142,
+      height: 42,
     },
   },
 }));
@@ -129,8 +144,18 @@ export default function TopNav({ handleOpenSearch }: IProps) {
     <Box>
       <Header height="100%" px="md" className={classes.header}>
         <Group position="apart" sx={{ height: "100%" }}>
-          <UnstyledButton component={Link} href="/">
-            <Title order={2}>{t("common.brand")}</Title>
+          <UnstyledButton
+            component={Link}
+            href="/"
+            className={classes.brandButton}
+            aria-label={t("common.brand")}
+          >
+            <Image
+              src="/eastwood-logo.png"
+              alt={t("common.brand")}
+              className={classes.brandLogo}
+              fit="contain"
+            />
           </UnstyledButton>
 
           <Group
