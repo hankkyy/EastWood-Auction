@@ -1,17 +1,22 @@
-import { getImportedArtworks } from "@/features/image-search/artworkKnowledgeBase";
+import Link from "next/link";
+import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import {
   Alert,
   Badge,
+  Box,
+  Button,
+  Card,
   Container,
-  Grid,
+  Group,
   Image,
-  Paper,
+  SimpleGrid,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
+import { IconCalendarEvent } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 
 export default function CasesSection() {
@@ -19,13 +24,10 @@ export default function CasesSection() {
   const [items, setItems] = useState<Artwork[]>([]);
 
   useEffect(() => {
-    setItems(getImportedArtworks());
+    setItems(getKnowledgeBase());
   }, []);
 
-  const cases = useMemo(
-    () => items.filter((item) => item.caseRecord),
-    [items]
-  );
+  const cases = useMemo(() => items.filter((item) => item.caseRecord), [items]);
 
   return (
     <Container fluid pt={80} pb={120}>
@@ -36,7 +38,7 @@ export default function CasesSection() {
       {cases.length === 0 ? (
         <Alert color="blue">{t("support.emptyCases")}</Alert>
       ) : (
-        <Stack spacing="lg">
+        <SimpleGrid cols={3} spacing="xl" breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}>
           {cases.map((item) => {
             const caseRecord = item.caseRecord;
 
@@ -49,66 +51,30 @@ export default function CasesSection() {
               locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
 
             return (
-              <Paper
-                key={item.id}
-                p="lg"
-                sx={{
-                  border: "1px solid rgba(216, 183, 109, 0.2)",
-                  backgroundColor: "rgba(24, 30, 38, 0.96)",
-                }}
-              >
-                <Grid>
-                  <Grid.Col md={4}>
-                    <Image
-                      src={item.image}
-                      alt={itemTitle}
-                      height={260}
-                      fit="cover"
-                      radius="sm"
-                    />
-                  </Grid.Col>
-                  <Grid.Col md={8}>
-                    <Stack spacing="xs">
-                      <Badge color="yellow">{t("support.caseDetails")}</Badge>
-                      <Title order={3}>{itemTitle}</Title>
-                      <Text color="dark.1">{itemDescription}</Text>
-                      <Text>
-                        <strong>{t("support.casePhoto")}:</strong> {item.image}
-                      </Text>
-                      <Text>
-                        <strong>{t("support.caseName")}:</strong> {itemTitle} / {itemDescription}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.caseSalePrice")}:</strong> {caseRecord.salePrice}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.caseSaleTime")}:</strong> {caseRecord.saleTime}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.casePlatform")}:</strong> {caseRecord.salePlatform}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.caseClientRegion")}:</strong> {caseRecord.clientRegion}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.caseLogisticsCost")}:</strong> {caseRecord.logisticsCost}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.casePurchaseChannel")}:</strong> {caseRecord.purchaseChannel}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.casePurchaseCost")}:</strong> {caseRecord.purchaseCost}
-                      </Text>
-                      <Text>
-                        <strong>{t("image.caseRiskAdvice")}:</strong> {caseRecord.riskAdvice}
-                      </Text>
-                    </Stack>
-                  </Grid.Col>
-                </Grid>
-              </Paper>
+              <Card key={item.id} padding="md" radius="sm" sx={{ backgroundColor: "rgba(34, 39, 47, 0.96)", border: "1px solid rgba(216, 183, 109, 0.16)" }}>
+                <Card.Section>
+                  <Box sx={{ height: 220, background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))", display: "flex", alignItems: "center", justifyContent: "center", padding: 12 }}><Box component="img" src={item.image} alt={itemTitle} sx={{ width: "100%", height: "100%", objectFit: "contain" }} /></Box>
+                </Card.Section>
+                <Stack spacing="sm" mt="md">
+                  <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
+                    {t("support.caseCardBadge")}
+                  </Badge>
+                  <Title order={3} size="h3">{itemTitle}</Title>
+                  <Group spacing={8} color="dark.1">
+                    <IconCalendarEvent size={16} />
+                    <Text size="sm" color="dark.1">{caseRecord.saleTime}</Text>
+                  </Group>
+                  <Text size="sm" color="dark.1" lineClamp={3}>
+                    {itemDescription}
+                  </Text>
+                  <Button component={Link} href={`/cases/${item.id}`} variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+                    {t("image.caseOpen")}
+                  </Button>
+                </Stack>
+              </Card>
             );
           })}
-        </Stack>
+        </SimpleGrid>
       )}
     </Container>
   );

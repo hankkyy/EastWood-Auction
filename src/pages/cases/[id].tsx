@@ -1,0 +1,373 @@
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { AnimatedBox, Wrapper } from "@/layout";
+import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { useI18n } from "@/i18n";
+import type { Artwork } from "@/data/artworks";
+import {
+  ActionIcon,
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Container,
+  Group,
+  Modal,
+  ScrollArea,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
+import { IconChevronLeft, IconChevronRight, IconZoomIn } from "@tabler/icons-react";
+import Head from "next/head";
+import { useEffect, useMemo, useState } from "react";
+
+const frameStyles = {
+  background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
+  borderRadius: 8,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  overflow: "hidden",
+} as const;
+
+export default function CaseDetailPage() {
+  const router = useRouter();
+  const { locale, t } = useI18n();
+  const [items, setItems] = useState<Artwork[]>([]);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [lightboxOpened, setLightboxOpened] = useState(false);
+  const caseId = typeof router.query.id === "string" ? router.query.id : "";
+
+  useEffect(() => {
+    setItems(getKnowledgeBase());
+  }, []);
+
+  const item = useMemo(
+    () => items.find((entry) => entry.id === caseId && entry.caseRecord),
+    [caseId, items]
+  );
+  const gallery = useMemo(
+    () => (item ? item.galleryImages?.length ? item.galleryImages : [item.image] : []),
+    [item]
+  );
+  const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
+
+  useEffect(() => {
+    setSelectedImage(gallery[0] ?? "");
+  }, [item?.id, gallery]);
+
+  useEffect(() => {
+    if (!lightboxOpened || gallery.length <= 1) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        setSelectedImage((current) => {
+          const currentIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === current));
+          return gallery[(currentIndex - 1 + gallery.length) % gallery.length] ?? current;
+        });
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        setSelectedImage((current) => {
+          const currentIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === current));
+          return gallery[(currentIndex + 1) % gallery.length] ?? current;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [gallery, lightboxOpened]);
+
+  if (!item || !item.caseRecord) {
+    return (
+      <Wrapper>
+        <AnimatedBox>
+          <Container py={80}>
+            <Alert color="red">{t("support.emptyCases")}</Alert>
+          </Container>
+        </AnimatedBox>
+      </Wrapper>
+    );
+  }
+
+  const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
+  const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const activeImage = selectedImage || gallery[0] || item.image;
+
+  const goToImage = (index: number) => {
+    const nextImage = gallery[index];
+    if (nextImage) {
+      setSelectedImage(nextImage);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (!gallery.length) {
+      return;
+    }
+    goToImage((selectedIndex - 1 + gallery.length) % gallery.length);
+  };
+
+  const goToNext = () => {
+    if (!gallery.length) {
+      return;
+    }
+    goToImage((selectedIndex + 1) % gallery.length);
+  };
+
+  return (
+    <>
+      <Head>
+        <title>{title} - Eastwood Auction</title>
+      </Head>
+      <Wrapper>
+        <AnimatedBox>
+          <Container py={64}>
+            <Stack spacing="xl">
+              <Button component={Link} href="/cases" variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+                {t("support.caseBack")}
+              </Button>
+
+              <Stack spacing="sm">
+                <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
+                  {t("support.caseDetailTitle")}
+                </Badge>
+                <Title order={1}>{title}</Title>
+                <Text color="dark.1">{description}</Text>
+              </Stack>
+
+              <Box sx={{ position: "relative" }}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setLightboxOpened(true)}
+                  sx={{
+                    ...frameStyles,
+                    height: 460,
+                    width: "100%",
+                    padding: 16,
+                    cursor: "zoom-in",
+                    border: "1px solid rgba(216, 183, 109, 0.18)",
+                    position: "relative",
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={activeImage}
+                    alt={title}
+                    sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                  />
+                  <Group spacing={8} sx={{ position: "absolute", right: 16, top: 16, color: "#f4ead7", pointerEvents: "none" }}>
+                    <IconZoomIn size={18} />
+                    <Text size="sm">{locale === "zh" ? "点击放大" : "Click to zoom"}</Text>
+                  </Group>
+                </Box>
+
+                {gallery.length > 1 ? (
+                  <>
+                    <ActionIcon
+                      variant="filled"
+                      radius="xl"
+                      size={42}
+                      onClick={goToPrevious}
+                      sx={{
+                        position: "absolute",
+                        left: 14,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        backgroundColor: "rgba(15, 18, 22, 0.78)",
+                        border: "1px solid rgba(216, 183, 109, 0.24)",
+                      }}
+                    >
+                      <IconChevronLeft size={22} />
+                    </ActionIcon>
+                    <ActionIcon
+                      variant="filled"
+                      radius="xl"
+                      size={42}
+                      onClick={goToNext}
+                      sx={{
+                        position: "absolute",
+                        right: 14,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        backgroundColor: "rgba(15, 18, 22, 0.78)",
+                        border: "1px solid rgba(216, 183, 109, 0.24)",
+                      }}
+                    >
+                      <IconChevronRight size={22} />
+                    </ActionIcon>
+                  </>
+                ) : null}
+              </Box>
+
+              {gallery.length > 1 ? (
+                <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
+                  <Group spacing="md" noWrap>
+                    {gallery.map((imageUrl, index) => {
+                      const isActive = imageUrl === activeImage;
+
+                      return (
+                        <Box
+                          key={`${imageUrl}-${index}`}
+                          component="button"
+                          type="button"
+                          onClick={() => setSelectedImage(imageUrl)}
+                          sx={{
+                            ...frameStyles,
+                            height: 150,
+                            width: 170,
+                            flex: "0 0 auto",
+                            padding: 10,
+                            border: isActive ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                            boxShadow: isActive ? "0 0 0 1px rgba(216, 183, 109, 0.18) inset" : "none",
+                            cursor: "pointer",
+                            transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+                            "&:hover": {
+                              transform: "translateY(-2px)",
+                              borderColor: "#d8b76d",
+                            },
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={imageUrl}
+                            alt={`${title}-${index + 1}`}
+                            sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                          />
+                        </Box>
+                      );
+                    })}
+                  </Group>
+                </ScrollArea>
+              ) : null}
+
+              <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
+                  <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
+                  <Text><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
+                  <Text><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
+                  <Text><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>
+                  <Text><strong>{t("image.caseClientRegion")}:</strong> {item.caseRecord.clientRegion}</Text>
+                  <Text><strong>{t("image.caseLogisticsCost")}:</strong> {item.caseRecord.logisticsCost}</Text>
+                  <Text><strong>{t("image.casePurchaseChannel")}:</strong> {item.caseRecord.purchaseChannel}</Text>
+                  <Text><strong>{t("image.casePurchaseCost")}:</strong> {item.caseRecord.purchaseCost}</Text>
+                </SimpleGrid>
+                <Text mt="md"><strong>{t("image.caseRiskAdvice")}:</strong> {item.caseRecord.riskAdvice}</Text>
+              </Box>
+            </Stack>
+          </Container>
+        </AnimatedBox>
+      </Wrapper>
+
+      <Modal
+        opened={lightboxOpened}
+        onClose={() => setLightboxOpened(false)}
+        centered
+        size="90vw"
+        withCloseButton
+        overlayProps={{ opacity: 0.72, blur: 4 }}
+        styles={{ body: { paddingTop: 8 } }}
+      >
+        <Stack spacing="md">
+          <Box sx={{ position: "relative" }}>
+            <Box
+              sx={{
+                ...frameStyles,
+                minHeight: 620,
+                padding: 20,
+                border: "1px solid rgba(216, 183, 109, 0.18)",
+              }}
+            >
+              <Box
+                component="img"
+                src={activeImage}
+                alt={title}
+                sx={{ maxWidth: "100%", maxHeight: "72vh", width: "auto", height: "auto", objectFit: "contain" }}
+              />
+            </Box>
+
+            {gallery.length > 1 ? (
+              <>
+                <ActionIcon
+                  variant="filled"
+                  radius="xl"
+                  size={48}
+                  onClick={goToPrevious}
+                  sx={{
+                    position: "absolute",
+                    left: 18,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(15, 18, 22, 0.84)",
+                    border: "1px solid rgba(216, 183, 109, 0.24)",
+                  }}
+                >
+                  <IconChevronLeft size={24} />
+                </ActionIcon>
+                <ActionIcon
+                  variant="filled"
+                  radius="xl"
+                  size={48}
+                  onClick={goToNext}
+                  sx={{
+                    position: "absolute",
+                    right: 18,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(15, 18, 22, 0.84)",
+                    border: "1px solid rgba(216, 183, 109, 0.24)",
+                  }}
+                >
+                  <IconChevronRight size={24} />
+                </ActionIcon>
+              </>
+            ) : null}
+          </Box>
+
+          {gallery.length > 1 ? (
+            <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
+              <Group spacing="md" noWrap>
+                {gallery.map((imageUrl, index) => {
+                  const isActive = imageUrl === activeImage;
+
+                  return (
+                    <Box
+                      key={`lightbox-${imageUrl}-${index}`}
+                      component="button"
+                      type="button"
+                      onClick={() => setSelectedImage(imageUrl)}
+                      sx={{
+                        ...frameStyles,
+                        height: 110,
+                        width: 130,
+                        flex: "0 0 auto",
+                        padding: 8,
+                        border: isActive ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={imageUrl}
+                        alt={`${title}-lightbox-${index + 1}`}
+                        sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                      />
+                    </Box>
+                  );
+                })}
+              </Group>
+            </ScrollArea>
+          ) : null}
+        </Stack>
+      </Modal>
+    </>
+  );
+}
