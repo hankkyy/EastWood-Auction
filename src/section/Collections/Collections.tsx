@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Box, Container, createStyles, SimpleGrid, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
@@ -19,6 +20,7 @@ type CollectionCard = {
   image: string;
   title: string;
   category: string;
+  href: string;
 };
 
 const useStyles = createStyles((theme) => ({
@@ -122,6 +124,10 @@ function remValue(value: number) {
 }
 
 const mapArtworkCategory = (artwork: Artwork): string => {
+  if (["calligraphy", "misc", "porcelain", "jade", "bronze"].includes(artwork.category)) {
+    return artwork.category;
+  }
+
   const category = `${artwork.category} ${artwork.categoryZh ?? ""}`.toLowerCase();
   if (category.includes("jade") || category.includes("玉")) return "jade";
   if (category.includes("bronze") || category.includes("铜")) return "bronze";
@@ -148,6 +154,7 @@ export default function Collections() {
         image: item.image,
         title: locale === "zh" && item.titleZh ? item.titleZh : item.title,
         category: mapArtworkCategory(item),
+        href: `/collections/${item.id}`,
       }));
   }, [knowledgeBaseItems, locale]);
 
@@ -189,7 +196,12 @@ export default function Collections() {
                   ]}
                 >
                   {visibleItems.map((item) => (
-                    <Box key={item.key}>
+                    <Box
+                      key={item.key}
+                      component={Link}
+                      href={item.href}
+                      sx={{ textDecoration: "none", display: "block" }}
+                    >
                       <Box className={classes.imageWrap}>
                         <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                       </Box>
