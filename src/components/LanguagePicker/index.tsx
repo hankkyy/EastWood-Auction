@@ -1,8 +1,12 @@
 import { useI18n } from "@/i18n";
 import type { Locale } from "@/i18n";
-import { createStyles, Group, Menu, UnstyledButton } from "@mantine/core";
+import { Button, createStyles, Group, Menu, UnstyledButton } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useState } from "react";
+
+type LanguagePickerProps = {
+  mobile?: boolean;
+};
 
 type LanguageOption = {
   code: Locale;
@@ -71,11 +75,40 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
   },
 }));
 
-export default function LanguagePicker() {
+export default function LanguagePicker({ mobile = false }: LanguagePickerProps) {
   const [opened, setOpened] = useState(false);
   const { locale, setLocale } = useI18n();
   const { classes } = useStyles({ opened });
   const selected = data.find((language) => language.code === locale) ?? data[0];
+
+  if (mobile) {
+    return (
+      <Group spacing="xs" position="center" noWrap>
+        {data.map((item) => {
+          const active = item.code === locale;
+
+          return (
+            <Button
+              key={item.code}
+              size="sm"
+              variant={active ? "filled" : "subtle"}
+              color={active ? "yellow" : "gray"}
+              onClick={() => setLocale(item.code)}
+              leftIcon={
+                <span
+                  className={classes.menuFlag}
+                  style={{ backgroundImage: `url(${item.image})` }}
+                />
+              }
+              sx={{ minWidth: 110 }}
+            >
+              {item.label}
+            </Button>
+          );
+        })}
+      </Group>
+    );
+  }
 
   const items = data.map((item) => (
     <Menu.Item

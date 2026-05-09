@@ -32,26 +32,47 @@ const frameStyles = {
   overflow: "hidden",
 } as const;
 
-export default function CaseDetailPage() {
+const getDisplayCategory = (artwork: Artwork, locale: "en" | "zh") => {
+  if (["calligraphy", "misc", "porcelain", "jade", "bronze"].includes(artwork.category)) {
+    switch (artwork.category) {
+      case "calligraphy":
+        return locale === "zh" ? "字画" : "Paintings & Calligraphy";
+      case "porcelain":
+        return locale === "zh" ? "瓷器" : "Porcelain";
+      case "jade":
+        return locale === "zh" ? "翡翠玉器" : "Jade";
+      case "bronze":
+        return locale === "zh" ? "铜器" : "Bronze";
+      default:
+        return locale === "zh" ? "杂项" : "Miscellaneous";
+    }
+  }
+
+  return locale === "zh" && artwork.categoryZh ? artwork.categoryZh : artwork.category;
+};
+
+export default function CollectionDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [items, setItems] = useState<Artwork[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
-  const caseId = typeof router.query.id === "string" ? router.query.id : "";
+  const collectionId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
     setItems(getKnowledgeBase());
   }, []);
 
   const item = useMemo(
-    () => items.find((entry) => entry.id === caseId && entry.caseRecord),
-    [caseId, items]
+    () => items.find((entry) => entry.id === collectionId && !entry.caseRecord),
+    [collectionId, items]
   );
+
   const gallery = useMemo(
     () => (item ? [item.image, ...(item.galleryImages ?? []).filter((imageUrl) => imageUrl !== item.image)] : []),
     [item]
   );
+
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
 
   useEffect(() => {
@@ -85,12 +106,12 @@ export default function CaseDetailPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gallery, lightboxOpened]);
 
-  if (!item || !item.caseRecord) {
+  if (!item) {
     return (
       <Wrapper>
         <AnimatedBox>
           <Container py={80}>
-            <Alert color="red">{t("support.emptyCases")}</Alert>
+            <Alert color="red">{locale === "zh" ? "未找到该藏品。" : "Collection item not found."}</Alert>
           </Container>
         </AnimatedBox>
       </Wrapper>
@@ -99,6 +120,8 @@ export default function CaseDetailPage() {
 
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const period = locale === "zh" && item.periodZh ? item.periodZh : item.period;
+  const category = getDisplayCategory(item, locale);
   const activeImage = selectedImage || gallery[0] || item.image;
 
   const goToImage = (index: number) => {
@@ -109,16 +132,12 @@ export default function CaseDetailPage() {
   };
 
   const goToPrevious = () => {
-    if (!gallery.length) {
-      return;
-    }
+    if (!gallery.length) return;
     goToImage((selectedIndex - 1 + gallery.length) % gallery.length);
   };
 
   const goToNext = () => {
-    if (!gallery.length) {
-      return;
-    }
+    if (!gallery.length) return;
     goToImage((selectedIndex + 1) % gallery.length);
   };
 
@@ -131,16 +150,24 @@ export default function CaseDetailPage() {
         <AnimatedBox>
           <Container py={64}>
             <Stack spacing="xl">
-              <Button component={Link} href="/cases" variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
-                {t("support.caseBack")}
+              <Button component={Link} href="/collections" variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+                {t("collections.detailBack")}
               </Button>
 
               <Stack spacing="sm">
-                <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
-                  {t("support.caseDetailTitle")}
+                <Badge color="blue" variant="filled" sx={{ alignSelf: "flex-start" }}>
+                  {t("collections.exhibitionTitle")}
                 </Badge>
                 <Title order={1}>{title}</Title>
                 <Text color="dark.1">{description}</Text>
+                <Group spacing="xl">
+                  <Text size="sm" color="dark.1">
+                    {t("collections.detailCategory")}: {category}
+                  </Text>
+                  <Text size="sm" color="dark.1">
+                    {t("collections.detailPeriod")}: {period}
+                  </Text>
+                </Group>
               </Stack>
 
               <Box sx={{ position: "relative" }}>
@@ -150,7 +177,7 @@ export default function CaseDetailPage() {
                   onClick={() => setLightboxOpened(true)}
                   sx={{
                     ...frameStyles,
-                    height: 460,
+                    height: 520,
                     width: "100%",
                     padding: 16,
                     cursor: "zoom-in",
@@ -166,7 +193,7 @@ export default function CaseDetailPage() {
                   />
                   <Group spacing={8} sx={{ position: "absolute", right: 16, top: 16, color: "#f4ead7", pointerEvents: "none" }}>
                     <IconZoomIn size={18} />
-                    <Text size="sm">{locale === "zh" ? "点击放大" : "Click to zoom"}</Text>
+                    <Text size="sm">{t("collections.detailZoom")}</Text>
                   </Group>
                 </Box>
 
@@ -209,59 +236,44 @@ export default function CaseDetailPage() {
               </Box>
 
               {gallery.length > 1 ? (
-                <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
-                  <Group spacing="md" noWrap>
-                    {gallery.map((imageUrl, index) => {
-                      const isActive = imageUrl === activeImage;
+                <Stack spacing="sm">
+                  <Text size="sm" weight={700}>{t("collections.detailGallery")}</Text>
+                  <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
+                    <Group spacing="md" noWrap>
+                      {gallery.map((imageUrl, index) => {
+                        const isActive = imageUrl === activeImage;
 
-                      return (
-                        <Box
-                          key={`${imageUrl}-${index}`}
-                          component="button"
-                          type="button"
-                          onClick={() => setSelectedImage(imageUrl)}
-                          sx={{
-                            ...frameStyles,
-                            height: 150,
-                            width: 170,
-                            flex: "0 0 auto",
-                            padding: 10,
-                            border: isActive ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
-                            boxShadow: isActive ? "0 0 0 1px rgba(216, 183, 109, 0.18) inset" : "none",
-                            cursor: "pointer",
-                            transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                              borderColor: "#d8b76d",
-                            },
-                          }}
-                        >
+                        return (
                           <Box
-                            component="img"
-                            src={imageUrl}
-                            alt={`${title}-${index + 1}`}
-                            sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Group>
-                </ScrollArea>
+                            key={`${imageUrl}-${index}`}
+                            component="button"
+                            type="button"
+                            onClick={() => setSelectedImage(imageUrl)}
+                            sx={{
+                              ...frameStyles,
+                              minWidth: 168,
+                              width: 168,
+                              height: 168,
+                              padding: 10,
+                              border: isActive
+                                ? "2px solid #d8b76d"
+                                : "1px solid rgba(216, 183, 109, 0.18)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={imageUrl}
+                              alt={`${title}-${index + 1}`}
+                              sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </Group>
+                  </ScrollArea>
+                </Stack>
               ) : null}
-
-              <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
-                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                  <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
-                  <Text><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
-                  <Text><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
-                  <Text><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>
-                  <Text><strong>{t("image.caseClientRegion")}:</strong> {item.caseRecord.clientRegion}</Text>
-                  <Text><strong>{t("image.caseLogisticsCost")}:</strong> {item.caseRecord.logisticsCost}</Text>
-                  <Text><strong>{t("image.casePurchaseChannel")}:</strong> {item.caseRecord.purchaseChannel}</Text>
-                  <Text><strong>{t("image.casePurchaseCost")}:</strong> {item.caseRecord.purchaseCost}</Text>
-                </SimpleGrid>
-                <Text mt="md"><strong>{t("image.caseRiskAdvice")}:</strong> {item.caseRecord.riskAdvice}</Text>
-              </Box>
             </Stack>
           </Container>
         </AnimatedBox>
@@ -270,19 +282,25 @@ export default function CaseDetailPage() {
       <Modal
         opened={lightboxOpened}
         onClose={() => setLightboxOpened(false)}
-        centered
-        size="90vw"
         withCloseButton
-        overlayProps={{ opacity: 0.72, blur: 4 }}
-        styles={{ body: { paddingTop: 8 } }}
+        centered
+        size="95vw"
+        styles={{
+          content: {
+            background: "#11161d",
+          },
+          body: {
+            padding: 12,
+          },
+        }}
       >
         <Stack spacing="md">
           <Box sx={{ position: "relative" }}>
             <Box
               sx={{
                 ...frameStyles,
-                minHeight: 620,
-                padding: 20,
+                minHeight: 560,
+                padding: 18,
                 border: "1px solid rgba(216, 183, 109, 0.18)",
               }}
             >
@@ -290,7 +308,7 @@ export default function CaseDetailPage() {
                 component="img"
                 src={activeImage}
                 alt={title}
-                sx={{ maxWidth: "100%", maxHeight: "72vh", width: "auto", height: "auto", objectFit: "contain" }}
+                sx={{ maxWidth: "100%", maxHeight: "78vh", width: "auto", height: "auto", objectFit: "contain" }}
               />
             </Box>
 
@@ -299,34 +317,34 @@ export default function CaseDetailPage() {
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={42}
                   onClick={goToPrevious}
                   sx={{
                     position: "absolute",
-                    left: 18,
+                    left: 16,
                     top: "50%",
                     transform: "translateY(-50%)",
                     backgroundColor: "rgba(15, 18, 22, 0.84)",
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronLeft size={24} />
+                  <IconChevronLeft size={22} />
                 </ActionIcon>
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={42}
                   onClick={goToNext}
                   sx={{
                     position: "absolute",
-                    right: 18,
+                    right: 16,
                     top: "50%",
                     transform: "translateY(-50%)",
                     backgroundColor: "rgba(15, 18, 22, 0.84)",
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronRight size={24} />
+                  <IconChevronRight size={22} />
                 </ActionIcon>
               </>
             ) : null}
@@ -340,24 +358,26 @@ export default function CaseDetailPage() {
 
                   return (
                     <Box
-                      key={`lightbox-${imageUrl}-${index}`}
+                      key={`${imageUrl}-${index}`}
                       component="button"
                       type="button"
                       onClick={() => setSelectedImage(imageUrl)}
                       sx={{
                         ...frameStyles,
-                        height: 110,
-                        width: 130,
-                        flex: "0 0 auto",
+                        minWidth: 124,
+                        width: 124,
+                        height: 124,
                         padding: 8,
-                        border: isActive ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                        border: isActive
+                          ? "2px solid #d8b76d"
+                          : "1px solid rgba(216, 183, 109, 0.18)",
                         cursor: "pointer",
                       }}
                     >
                       <Box
                         component="img"
                         src={imageUrl}
-                        alt={`${title}-lightbox-${index + 1}`}
+                        alt={`${title}-modal-${index + 1}`}
                         sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
                       />
                     </Box>

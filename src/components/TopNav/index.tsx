@@ -206,7 +206,7 @@ export default function TopNav() {
           <Stack align="center" spacing="sm" px="sm" mb="sm">
             <Button variant="subtle">{t("top.joinGive")}</Button>
             <Button variant="subtle">{t("top.shop")}</Button>
-            <LanguagePicker />
+            <LanguagePicker mobile />
           </Stack>
         </ScrollArea>
       </Drawer>

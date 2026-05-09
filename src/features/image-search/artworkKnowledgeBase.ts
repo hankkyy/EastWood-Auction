@@ -160,7 +160,7 @@ export const deleteImportedArtwork = (artworkId: string) => {
   if (!artworkId.startsWith("imported-")) {
     const deletedIds = new Set(readDeletedIds());
     deletedIds.add(artworkId);
-    writeDeletedIds([...deletedIds]);
+    writeDeletedIds(Array.from(deletedIds));
     return;
   }
 

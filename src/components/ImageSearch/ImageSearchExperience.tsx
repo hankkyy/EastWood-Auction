@@ -1,5 +1,4 @@
 import {
-  clearImportedArtworks,
   deleteImportedArtwork,
   getImportedArtworks,
   getKnowledgeBase,
@@ -44,6 +43,7 @@ import {
   Group,
   Image,
   Paper,
+  Select,
   Progress,
   SegmentedControl,
   SimpleGrid,
@@ -87,6 +87,39 @@ const getArtworkDescription = (artwork: Artwork, locale: Locale) =>
 
 const getListingType = (artwork: Artwork): ArtworkListingType =>
   artwork.listingType ?? "product";
+
+
+const collectionCategoryOptions = [
+  { value: "calligraphy", labelKey: "collections.tabCalligraphy" },
+  { value: "misc", labelKey: "collections.tabMisc" },
+  { value: "porcelain", labelKey: "collections.tabPorcelain" },
+  { value: "jade", labelKey: "collections.tabJade" },
+  { value: "bronze", labelKey: "collections.tabBronze" },
+] as const;
+
+const getCanonicalCollectionCategory = (category?: string, categoryZh?: string) => {
+  const normalized = `${category ?? ""} ${categoryZh ?? ""}`.toLowerCase();
+  if (normalized.includes("calligraphy") || normalized.includes("painting") || normalized.includes("书") || normalized.includes("画")) return "calligraphy";
+  if (normalized.includes("porcelain") || normalized.includes("瓷")) return "porcelain";
+  if (normalized.includes("jade") || normalized.includes("玉")) return "jade";
+  if (normalized.includes("bronze") || normalized.includes("铜")) return "bronze";
+  return "misc";
+};
+
+const getCollectionCategoryText = (value: string, locale: Locale) => {
+  switch (value) {
+    case "calligraphy":
+      return locale === "zh" ? "字画" : "Paintings & Calligraphy";
+    case "porcelain":
+      return locale === "zh" ? "瓷器" : "Porcelain";
+    case "jade":
+      return locale === "zh" ? "翡翠玉器" : "Jade";
+    case "bronze":
+      return locale === "zh" ? "铜器" : "Bronze";
+    default:
+      return locale === "zh" ? "杂项" : "Miscellaneous";
+  }
+};
 
 const useStyles = createStyles((theme) => ({
   shell: {
@@ -219,6 +252,7 @@ export default function ImageSearchExperience() {
   const [adminPreviewUrl, setAdminPreviewUrl] = useState<string | null>(null);
   const [adminFeature, setAdminFeature] = useState<ImageFeature | null>(null);
   const [adminGalleryUrls, setAdminGalleryUrls] = useState<string[]>([]);
+  const [adminCoverUrl, setAdminCoverUrl] = useState<string | null>(null);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminTitle, setAdminTitle] = useState("");
   const [adminCategory, setAdminCategory] = useState("");
@@ -253,6 +287,8 @@ export default function ImageSearchExperience() {
   const [editPurchaseChannel, setEditPurchaseChannel] = useState("");
   const [editPurchaseCost, setEditPurchaseCost] = useState("");
   const [editRiskAdvice, setEditRiskAdvice] = useState("");
+  const [editGalleryUrls, setEditGalleryUrls] = useState<string[]>([]);
+  const [editCoverUrl, setEditCoverUrl] = useState<string | null>(null);
   const [editImportType, setEditImportType] = useState<"case" | "collection">(
     "case"
   );
@@ -372,6 +408,7 @@ export default function ImageSearchExperience() {
     setEditPeriod("");
     setEditDescription("");
     setEditItemDetails("");
+    setEditCategory("");
     setEditImportType("case");
     setEditSalePrice("");
     setEditCaseId("");
@@ -382,12 +419,16 @@ export default function ImageSearchExperience() {
     setEditPurchaseChannel("");
     setEditPurchaseCost("");
     setEditRiskAdvice("");
+    setEditGalleryUrls([]);
+    setEditCoverUrl(null);
   };
 
   const handleStartEdit = (artwork: Artwork) => {
+    const galleryUrls =
+      artwork.galleryImages?.length ? artwork.galleryImages : [artwork.image];
     setEditingArtworkId(artwork.id);
     setEditTitle(artwork.title);
-    setEditCategory(artwork.category);
+    setEditCategory(getCanonicalCollectionCategory(artwork.category, artwork.categoryZh));
     setEditPeriod(artwork.period);
     setEditDescription(artwork.description);
     setEditItemDetails(`${artwork.title}\n${artwork.description}`);
@@ -401,6 +442,8 @@ export default function ImageSearchExperience() {
     setEditPurchaseChannel(artwork.caseRecord?.purchaseChannel ?? "");
     setEditPurchaseCost(artwork.caseRecord?.purchaseCost ?? "");
     setEditRiskAdvice(artwork.caseRecord?.riskAdvice ?? "");
+    setEditGalleryUrls(galleryUrls);
+    setEditCoverUrl(artwork.image);
     setManageMessage(null);
   };
 
@@ -420,14 +463,22 @@ export default function ImageSearchExperience() {
           }
         : undefined;
 
+    const coverImageUrl = editCoverUrl || artwork.image;
+    const orderedGalleryImages = [
+      coverImageUrl,
+      ...editGalleryUrls.filter((imageUrl) => imageUrl !== coverImageUrl),
+    ];
+
     updateImportedArtwork({
       ...artwork,
       title: (editItemDetails.split("\n")[0]?.trim() || editTitle) || artwork.title,
-      category: editCategory || artwork.category,
+      category: editImportType === "collection" ? (editCategory || getCanonicalCollectionCategory(artwork.category, artwork.categoryZh)) : (editCategory || artwork.category),
+      categoryZh: editImportType === "collection" ? getCollectionCategoryText(editCategory || getCanonicalCollectionCategory(artwork.category, artwork.categoryZh), "zh") : artwork.categoryZh,
       period: editPeriod || artwork.period,
+      image: coverImageUrl,
       description: editItemDetails.trim() || editDescription || artwork.description,
       listingType: editImportType === "collection" ? "collection" : "product",
-      galleryImages: artwork.galleryImages ?? [artwork.image],
+      galleryImages: orderedGalleryImages,
       caseRecord: nextCaseRecord,
     });
     refreshKnowledgeBase();
@@ -561,6 +612,7 @@ export default function ImageSearchExperience() {
         URL.revokeObjectURL(adminPreviewUrl);
       }
 
+      setAdminCoverUrl(storedImageUrls[0]);
       setAdminPreviewUrl(storedImageUrls[0]);
       setAdminGalleryUrls(storedImageUrls);
       setAdminFeature({
@@ -598,14 +650,21 @@ export default function ImageSearchExperience() {
           }
         : undefined;
 
+    const coverImageUrl = adminCoverUrl || adminPreviewUrl;
+    const orderedGalleryImages = [
+      coverImageUrl,
+      ...adminGalleryUrls.filter((imageUrl) => imageUrl !== coverImageUrl),
+    ];
+
     const nextArtwork: Artwork = {
       id: `imported-${Date.now()}`,
       title:
         adminItemDetails.split("\n")[0]?.trim() || adminTitle || t("image.untitledArtwork"),
-      category: adminCategory || t("image.uncategorized"),
+      category: adminImportType === "collection" ? (adminCategory || "misc") : (adminCategory || t("image.uncategorized")),
+      categoryZh: adminImportType === "collection" ? getCollectionCategoryText(adminCategory || "misc", "zh") : undefined,
       period: adminPeriod || t("image.unknownPeriod"),
-      image: adminPreviewUrl,
-      galleryImages: adminGalleryUrls.length ? adminGalleryUrls : [adminPreviewUrl],
+      image: coverImageUrl,
+      galleryImages: orderedGalleryImages,
       description:
         adminItemDetails.trim() || adminDescription || t("image.importedDescription"),
       listingType: adminImportType === "collection" ? "collection" : "product",
@@ -635,6 +694,7 @@ export default function ImageSearchExperience() {
       setAdminImportType("case");
       setAdminPreviewUrl(null);
       setAdminGalleryUrls([]);
+      setAdminCoverUrl(null);
       setAdminFeature(null);
       setAdminError(null);
       setManageMessage(t("image.itemImported"));
@@ -645,14 +705,6 @@ export default function ImageSearchExperience() {
           : t("image.importFallback")
       );
     }
-  };
-
-  const handleClearImportedArtworks = () => {
-    clearImportedArtworks();
-    refreshKnowledgeBase();
-    resetEditForm();
-    setResults([]);
-    setManageMessage(t("image.itemsCleared"));
   };
 
   const handleReset = () => {
@@ -675,12 +727,6 @@ export default function ImageSearchExperience() {
             {t("image.badge")}
           </Badge>
           <Title size={56}>{t("image.title")}</Title>
-          <Text size="lg" color="dark.1">
-            {t("image.description")}
-          </Text>
-          <Text size="sm" color="dark.1">
-            {t("image.matchScope")}
-          </Text>
           <TextInput
             size="lg"
             value={searchQuery}
@@ -778,7 +824,7 @@ export default function ImageSearchExperience() {
                       {t("image.adminDescription")}
                     </Text>
                   </div>
-                  <FileButton onChange={handleAdminUpload} accept="image/*" multiple={adminImportType === "case"}>
+                  <FileButton onChange={handleAdminUpload} accept="image/*" multiple>
                     {(props) => (
                       <Button {...props} leftIcon={<IconDatabaseImport size={18} />}>
                         {t("image.uploadAsset")}
@@ -845,9 +891,62 @@ export default function ImageSearchExperience() {
                   minRows={4}
                 />
 
-                {adminImportType === "case" ? (
+                {adminImportType === "collection" ? (
+                  <Select
+                    label={t("image.collectionCategory")}
+                    value={adminCategory || "misc"}
+                    onChange={(value) => setAdminCategory(value || "misc")}
+                    data={collectionCategoryOptions.map((option) => ({
+                      value: option.value,
+                      label: t(option.labelKey),
+                    }))}
+                    withinPortal
+                  />
+                ) : null}
+
+                {adminGalleryUrls.length ? (
                   <>
                     <Text size="sm" color="dark.1">{t("image.caseGalleryHint")}</Text>
+                    <Text size="sm" color="dark.1">{t("image.coverSelectionHint")}</Text>
+                    <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
+                      {adminGalleryUrls.map((imageUrl, index) => {
+                        const isCover = imageUrl === (adminCoverUrl || adminPreviewUrl);
+
+                        return (
+                          <Box
+                            key={`${imageUrl}-${index}`}
+                            component="button"
+                            type="button"
+                            onClick={() => {
+                              setAdminCoverUrl(imageUrl);
+                              setAdminPreviewUrl(imageUrl);
+                            }}
+                            sx={{
+                              position: "relative",
+                              border: isCover ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                              borderRadius: 8,
+                              padding: 0,
+                              background: "transparent",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Box className={classes.galleryThumbFrame}>
+                              <Box component="img" src={imageUrl} alt={`gallery-${index + 1}`} className={classes.containedImage} />
+                            </Box>
+                            {isCover ? (
+                              <Badge color="yellow" variant="filled" sx={{ position: "absolute", top: 8, left: 8 }}>
+                                {t("image.coverBadge")}
+                              </Badge>
+                            ) : null}
+                          </Box>
+                        );
+                      })}
+                    </SimpleGrid>
+                  </>
+                ) : null}
+
+                {adminImportType === "case" ? (
+                  <>
                     <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
                       <TextInput label={t("image.caseId")} value={adminCaseId} onChange={(event) => setAdminCaseId(event.currentTarget.value)} />
                       <TextInput label={t("image.caseSalePrice")} value={adminSalePrice} onChange={(event) => setAdminSalePrice(event.currentTarget.value)} />
@@ -859,27 +958,10 @@ export default function ImageSearchExperience() {
                       <TextInput label={t("image.casePurchaseCost")} value={adminPurchaseCost} onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)} />
                     </SimpleGrid>
                     <Textarea label={t("image.caseRiskAdvice")} value={adminRiskAdvice} onChange={(event) => setAdminRiskAdvice(event.currentTarget.value)} minRows={2} />
-                    {adminGalleryUrls.length ? (
-                      <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
-                        {adminGalleryUrls.map((imageUrl, index) => (
-                          <Box key={`${imageUrl}-${index}`} className={classes.galleryThumbFrame}>
-                            <Box component="img" src={imageUrl} alt={`case-gallery-${index + 1}`} className={classes.containedImage} />
-                          </Box>
-                        ))}
-                      </SimpleGrid>
-                    ) : null}
                   </>
                 ) : null}
 
-                <Group position="apart">
-                  <Button
-                    variant="outline"
-                    color="red"
-                    onClick={handleClearImportedArtworks}
-                    disabled={importedArtworks.length === 0}
-                  >
-                    {t("image.clearImported")}
-                  </Button>
+                <Group position="right">
                   <Button onClick={handleSaveToKnowledgeBase}>
                     {t("image.importButton")}
                   </Button>
@@ -1035,6 +1117,54 @@ export default function ImageSearchExperience() {
                               onChange={(event) => setEditItemDetails(event.currentTarget.value)}
                               minRows={3}
                             />
+                            {editImportType === "collection" ? (
+                              <Select
+                                label={t("image.collectionCategory")}
+                                value={editCategory || "misc"}
+                                onChange={(value) => setEditCategory(value || "misc")}
+                                data={collectionCategoryOptions.map((option) => ({
+                                  value: option.value,
+                                  label: t(option.labelKey),
+                                }))}
+                                withinPortal
+                              />
+                            ) : null}
+                            {editGalleryUrls.length ? (
+                              <>
+                                <Text size="sm" color="dark.1">{t("image.coverSelectionHint")}</Text>
+                                <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
+                                  {editGalleryUrls.map((imageUrl, index) => {
+                                    const isCover = imageUrl === (editCoverUrl || artwork.image);
+
+                                    return (
+                                      <Box
+                                        key={`${imageUrl}-${index}`}
+                                        component="button"
+                                        type="button"
+                                        onClick={() => setEditCoverUrl(imageUrl)}
+                                        sx={{
+                                          position: "relative",
+                                          border: isCover ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                                          borderRadius: 8,
+                                          padding: 0,
+                                          background: "transparent",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        <Box className={classes.galleryThumbFrame}>
+                                          <Box component="img" src={imageUrl} alt={`edit-gallery-${index + 1}`} className={classes.containedImage} />
+                                        </Box>
+                                        {isCover ? (
+                                          <Badge color="yellow" variant="filled" sx={{ position: "absolute", top: 8, left: 8 }}>
+                                            {t("image.coverBadge")}
+                                          </Badge>
+                                        ) : null}
+                                      </Box>
+                                    );
+                                  })}
+                                </SimpleGrid>
+                              </>
+                            ) : null}
                             {editImportType === "case" ? (
                               <>
                                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
@@ -1105,6 +1235,9 @@ export default function ImageSearchExperience() {
                               <Text size="sm" color="dark.1">
                                 {getArtworkPeriod(artwork, locale)}
                               </Text>
+                              <Text size="sm" color="dark.1">
+                                {getCollectionCategoryText(getCanonicalCollectionCategory(artwork.category, artwork.categoryZh), locale)}
+                              </Text>
                             </Stack>
                           </Group>
                           <Group spacing="xs" noWrap>
@@ -1147,6 +1280,54 @@ export default function ImageSearchExperience() {
                               onChange={(event) => setEditItemDetails(event.currentTarget.value)}
                               minRows={3}
                             />
+                            {editImportType === "collection" ? (
+                              <Select
+                                label={t("image.collectionCategory")}
+                                value={editCategory || "misc"}
+                                onChange={(value) => setEditCategory(value || "misc")}
+                                data={collectionCategoryOptions.map((option) => ({
+                                  value: option.value,
+                                  label: t(option.labelKey),
+                                }))}
+                                withinPortal
+                              />
+                            ) : null}
+                            {editGalleryUrls.length ? (
+                              <>
+                                <Text size="sm" color="dark.1">{t("image.coverSelectionHint")}</Text>
+                                <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
+                                  {editGalleryUrls.map((imageUrl, index) => {
+                                    const isCover = imageUrl === (editCoverUrl || artwork.image);
+
+                                    return (
+                                      <Box
+                                        key={`${imageUrl}-${index}`}
+                                        component="button"
+                                        type="button"
+                                        onClick={() => setEditCoverUrl(imageUrl)}
+                                        sx={{
+                                          position: "relative",
+                                          border: isCover ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                                          borderRadius: 8,
+                                          padding: 0,
+                                          background: "transparent",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        <Box className={classes.galleryThumbFrame}>
+                                          <Box component="img" src={imageUrl} alt={`edit-gallery-${index + 1}`} className={classes.containedImage} />
+                                        </Box>
+                                        {isCover ? (
+                                          <Badge color="yellow" variant="filled" sx={{ position: "absolute", top: 8, left: 8 }}>
+                                            {t("image.coverBadge")}
+                                          </Badge>
+                                        ) : null}
+                                      </Box>
+                                    );
+                                  })}
+                                </SimpleGrid>
+                              </>
+                            ) : null}
                             {editImportType === "case" ? (
                               <>
                                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
