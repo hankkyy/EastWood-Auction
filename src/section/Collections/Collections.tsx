@@ -1,6 +1,9 @@
-import { Box, Container, createStyles, Image, SimpleGrid, Tabs, Text, Title } from "@mantine/core";
+import { Box, Container, createStyles, SimpleGrid, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import type { Artwork } from "@/data/artworks";
+import { useEffect, useMemo, useState } from "react";
 
 const categories = [
   { value: "all", labelKey: "collections.tabAll" },
@@ -11,44 +14,12 @@ const categories = [
   { value: "bronze", labelKey: "collections.tabBronze" },
 ] as const;
 
-const data = [
-  {
-    image:
-      "https://images.unsplash.com/photo-1578926288207-a90a5366759d?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemPorcelainBowl",
-    category: "porcelain",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemInkPainting",
-    category: "calligraphy",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1602086232396-bdff9b31bc7d?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemBlueVase",
-    category: "porcelain",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemJadePendant",
-    category: "jade",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemBronzeVessel",
-    category: "bronze",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1611308013843-a639168ef025?auto=format&fit=crop&w=1200&q=85",
-    titleKey: "collections.itemLacquerBox",
-    category: "misc",
-  },
-] as const;
+type CollectionCard = {
+  key: string;
+  image: string;
+  title: string;
+  category: string;
+};
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -107,14 +78,26 @@ const useStyles = createStyles((theme) => ({
   },
 
   imageWrap: {
-    backgroundColor: "#050505",
+    background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
     overflow: "hidden",
+    height: remValue(560),
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: remValue(16),
+
+    [theme.fn.smallerThan("md")]: {
+      height: remValue(420),
+      padding: remValue(12),
+    },
   },
 
   image: {
-    width: "100%",
-    height: remValue(560),
-    objectFit: "cover",
+    maxWidth: "100%",
+    maxHeight: "100%",
+    width: "auto",
+    height: "auto",
+    objectFit: "contain",
     display: "block",
     transition: "transform 220ms ease, filter 220ms ease",
 
@@ -123,9 +106,6 @@ const useStyles = createStyles((theme) => ({
       filter: "brightness(1.08)",
     },
 
-    [theme.fn.smallerThan("md")]: {
-      height: remValue(420),
-    },
   },
 
   itemTitle: {
@@ -141,10 +121,35 @@ function remValue(value: number) {
   return `${value / 16}rem`;
 }
 
+const mapArtworkCategory = (artwork: Artwork): string => {
+  const category = `${artwork.category} ${artwork.categoryZh ?? ""}`.toLowerCase();
+  if (category.includes("jade") || category.includes("玉")) return "jade";
+  if (category.includes("bronze") || category.includes("铜")) return "bronze";
+  if (category.includes("porcelain") || category.includes("瓷")) return "porcelain";
+  if (category.includes("painting") || category.includes("画") || category.includes("calligraphy") || category.includes("书")) return "calligraphy";
+  return "misc";
+};
+
 export default function Collections() {
   const { classes } = useStyles();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const [knowledgeBaseItems, setKnowledgeBaseItems] = useState<Artwork[]>([]);
+
+  useEffect(() => {
+    setKnowledgeBaseItems(getKnowledgeBase());
+  }, []);
+
+  const cards = useMemo<CollectionCard[]>(() => {
+    return knowledgeBaseItems
+      .filter((item) => !item.caseRecord)
+      .map((item) => ({
+        key: item.id,
+        image: item.image,
+        title: locale === "zh" && item.titleZh ? item.titleZh : item.title,
+        category: mapArtworkCategory(item),
+      }));
+  }, [knowledgeBaseItems, locale]);
 
   return (
     <Box className={classes.wrapper}>
@@ -170,8 +175,8 @@ export default function Collections() {
           {categories.map((category) => {
             const visibleItems =
               category.value === "all"
-                ? data.slice(0, 3)
-                : data.filter((item) => item.category === category.value);
+                ? cards
+                : cards.filter((item) => item.category === category.value);
 
             return (
               <Tabs.Panel key={category.value} value={category.value} pt="xl">
@@ -184,15 +189,11 @@ export default function Collections() {
                   ]}
                 >
                   {visibleItems.map((item) => (
-                    <Box key={item.titleKey}>
+                    <Box key={item.key}>
                       <Box className={classes.imageWrap}>
-                        <Image
-                          src={item.image}
-                          alt={t(item.titleKey)}
-                          className={classes.image}
-                        />
+                        <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                       </Box>
-                      <Text className={classes.itemTitle}>{t(item.titleKey)}</Text>
+                      <Text className={classes.itemTitle}>{item.title}</Text>
                     </Box>
                   ))}
                 </SimpleGrid>

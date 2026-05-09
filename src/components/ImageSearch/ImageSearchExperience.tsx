@@ -3,6 +3,7 @@ import {
   deleteImportedArtwork,
   getImportedArtworks,
   getKnowledgeBase,
+  rehydrateImportedArtworkSignatures,
   saveImportedArtwork,
   updateImportedArtwork,
 } from "@/features/image-search/artworkKnowledgeBase";
@@ -42,7 +43,6 @@ import {
   FileButton,
   Group,
   Image,
-  NumberInput,
   Paper,
   Progress,
   SegmentedControl,
@@ -67,7 +67,7 @@ import {
   IconUpload,
   IconX,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const isObjectUrl = (url: string) => url.startsWith("blob:");
 
@@ -110,8 +110,53 @@ const useStyles = createStyles((theme) => ({
     minHeight: 320,
     border: `1px dashed rgba(216, 183, 109, 0.36)`,
     borderRadius: theme.radius.sm,
-    backgroundColor: "rgba(15, 18, 22, 0.7)",
+    background: "linear-gradient(180deg, rgba(46, 36, 28, 0.45), rgba(22, 26, 32, 0.92))",
     overflow: "hidden",
+    padding: theme.spacing.md,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  containedImage: {
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+    objectPosition: "center",
+  },
+
+  thumbFrame: {
+    width: 112,
+    height: 88,
+    borderRadius: theme.radius.sm,
+    overflow: "hidden",
+    background: "linear-gradient(180deg, rgba(58, 46, 36, 0.5), rgba(23, 27, 34, 0.9))",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: "0 0 auto",
+  },
+
+  resultImageFrame: {
+    height: 190,
+    borderRadius: theme.radius.sm,
+    overflow: "hidden",
+    background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing.sm,
+  },
+
+  galleryThumbFrame: {
+    height: 120,
+    borderRadius: theme.radius.sm,
+    overflow: "hidden",
+    background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing.xs,
   },
 
   emptyPreview: {
@@ -173,12 +218,15 @@ export default function ImageSearchExperience() {
   const [isSearching, setIsSearching] = useState(false);
   const [adminPreviewUrl, setAdminPreviewUrl] = useState<string | null>(null);
   const [adminFeature, setAdminFeature] = useState<ImageFeature | null>(null);
+  const [adminGalleryUrls, setAdminGalleryUrls] = useState<string[]>([]);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [adminTitle, setAdminTitle] = useState("");
   const [adminCategory, setAdminCategory] = useState("");
   const [adminPeriod, setAdminPeriod] = useState("");
   const [adminDescription, setAdminDescription] = useState("");
+  const [adminItemDetails, setAdminItemDetails] = useState("");
   const [adminSalePrice, setAdminSalePrice] = useState("");
+  const [adminCaseId, setAdminCaseId] = useState("");
   const [adminSaleTime, setAdminSaleTime] = useState("");
   const [adminSalePlatform, setAdminSalePlatform] = useState("");
   const [adminClientRegion, setAdminClientRegion] = useState("");
@@ -186,15 +234,18 @@ export default function ImageSearchExperience() {
   const [adminPurchaseChannel, setAdminPurchaseChannel] = useState("");
   const [adminPurchaseCost, setAdminPurchaseCost] = useState("");
   const [adminRiskAdvice, setAdminRiskAdvice] = useState("");
-  const [adminListingType, setAdminListingType] =
-    useState<ArtworkListingType>("product");
+  const [adminImportType, setAdminImportType] = useState<"case" | "collection">(
+    "case"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editPeriod, setEditPeriod] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editItemDetails, setEditItemDetails] = useState("");
   const [editSalePrice, setEditSalePrice] = useState("");
+  const [editCaseId, setEditCaseId] = useState("");
   const [editSaleTime, setEditSaleTime] = useState("");
   const [editSalePlatform, setEditSalePlatform] = useState("");
   const [editClientRegion, setEditClientRegion] = useState("");
@@ -202,9 +253,24 @@ export default function ImageSearchExperience() {
   const [editPurchaseChannel, setEditPurchaseChannel] = useState("");
   const [editPurchaseCost, setEditPurchaseCost] = useState("");
   const [editRiskAdvice, setEditRiskAdvice] = useState("");
-  const [editListingType, setEditListingType] =
-    useState<ArtworkListingType>("product");
+  const [editImportType, setEditImportType] = useState<"case" | "collection">(
+    "case"
+  );
   const [manageMessage, setManageMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void rehydrateImportedArtworkSignatures().then((updated) => {
+      if (!cancelled && updated) {
+        refreshKnowledgeBase();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
   const allProductArtworks = knowledgeBase.filter(
@@ -229,9 +295,9 @@ export default function ImageSearchExperience() {
         return searchableText.includes(normalizedSearchQuery);
       })
     : allProductArtworks;
-  const collectionKnowledgeBase = knowledgeBase.filter(
-    (artwork) => getListingType(artwork) === "collection"
-  );
+  const caseKnowledgeBase = knowledgeBase.filter((artwork) => artwork.caseRecord);
+  const displayKnowledgeBase = knowledgeBase.filter((artwork) => !artwork.caseRecord);
+  const collectionKnowledgeBase = displayKnowledgeBase;
   const featureInsights: FeatureInsight[] = feature
     ? getFeatureInsights(feature.vector)
     : [];
@@ -305,8 +371,10 @@ export default function ImageSearchExperience() {
     setEditCategory("");
     setEditPeriod("");
     setEditDescription("");
-    setEditListingType("product");
+    setEditItemDetails("");
+    setEditImportType("case");
     setEditSalePrice("");
+    setEditCaseId("");
     setEditSaleTime("");
     setEditSalePlatform("");
     setEditClientRegion("");
@@ -322,8 +390,10 @@ export default function ImageSearchExperience() {
     setEditCategory(artwork.category);
     setEditPeriod(artwork.period);
     setEditDescription(artwork.description);
-    setEditListingType(getListingType(artwork));
+    setEditItemDetails(`${artwork.title}\n${artwork.description}`);
+    setEditImportType(getListingType(artwork) === "collection" ? "collection" : "case");
     setEditSalePrice(artwork.caseRecord?.salePrice ?? "");
+    setEditCaseId(artwork.caseRecord?.caseId ?? "");
     setEditSaleTime(artwork.caseRecord?.saleTime ?? "");
     setEditSalePlatform(artwork.caseRecord?.salePlatform ?? "");
     setEditClientRegion(artwork.caseRecord?.clientRegion ?? "");
@@ -335,23 +405,30 @@ export default function ImageSearchExperience() {
   };
 
   const handleSaveEdit = (artwork: Artwork) => {
+    const nextCaseRecord =
+      editImportType === "case"
+        ? {
+            salePrice: editSalePrice,
+            caseId: editCaseId,
+            saleTime: editSaleTime,
+            salePlatform: editSalePlatform,
+            clientRegion: editClientRegion,
+            logisticsCost: editLogisticsCost,
+            purchaseChannel: editPurchaseChannel,
+            purchaseCost: editPurchaseCost,
+            riskAdvice: editRiskAdvice,
+          }
+        : undefined;
+
     updateImportedArtwork({
       ...artwork,
-      title: editTitle || artwork.title,
+      title: (editItemDetails.split("\n")[0]?.trim() || editTitle) || artwork.title,
       category: editCategory || artwork.category,
       period: editPeriod || artwork.period,
-      description: editDescription || artwork.description,
-      listingType: editListingType,
-      caseRecord: {
-        salePrice: editSalePrice,
-        saleTime: editSaleTime,
-        salePlatform: editSalePlatform,
-        clientRegion: editClientRegion,
-        logisticsCost: editLogisticsCost,
-        purchaseChannel: editPurchaseChannel,
-        purchaseCost: editPurchaseCost,
-        riskAdvice: editRiskAdvice,
-      },
+      description: editItemDetails.trim() || editDescription || artwork.description,
+      listingType: editImportType === "collection" ? "collection" : "product",
+      galleryImages: artwork.galleryImages ?? [artwork.image],
+      caseRecord: nextCaseRecord,
     });
     refreshKnowledgeBase();
     resetEditForm();
@@ -465,29 +542,32 @@ export default function ImageSearchExperience() {
     setResults(searchSimilarArtworks(demoFeature, productKnowledgeBase));
   };
 
-  const handleAdminUpload = async (file: File | null) => {
-    if (!file) {
+  const handleAdminUpload = async (files: File[] | File | null) => {
+    const nextFiles = Array.isArray(files) ? files : files ? [files] : [];
+
+    if (!nextFiles.length) {
       return;
     }
 
     setAdminError(null);
 
     try {
-      const [feature, storedImageUrl] = await Promise.all([
-        extractImageFeature(file),
-        readImageAsDataUrl(file),
+      const [feature, storedImageUrls] = await Promise.all([
+        extractImageFeature(nextFiles[0]),
+        Promise.all(nextFiles.map((file) => readImageAsDataUrl(file))),
       ]);
 
       if (adminPreviewUrl && isObjectUrl(adminPreviewUrl)) {
         URL.revokeObjectURL(adminPreviewUrl);
       }
 
-      setAdminPreviewUrl(storedImageUrl);
+      setAdminPreviewUrl(storedImageUrls[0]);
+      setAdminGalleryUrls(storedImageUrls);
       setAdminFeature({
         ...feature,
-        previewUrl: storedImageUrl,
+        previewUrl: storedImageUrls[0],
       });
-      setAdminTitle(file.name.replace(/\.[^/.]+$/, ""));
+      setAdminTitle(nextFiles[0].name.replace(/\.[^/.]+$/, ""));
     } catch (uploadError) {
       setAdminError(
         uploadError instanceof Error
@@ -503,52 +583,68 @@ export default function ImageSearchExperience() {
       return;
     }
 
-    const nextCaseRecord: ArtworkCaseRecord = {
-      salePrice: adminSalePrice,
-      saleTime: adminSaleTime,
-      salePlatform: adminSalePlatform,
-      clientRegion: adminClientRegion,
-      logisticsCost: adminLogisticsCost,
-      purchaseChannel: adminPurchaseChannel,
-      purchaseCost: adminPurchaseCost,
-      riskAdvice: adminRiskAdvice,
-    };
+    const nextCaseRecord: ArtworkCaseRecord | undefined =
+      adminImportType === "case"
+        ? {
+            salePrice: adminSalePrice,
+            caseId: adminCaseId || `EA-${Date.now()}`,
+            saleTime: adminSaleTime,
+            salePlatform: adminSalePlatform,
+            clientRegion: adminClientRegion,
+            logisticsCost: adminLogisticsCost,
+            purchaseChannel: adminPurchaseChannel,
+            purchaseCost: adminPurchaseCost,
+            riskAdvice: adminRiskAdvice,
+          }
+        : undefined;
 
     const nextArtwork: Artwork = {
       id: `imported-${Date.now()}`,
-      title: adminTitle || t("image.untitledArtwork"),
+      title:
+        adminItemDetails.split("\n")[0]?.trim() || adminTitle || t("image.untitledArtwork"),
       category: adminCategory || t("image.uncategorized"),
       period: adminPeriod || t("image.unknownPeriod"),
       image: adminPreviewUrl,
+      galleryImages: adminGalleryUrls.length ? adminGalleryUrls : [adminPreviewUrl],
       description:
-        adminDescription ||
-        t("image.importedDescription"),
-      listingType: adminListingType,
+        adminItemDetails.trim() || adminDescription || t("image.importedDescription"),
+      listingType: adminImportType === "collection" ? "collection" : "product",
       featureVector: adminFeature.vector,
       imageSignature: adminFeature.signature,
       caseRecord: nextCaseRecord,
     };
 
-    saveImportedArtwork(nextArtwork);
-    refreshKnowledgeBase();
-    setResults([]);
-    setAdminTitle("");
-    setAdminCategory("");
-    setAdminPeriod("");
-    setAdminDescription("");
-    setAdminSalePrice("");
-    setAdminSaleTime("");
-    setAdminSalePlatform("");
-    setAdminClientRegion("");
-    setAdminLogisticsCost("");
-    setAdminPurchaseChannel("");
-    setAdminPurchaseCost("");
-    setAdminRiskAdvice("");
-    setAdminListingType("product");
-    setAdminPreviewUrl(null);
-    setAdminFeature(null);
-    setAdminError(null);
-    setManageMessage(t("image.itemImported"));
+    try {
+      saveImportedArtwork(nextArtwork);
+      refreshKnowledgeBase();
+      setResults([]);
+      setAdminTitle("");
+      setAdminCategory("");
+      setAdminPeriod("");
+      setAdminDescription("");
+      setAdminItemDetails("");
+      setAdminSalePrice("");
+      setAdminCaseId("");
+      setAdminSaleTime("");
+      setAdminSalePlatform("");
+      setAdminClientRegion("");
+      setAdminLogisticsCost("");
+      setAdminPurchaseChannel("");
+      setAdminPurchaseCost("");
+      setAdminRiskAdvice("");
+      setAdminImportType("case");
+      setAdminPreviewUrl(null);
+      setAdminGalleryUrls([]);
+      setAdminFeature(null);
+      setAdminError(null);
+      setManageMessage(t("image.itemImported"));
+    } catch (saveError) {
+      setAdminError(
+        saveError instanceof Error
+          ? saveError.message
+          : t("image.importFallback")
+      );
+    }
   };
 
   const handleClearImportedArtworks = () => {
@@ -682,7 +778,7 @@ export default function ImageSearchExperience() {
                       {t("image.adminDescription")}
                     </Text>
                   </div>
-                  <FileButton onChange={handleAdminUpload} accept="image/*">
+                  <FileButton onChange={handleAdminUpload} accept="image/*" multiple={adminImportType === "case"}>
                     {(props) => (
                       <Button {...props} leftIcon={<IconDatabaseImport size={18} />}>
                         {t("image.uploadAsset")}
@@ -711,12 +807,7 @@ export default function ImageSearchExperience() {
 
                 <Box className={classes.previewFrame}>
                   {adminPreviewUrl ? (
-                    <Image
-                      src={adminPreviewUrl}
-                      alt="Admin imported artwork preview"
-                      height={320}
-                      fit="contain"
-                    />
+                    <Box component="img" src={adminPreviewUrl} alt="Admin imported artwork preview" className={classes.containedImage} />
                   ) : (
                     <Stack spacing="sm" className={classes.emptyPreview}>
                       <IconDatabaseImport
@@ -731,87 +822,54 @@ export default function ImageSearchExperience() {
                   )}
                 </Box>
 
-                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                  <TextInput
-                    label={t("image.fieldTitle")}
-                    value={adminTitle}
-                    onChange={(event) => setAdminTitle(event.currentTarget.value)}
-                    placeholder={t("image.placeholderTitle")}
+                <Stack spacing={6}>
+                  <Text size="sm" weight={600}>{t("image.importEntryLabel")}</Text>
+                  <SegmentedControl
+                    value={adminImportType}
+                    onChange={(value) => setAdminImportType(value as "case" | "collection")}
+                    data={[
+                      { label: t("image.importCaseEntry"), value: "case" },
+                      { label: t("image.importCollectionEntry"), value: "collection" },
+                    ]}
                   />
-                  <TextInput
-                    label={t("image.fieldCategory")}
-                    value={adminCategory}
-                    onChange={(event) =>
-                      setAdminCategory(event.currentTarget.value)
-                    }
-                    placeholder={t("image.placeholderCategory")}
-                  />
-                  <TextInput
-                    label={t("image.fieldPeriod")}
-                    value={adminPeriod}
-                    onChange={(event) => setAdminPeriod(event.currentTarget.value)}
-                    placeholder={t("image.placeholderPeriod")}
-                  />
-                  <NumberInput
-                    label={t("image.fieldVectors")}
-                    value={knowledgeBase.length}
-                    disabled
-                  />
-                </SimpleGrid>
+                  <Text size="sm" color="dark.1">
+                    {adminImportType === "case" ? t("image.caseFormHint") : t("image.collectionFormHint")}
+                  </Text>
+                </Stack>
 
                 <Textarea
-                  label={t("image.fieldDescription")}
-                  value={adminDescription}
-                  onChange={(event) =>
-                    setAdminDescription(event.currentTarget.value)
-                  }
-                  placeholder={t("image.placeholderDescription")}
-                  minRows={3}
+                  label={t("image.caseItemDetails")}
+                  value={adminItemDetails}
+                  onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
+                  placeholder={t("image.caseItemDetailsPlaceholder")}
+                  minRows={4}
                 />
 
-                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                  <TextInput
-                    label={t("image.caseSalePrice")}
-                    value={adminSalePrice}
-                    onChange={(event) => setAdminSalePrice(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.caseSaleTime")}
-                    value={adminSaleTime}
-                    onChange={(event) => setAdminSaleTime(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.casePlatform")}
-                    value={adminSalePlatform}
-                    onChange={(event) => setAdminSalePlatform(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.caseClientRegion")}
-                    value={adminClientRegion}
-                    onChange={(event) => setAdminClientRegion(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.caseLogisticsCost")}
-                    value={adminLogisticsCost}
-                    onChange={(event) => setAdminLogisticsCost(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.casePurchaseChannel")}
-                    value={adminPurchaseChannel}
-                    onChange={(event) => setAdminPurchaseChannel(event.currentTarget.value)}
-                  />
-                  <TextInput
-                    label={t("image.casePurchaseCost")}
-                    value={adminPurchaseCost}
-                    onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)}
-                  />
-                </SimpleGrid>
-                <Textarea
-                  label={t("image.caseRiskAdvice")}
-                  value={adminRiskAdvice}
-                  onChange={(event) => setAdminRiskAdvice(event.currentTarget.value)}
-                  minRows={2}
-                />
+                {adminImportType === "case" ? (
+                  <>
+                    <Text size="sm" color="dark.1">{t("image.caseGalleryHint")}</Text>
+                    <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
+                      <TextInput label={t("image.caseId")} value={adminCaseId} onChange={(event) => setAdminCaseId(event.currentTarget.value)} />
+                      <TextInput label={t("image.caseSalePrice")} value={adminSalePrice} onChange={(event) => setAdminSalePrice(event.currentTarget.value)} />
+                      <TextInput label={t("image.caseSaleTime")} value={adminSaleTime} onChange={(event) => setAdminSaleTime(event.currentTarget.value)} />
+                      <TextInput label={t("image.casePlatform")} value={adminSalePlatform} onChange={(event) => setAdminSalePlatform(event.currentTarget.value)} />
+                      <TextInput label={t("image.caseClientRegion")} value={adminClientRegion} onChange={(event) => setAdminClientRegion(event.currentTarget.value)} />
+                      <TextInput label={t("image.caseLogisticsCost")} value={adminLogisticsCost} onChange={(event) => setAdminLogisticsCost(event.currentTarget.value)} />
+                      <TextInput label={t("image.casePurchaseChannel")} value={adminPurchaseChannel} onChange={(event) => setAdminPurchaseChannel(event.currentTarget.value)} />
+                      <TextInput label={t("image.casePurchaseCost")} value={adminPurchaseCost} onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)} />
+                    </SimpleGrid>
+                    <Textarea label={t("image.caseRiskAdvice")} value={adminRiskAdvice} onChange={(event) => setAdminRiskAdvice(event.currentTarget.value)} minRows={2} />
+                    {adminGalleryUrls.length ? (
+                      <SimpleGrid cols={3} breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
+                        {adminGalleryUrls.map((imageUrl, index) => (
+                          <Box key={`${imageUrl}-${index}`} className={classes.galleryThumbFrame}>
+                            <Box component="img" src={imageUrl} alt={`case-gallery-${index + 1}`} className={classes.containedImage} />
+                          </Box>
+                        ))}
+                      </SimpleGrid>
+                    ) : null}
+                  </>
+                ) : null}
 
                 <Group position="apart">
                   <Button
@@ -903,141 +961,229 @@ export default function ImageSearchExperience() {
                   {manageMessage}
                 </Alert>
               ) : null}
-              {knowledgeBase.map((artwork) => {
-                const isImported = artwork.id.startsWith("imported-");
-                const isEditing = editingArtworkId === artwork.id;
+              <Stack spacing="xs">
+                <Group position="apart">
+                  <Title order={3}>{t("image.importCaseEntry")}</Title>
+                  <Badge color="yellow" variant="filled">{caseKnowledgeBase.length}</Badge>
+                </Group>
+                {caseKnowledgeBase.map((artwork) => {
+                  const isImported = artwork.id.startsWith("imported-");
+                  const isEditing = editingArtworkId === artwork.id;
 
-                return (
-                  <Paper key={artwork.id} p="md" className={classes.resultCard}>
-                    <Stack spacing="md">
-                      <Group align="center" position="apart" noWrap>
-                        <Group align="center" noWrap>
-                          <Image
-                            src={artwork.image}
-                            alt={getArtworkTitle(artwork, locale)}
-                            width={112}
-                            height={88}
-                            radius="sm"
-                            fit="cover"
-                          />
-                          <Stack spacing={4}>
-                            <Group spacing="xs">
-                              <Badge color="violet.7" variant="outline">
-                                {getArtworkCategory(artwork, locale)}
-                              </Badge>
-                              <Badge
-                                color={
-                                  getListingType(artwork) === "product"
-                                    ? "green"
-                                    : "blue"
-                                }
-                              >
-                                {getListingType(artwork) === "product"
-                                  ? t("image.productBadge")
-                                  : t("image.collectionBadge")}
-                              </Badge>
-                              {isImported ? (
-                                <Badge color="violet.9">{t("image.imported")}</Badge>
-                              ) : (
-                                <Badge color="gray">{t("image.seeded")}</Badge>
-                              )}
-                            </Group>
-                            <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
-                            <Text size="sm" color="dark.1">
-                              {getArtworkPeriod(artwork, locale)}
-                            </Text>
-                          </Stack>
-                        </Group>
-                        <Group spacing="xs" noWrap>
-                          <Button
-                            size="xs"
-                            variant="light"
-                            leftIcon={<IconEdit size={14} />}
-                            onClick={() => handleStartEdit(artwork)}
-                            disabled={!isImported}
-                          >
-                            {t("image.editItem")}
-                          </Button>
-                          <Button
-                            size="xs"
-                            color="red"
-                            variant="outline"
-                            leftIcon={<IconTrash size={14} />}
-                            onClick={() => handleDeleteImportedArtwork(artwork.id)}
-                            disabled={!isImported}
-                          >
-                            {t("image.deleteItem")}
-                          </Button>
-                        </Group>
-                      </Group>
-
-                      {isEditing ? (
-                        <Stack spacing="sm">
-                          <SimpleGrid
-                            cols={2}
-                            breakpoints={[{ maxWidth: "sm", cols: 1 }]}
-                          >
-                            <TextInput
-                              label={t("image.fieldTitle")}
-                              value={editTitle}
-                              onChange={(event) =>
-                                setEditTitle(event.currentTarget.value)
-                              }
-                            />
-                            <TextInput
-                              label={t("image.fieldCategory")}
-                              value={editCategory}
-                              onChange={(event) =>
-                                setEditCategory(event.currentTarget.value)
-                              }
-                            />
-                            <TextInput
-                              label={t("image.fieldPeriod")}
-                              value={editPeriod}
-                              onChange={(event) =>
-                                setEditPeriod(event.currentTarget.value)
-                              }
-                            />
-                          </SimpleGrid>
-                          <Textarea
-                            label={t("image.fieldDescription")}
-                            value={editDescription}
-                            onChange={(event) =>
-                              setEditDescription(event.currentTarget.value)
-                            }
-                            minRows={2}
-                          />
-                          <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                            <TextInput label={t("image.caseSalePrice")} value={editSalePrice} onChange={(event) => setEditSalePrice(event.currentTarget.value)} />
-                            <TextInput label={t("image.caseSaleTime")} value={editSaleTime} onChange={(event) => setEditSaleTime(event.currentTarget.value)} />
-                            <TextInput label={t("image.casePlatform")} value={editSalePlatform} onChange={(event) => setEditSalePlatform(event.currentTarget.value)} />
-                            <TextInput label={t("image.caseClientRegion")} value={editClientRegion} onChange={(event) => setEditClientRegion(event.currentTarget.value)} />
-                            <TextInput label={t("image.caseLogisticsCost")} value={editLogisticsCost} onChange={(event) => setEditLogisticsCost(event.currentTarget.value)} />
-                            <TextInput label={t("image.casePurchaseChannel")} value={editPurchaseChannel} onChange={(event) => setEditPurchaseChannel(event.currentTarget.value)} />
-                            <TextInput label={t("image.casePurchaseCost")} value={editPurchaseCost} onChange={(event) => setEditPurchaseCost(event.currentTarget.value)} />
-                          </SimpleGrid>
-                          <Textarea label={t("image.caseRiskAdvice")} value={editRiskAdvice} onChange={(event) => setEditRiskAdvice(event.currentTarget.value)} minRows={2} />
-                          <Group position="right">
+                  return (
+                    <Paper key={artwork.id} p="md" className={classes.resultCard}>
+                      <Stack spacing="md">
+                        <Group align="center" position="apart" noWrap>
+                          <Group align="center" noWrap>
+                            <Box className={classes.thumbFrame}>
+                              <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
+                            </Box>
+                            <Stack spacing={4}>
+                              <Group spacing="xs">
+                                <Badge color="yellow" variant="filled">
+                                  {t("image.importCaseEntry")}
+                                </Badge>
+                                {isImported ? (
+                                  <Badge color="violet.9">{t("image.imported")}</Badge>
+                                ) : (
+                                  <Badge color="gray">{t("image.seeded")}</Badge>
+                                )}
+                              </Group>
+                              <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
+                              <Text size="sm" color="dark.1">
+                                {artwork.caseRecord?.saleTime || getArtworkPeriod(artwork, locale)}
+                              </Text>
+                            </Stack>
+                          </Group>
+                          <Group spacing="xs" noWrap>
                             <Button
-                              variant="subtle"
-                              leftIcon={<IconX size={16} />}
-                              onClick={resetEditForm}
+                              size="xs"
+                              variant="light"
+                              leftIcon={<IconEdit size={14} />}
+                              onClick={() => handleStartEdit(artwork)}
                             >
-                              {t("image.cancelEdit")}
+                              {t("image.editItem")}
                             </Button>
                             <Button
-                              leftIcon={<IconCheck size={16} />}
-                              onClick={() => handleSaveEdit(artwork)}
+                              size="xs"
+                              color="red"
+                              variant="outline"
+                              leftIcon={<IconTrash size={14} />}
+                              onClick={() => handleDeleteImportedArtwork(artwork.id)}
                             >
-                              {t("image.saveEdit")}
+                              {t("image.deleteItem")}
                             </Button>
                           </Group>
-                        </Stack>
-                      ) : null}
-                    </Stack>
-                  </Paper>
-                );
-              })}
+                        </Group>
+
+                        {isEditing ? (
+                          <Stack spacing="sm">
+                            <Stack spacing={6}>
+                              <Text size="sm" weight={600}>{t("image.importEntryLabel")}</Text>
+                              <SegmentedControl
+                                value={editImportType}
+                                onChange={(value) => setEditImportType(value as "case" | "collection")}
+                                data={[
+                                  { label: t("image.importCaseEntry"), value: "case" },
+                                  { label: t("image.importCollectionEntry"), value: "collection" },
+                                ]}
+                              />
+                            </Stack>
+                            <Textarea
+                              label={t("image.caseItemDetails")}
+                              value={editItemDetails}
+                              onChange={(event) => setEditItemDetails(event.currentTarget.value)}
+                              minRows={3}
+                            />
+                            {editImportType === "case" ? (
+                              <>
+                                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
+                                  <TextInput label={t("image.caseId")} value={editCaseId} onChange={(event) => setEditCaseId(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseSalePrice")} value={editSalePrice} onChange={(event) => setEditSalePrice(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseSaleTime")} value={editSaleTime} onChange={(event) => setEditSaleTime(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePlatform")} value={editSalePlatform} onChange={(event) => setEditSalePlatform(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseClientRegion")} value={editClientRegion} onChange={(event) => setEditClientRegion(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseLogisticsCost")} value={editLogisticsCost} onChange={(event) => setEditLogisticsCost(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePurchaseChannel")} value={editPurchaseChannel} onChange={(event) => setEditPurchaseChannel(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePurchaseCost")} value={editPurchaseCost} onChange={(event) => setEditPurchaseCost(event.currentTarget.value)} />
+                                </SimpleGrid>
+                                <Textarea label={t("image.caseRiskAdvice")} value={editRiskAdvice} onChange={(event) => setEditRiskAdvice(event.currentTarget.value)} minRows={2} />
+                              </>
+                            ) : null}
+                            <Group position="right">
+                              <Button
+                                variant="subtle"
+                                leftIcon={<IconX size={16} />}
+                                onClick={resetEditForm}
+                              >
+                                {t("image.cancelEdit")}
+                              </Button>
+                              <Button
+                                leftIcon={<IconCheck size={16} />}
+                                onClick={() => handleSaveEdit(artwork)}
+                              >
+                                {t("image.saveEdit")}
+                              </Button>
+                            </Group>
+                          </Stack>
+                        ) : null}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+
+              <Stack spacing="xs">
+                <Group position="apart">
+                  <Title order={3}>{t("image.importCollectionEntry")}</Title>
+                  <Badge color="blue" variant="filled">{displayKnowledgeBase.length}</Badge>
+                </Group>
+                {displayKnowledgeBase.map((artwork) => {
+                  const isImported = artwork.id.startsWith("imported-");
+                  const isEditing = editingArtworkId === artwork.id;
+
+                  return (
+                    <Paper key={artwork.id} p="md" className={classes.resultCard}>
+                      <Stack spacing="md">
+                        <Group align="center" position="apart" noWrap>
+                          <Group align="center" noWrap>
+                            <Box className={classes.thumbFrame}>
+                              <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
+                            </Box>
+                            <Stack spacing={4}>
+                              <Group spacing="xs">
+                                <Badge color="blue" variant="filled">
+                                  {t("image.importCollectionEntry")}
+                                </Badge>
+                                {isImported ? (
+                                  <Badge color="violet.9">{t("image.imported")}</Badge>
+                                ) : (
+                                  <Badge color="gray">{t("image.seeded")}</Badge>
+                                )}
+                              </Group>
+                              <Text weight={700}>{getArtworkTitle(artwork, locale)}</Text>
+                              <Text size="sm" color="dark.1">
+                                {getArtworkPeriod(artwork, locale)}
+                              </Text>
+                            </Stack>
+                          </Group>
+                          <Group spacing="xs" noWrap>
+                            <Button
+                              size="xs"
+                              variant="light"
+                              leftIcon={<IconEdit size={14} />}
+                              onClick={() => handleStartEdit(artwork)}
+                            >
+                              {t("image.editItem")}
+                            </Button>
+                            <Button
+                              size="xs"
+                              color="red"
+                              variant="outline"
+                              leftIcon={<IconTrash size={14} />}
+                              onClick={() => handleDeleteImportedArtwork(artwork.id)}
+                            >
+                              {t("image.deleteItem")}
+                            </Button>
+                          </Group>
+                        </Group>
+
+                        {isEditing ? (
+                          <Stack spacing="sm">
+                            <Stack spacing={6}>
+                              <Text size="sm" weight={600}>{t("image.importEntryLabel")}</Text>
+                              <SegmentedControl
+                                value={editImportType}
+                                onChange={(value) => setEditImportType(value as "case" | "collection")}
+                                data={[
+                                  { label: t("image.importCaseEntry"), value: "case" },
+                                  { label: t("image.importCollectionEntry"), value: "collection" },
+                                ]}
+                              />
+                            </Stack>
+                            <Textarea
+                              label={t("image.caseItemDetails")}
+                              value={editItemDetails}
+                              onChange={(event) => setEditItemDetails(event.currentTarget.value)}
+                              minRows={3}
+                            />
+                            {editImportType === "case" ? (
+                              <>
+                                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}> 
+                                  <TextInput label={t("image.caseId")} value={editCaseId} onChange={(event) => setEditCaseId(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseSalePrice")} value={editSalePrice} onChange={(event) => setEditSalePrice(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseSaleTime")} value={editSaleTime} onChange={(event) => setEditSaleTime(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePlatform")} value={editSalePlatform} onChange={(event) => setEditSalePlatform(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseClientRegion")} value={editClientRegion} onChange={(event) => setEditClientRegion(event.currentTarget.value)} />
+                                  <TextInput label={t("image.caseLogisticsCost")} value={editLogisticsCost} onChange={(event) => setEditLogisticsCost(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePurchaseChannel")} value={editPurchaseChannel} onChange={(event) => setEditPurchaseChannel(event.currentTarget.value)} />
+                                  <TextInput label={t("image.casePurchaseCost")} value={editPurchaseCost} onChange={(event) => setEditPurchaseCost(event.currentTarget.value)} />
+                                </SimpleGrid>
+                                <Textarea label={t("image.caseRiskAdvice")} value={editRiskAdvice} onChange={(event) => setEditRiskAdvice(event.currentTarget.value)} minRows={2} />
+                              </>
+                            ) : null}
+                            <Group position="right">
+                              <Button
+                                variant="subtle"
+                                leftIcon={<IconX size={16} />}
+                                onClick={resetEditForm}
+                              >
+                                {t("image.cancelEdit")}
+                              </Button>
+                              <Button
+                                leftIcon={<IconCheck size={16} />}
+                                onClick={() => handleSaveEdit(artwork)}
+                              >
+                                {t("image.saveEdit")}
+                              </Button>
+                            </Group>
+                          </Stack>
+                        ) : null}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
             </Stack>
           </SimpleGrid>
         ) : (
@@ -1079,12 +1225,7 @@ export default function ImageSearchExperience() {
 
               <Box className={classes.previewFrame}>
                 {previewUrl ? (
-                  <Image
-                    src={previewUrl}
-                    alt="Uploaded search reference"
-                    height={320}
-                    fit="contain"
-                  />
+                  <Box component="img" src={previewUrl} alt="Uploaded search reference" className={classes.containedImage} />
                 ) : (
                   <Stack spacing="sm" className={classes.emptyPreview}>
                     <IconPhotoSearch size={44} color={theme.colors.violet[7]} />
@@ -1204,13 +1345,9 @@ export default function ImageSearchExperience() {
                   spacing="md"
                   breakpoints={[{ maxWidth: "sm", cols: 1, spacing: "sm" }]}
                 >
-                  <Image
-                    src={artwork.image}
-                    alt={getArtworkTitle(artwork, locale)}
-                    height={190}
-                    radius="sm"
-                    fit="cover"
-                  />
+                  <Box className={classes.resultImageFrame}>
+                  <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
+                  </Box>
                   <Stack spacing="xs">
                     <Group spacing="xs" position="apart">
                       <Group spacing="xs">

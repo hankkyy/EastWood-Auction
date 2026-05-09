@@ -42,18 +42,30 @@ const getSaturation = (red: number, green: number, blue: number) => {
   return max === 0 ? 0 : (max - min) / max;
 };
 
-const loadImage = (file: File): Promise<HTMLImageElement> =>
+const loadImageFromSource = (src: string, revokeOnLoad = false): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const image = new Image();
-    const previewUrl = URL.createObjectURL(file);
+    image.crossOrigin = "anonymous";
 
-    image.onload = () => resolve(image);
+    image.onload = () => {
+      if (revokeOnLoad) {
+        URL.revokeObjectURL(src);
+      }
+      resolve(image);
+    };
     image.onerror = () => {
-      URL.revokeObjectURL(previewUrl);
+      if (revokeOnLoad) {
+        URL.revokeObjectURL(src);
+      }
       reject(new Error("Unable to read the selected image."));
     };
-    image.src = previewUrl;
+    image.src = src;
   });
+
+const loadImage = (file: File): Promise<HTMLImageElement> => {
+  const previewUrl = URL.createObjectURL(file);
+  return loadImageFromSource(previewUrl, true);
+};
 
 const getPixels = (image: HTMLImageElement, size: number) => {
   const canvas = document.createElement("canvas");
@@ -90,6 +102,21 @@ const histogramSimilarity = (left: number[], right: number[]) => {
   return clamp01(intersection);
 };
 
+const vectorArraySimilarity = (left?: number[], right?: number[]) => {
+  if (!left?.length || !right?.length) {
+    return null;
+  }
+
+  const length = Math.min(left.length, right.length);
+  let distance = 0;
+
+  for (let index = 0; index < length; index += 1) {
+    distance += Math.abs(left[index] - right[index]);
+  }
+
+  return clamp01(1 - distance / length);
+};
+
 const hammingSimilarity = (left: string, right: string) => {
   const length = Math.min(left.length, right.length);
 
@@ -116,12 +143,39 @@ const vectorSimilarity = (
 ) => {
   const distance = left.reduce((total, value, index) => {
     const diff = value - right[index];
-    const weight = index <= 2 ? 0.45 : 1;
+    const weight = index <= 2 ? 0.3 : 1;
 
     return total + diff * diff * weight;
   }, 0);
 
-  return clamp01(1 - Math.sqrt(distance) / 1.5);
+  return clamp01(1 - Math.sqrt(distance) / 1.45);
+};
+
+const sampleBorderBackground = (pixels: Uint8ClampedArray, size: number) => {
+  let red = 0;
+  let green = 0;
+  let blue = 0;
+  let count = 0;
+
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      if (x > 1 && x < size - 2 && y > 1 && y < size - 2) {
+        continue;
+      }
+
+      const index = (y * size + x) * 4;
+      red += pixels[index] / 255;
+      green += pixels[index + 1] / 255;
+      blue += pixels[index + 2] / 255;
+      count += 1;
+    }
+  }
+
+  return {
+    red: red / Math.max(1, count),
+    green: green / Math.max(1, count),
+    blue: blue / Math.max(1, count),
+  };
 };
 
 const buildSignature = (
@@ -130,13 +184,21 @@ const buildSignature = (
 ): ArtworkImageSignature => {
   const colorBins = new Array(48).fill(0);
   const edgeBins = new Array(16).fill(0);
-  const grayValues: number[] = [];
+  const orientationBins = new Array(8).fill(0);
+  const luminanceGrid = new Array(64).fill(0);
+  const rowProfile = new Array(16).fill(0);
+  const columnProfile = new Array(16).fill(0);
+  const grayValues: number[] = new Array(size * size).fill(0);
   const edgeMagnitudes: number[] = [];
+  const background = sampleBorderBackground(pixels, size);
   let minX = size;
   let minY = size;
   let maxX = 0;
   let maxY = 0;
   let edgeCount = 0;
+  let foregroundCount = 0;
+  let centroidSumX = 0;
+  let centroidSumY = 0;
 
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -145,7 +207,7 @@ const buildSignature = (
       const green = pixels[index + 1] / 255;
       const blue = pixels[index + 2] / 255;
       const gray = getGray(pixels, index);
-      grayValues.push(gray);
+      grayValues[y * size + x] = gray;
 
       const redBin = Math.min(15, Math.floor(red * 16));
       const greenBin = Math.min(15, Math.floor(green * 16));
@@ -154,30 +216,61 @@ const buildSignature = (
       colorBins[16 + greenBin] += 1;
       colorBins[32 + blueBin] += 1;
 
-      if (x > 0 && y > 0 && x < size - 1 && y < size - 1) {
-        const left = grayValues[y * size + x - 1] ?? gray;
-        const up = grayValues[(y - 1) * size + x] ?? gray;
-        const magnitude = Math.abs(gray - left) + Math.abs(gray - up);
-        edgeMagnitudes.push(magnitude);
+      const gridX = Math.min(7, Math.floor((x / size) * 8));
+      const gridY = Math.min(7, Math.floor((y / size) * 8));
+      luminanceGrid[gridY * 8 + gridX] += gray;
 
-        if (magnitude > 0.12) {
-          const cellX = Math.min(3, Math.floor((x / size) * 4));
-          const cellY = Math.min(3, Math.floor((y / size) * 4));
-          edgeBins[cellY * 4 + cellX] += magnitude;
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
-          edgeCount += 1;
-        }
+      const colorDistance = Math.sqrt(
+        (red - background.red) ** 2 +
+        (green - background.green) ** 2 +
+        (blue - background.blue) ** 2
+      );
+      const isForeground = colorDistance > 0.14 || Math.abs(gray - ((background.red + background.green + background.blue) / 3)) > 0.08;
+
+      if (isForeground) {
+        const profileX = Math.min(15, Math.floor((x / size) * 16));
+        const profileY = Math.min(15, Math.floor((y / size) * 16));
+        rowProfile[profileY] += 1;
+        columnProfile[profileX] += 1;
+        centroidSumX += x;
+        centroidSumY += y;
+        foregroundCount += 1;
+      }
+    }
+  }
+
+  for (let y = 1; y < size - 1; y += 1) {
+    for (let x = 1; x < size - 1; x += 1) {
+      const grayLeft = grayValues[y * size + (x - 1)];
+      const grayRight = grayValues[y * size + (x + 1)];
+      const grayUp = grayValues[(y - 1) * size + x];
+      const grayDown = grayValues[(y + 1) * size + x];
+      const gradX = grayRight - grayLeft;
+      const gradY = grayDown - grayUp;
+      const magnitude = Math.sqrt(gradX ** 2 + gradY ** 2);
+
+      edgeMagnitudes.push(magnitude);
+
+      if (magnitude > 0.08) {
+        const cellX = Math.min(3, Math.floor((x / size) * 4));
+        const cellY = Math.min(3, Math.floor((y / size) * 4));
+        edgeBins[cellY * 4 + cellX] += magnitude;
+
+        const angle = (Math.atan2(gradY, gradX) + Math.PI) / (2 * Math.PI);
+        const orientationBin = Math.min(7, Math.floor(angle * 8));
+        orientationBins[orientationBin] += magnitude;
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+        edgeCount += 1;
       }
     }
   }
 
   const averageGray = grayValues.reduce((sum, value) => sum + value, 0) / grayValues.length;
-  const averageHash = grayValues
-    .map((value) => (value >= averageGray ? "1" : "0"))
-    .join("");
+  const averageHash = grayValues.map((value) => (value >= averageGray ? "1" : "0")).join("");
 
   const differenceHash: string[] = [];
   for (let y = 0; y < size; y += 1) {
@@ -188,12 +281,17 @@ const buildSignature = (
     }
   }
 
+  const cellSize = (size / 8) * (size / 8);
+  const luminanceGridNormalized = luminanceGrid.map((value) => value / cellSize);
+  const rowProfileNormalized = normalizeVector(rowProfile);
+  const columnProfileNormalized = normalizeVector(columnProfile);
   const objectWidth = Math.max(1, maxX - minX + 1);
   const objectHeight = Math.max(1, maxY - minY + 1);
   const hasObjectBounds = edgeCount > 8;
-  const texture =
-    edgeMagnitudes.reduce((sum, value) => sum + value, 0) /
-    Math.max(1, edgeMagnitudes.length);
+  const texture = edgeMagnitudes.reduce((sum, value) => sum + value, 0) / Math.max(1, edgeMagnitudes.length);
+  const foregroundRatio = foregroundCount / Math.max(1, size * size);
+  const centroidX = foregroundCount ? centroidSumX / foregroundCount / size : 0.5;
+  const centroidY = foregroundCount ? centroidSumY / foregroundCount / size : 0.5;
 
   return {
     colorHistogram: normalizeVector(colorBins),
@@ -203,6 +301,13 @@ const buildSignature = (
     objectAspectRatio: hasObjectBounds ? objectWidth / objectHeight : 1,
     edgeDensity: edgeCount / Math.max(1, edgeMagnitudes.length),
     texture,
+    luminanceGrid: luminanceGridNormalized,
+    edgeOrientationHistogram: normalizeVector(orientationBins),
+    rowProfile: rowProfileNormalized,
+    columnProfile: columnProfileNormalized,
+    foregroundRatio,
+    centroidX,
+    centroidY,
   };
 };
 
@@ -210,48 +315,116 @@ const signatureSimilarity = (
   query: ArtworkImageSignature,
   candidate: ArtworkImageSignature
 ) => {
-  const color = histogramSimilarity(query.colorHistogram, candidate.colorHistogram);
-  const edge = histogramSimilarity(query.edgeHistogram, candidate.edgeHistogram);
-  const averageHash = hammingSimilarity(query.averageHash, candidate.averageHash);
-  const differenceHash = hammingSimilarity(query.differenceHash, candidate.differenceHash);
-  const aspect = numericSimilarity(
-    Math.log(query.objectAspectRatio),
-    Math.log(candidate.objectAspectRatio),
-    1.05
-  );
-  const density = numericSimilarity(query.edgeDensity, candidate.edgeDensity, 0.45);
-  const texture = numericSimilarity(query.texture, candidate.texture, 0.28);
+  const weightedScores: Array<{ score: number | null; weight: number }> = [
+    { score: vectorArraySimilarity(query.rowProfile, candidate.rowProfile), weight: 0.18 },
+    { score: vectorArraySimilarity(query.columnProfile, candidate.columnProfile), weight: 0.18 },
+    { score: histogramSimilarity(query.edgeHistogram, candidate.edgeHistogram), weight: 0.12 },
+    { score: vectorArraySimilarity(query.edgeOrientationHistogram, candidate.edgeOrientationHistogram), weight: 0.14 },
+    { score: vectorArraySimilarity(query.luminanceGrid, candidate.luminanceGrid), weight: 0.1 },
+    { score: hammingSimilarity(query.differenceHash, candidate.differenceHash), weight: 0.08 },
+    { score: hammingSimilarity(query.averageHash, candidate.averageHash), weight: 0.08 },
+    {
+      score: numericSimilarity(
+        Math.log(query.objectAspectRatio),
+        Math.log(candidate.objectAspectRatio),
+        0.9
+      ),
+      weight: 0.05,
+    },
+    {
+      score:
+        query.centroidX !== undefined &&
+        query.centroidY !== undefined &&
+        candidate.centroidX !== undefined &&
+        candidate.centroidY !== undefined
+          ? (
+              numericSimilarity(query.centroidX, candidate.centroidX, 0.35) * 0.5 +
+              numericSimilarity(query.centroidY, candidate.centroidY, 0.35) * 0.5
+            )
+          : null,
+      weight: 0.05,
+    },
+    {
+      score:
+        query.foregroundRatio !== undefined && candidate.foregroundRatio !== undefined
+          ? numericSimilarity(query.foregroundRatio, candidate.foregroundRatio, 0.35)
+          : null,
+      weight: 0.04,
+    },
+    {
+      score: numericSimilarity(query.texture, candidate.texture, 0.22),
+      weight: 0.03,
+    },
+    { score: histogramSimilarity(query.colorHistogram, candidate.colorHistogram), weight: 0.03 },
+  ];
 
-  return (
-    edge * 0.28 +
-    differenceHash * 0.22 +
-    averageHash * 0.16 +
-    aspect * 0.12 +
-    density * 0.08 +
-    texture * 0.08 +
-    color * 0.06
-  );
+  let total = 0;
+  let totalWeight = 0;
+  for (const part of weightedScores) {
+    if (part.score === null) {
+      continue;
+    }
+    total += part.score * part.weight;
+    totalWeight += part.weight;
+  }
+
+  const normalizedScore = totalWeight > 0 ? total / totalWeight : 0;
+  const shapeCore = [
+    vectorArraySimilarity(query.rowProfile, candidate.rowProfile),
+    vectorArraySimilarity(query.columnProfile, candidate.columnProfile),
+    numericSimilarity(
+      Math.log(query.objectAspectRatio),
+      Math.log(candidate.objectAspectRatio),
+      0.9
+    ),
+  ].filter((value): value is number => value !== null);
+  const shapeAgreement = shapeCore.length
+    ? shapeCore.reduce((sum, value) => sum + value, 0) / shapeCore.length
+    : normalizedScore;
+  const shapeGate = 0.3 + shapeAgreement * 0.7;
+
+  return {
+    score: normalizedScore * shapeGate,
+    shapeAgreement,
+  };
 };
 
-export const readImageAsDataUrl = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-
-      reject(new Error("Unable to store the selected image."));
-    };
-    reader.onerror = () => reject(new Error("Unable to store the selected image."));
-    reader.readAsDataURL(file);
-  });
-
-export const extractImageFeature = async (file: File): Promise<ImageFeature> => {
+export const readImageAsDataUrl = async (file: File): Promise<string> => {
   const image = await loadImage(file);
-  const size = 32;
+  const maxDimension = 1280;
+  const scale = Math.min(
+    1,
+    maxDimension / Math.max(image.naturalWidth || image.width, image.naturalHeight || image.height)
+  );
+  const width = Math.max(1, Math.round((image.naturalWidth || image.width) * scale));
+  const height = Math.max(1, Math.round((image.naturalHeight || image.height) * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Unable to store the selected image.");
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  const candidates = [0.82, 0.72, 0.6, 0.5];
+
+  for (const quality of candidates) {
+    const encoded = canvas.toDataURL("image/jpeg", quality);
+    if (encoded.length <= 1_600_000 || quality === candidates[candidates.length - 1]) {
+      return encoded;
+    }
+  }
+
+  throw new Error("Unable to store the selected image.");
+};
+
+const buildImageFeature = (image: HTMLImageElement): ImageFeature => {
+  const size = 48;
   const pixels = getPixels(image, size);
   let red = 0;
   let green = 0;
@@ -304,6 +477,16 @@ export const extractImageFeature = async (file: File): Promise<ImageFeature> => 
   };
 };
 
+export const extractImageFeature = async (file: File): Promise<ImageFeature> => {
+  const image = await loadImage(file);
+  return buildImageFeature(image);
+};
+
+export const extractImageFeatureFromUrl = async (src: string): Promise<ImageFeature> => {
+  const image = await loadImageFromSource(src);
+  return buildImageFeature(image);
+};
+
 export const searchSimilarArtworks = (
   queryFeature: ImageFeature | ArtworkFeatureVector,
   collection: Artwork[]
@@ -315,21 +498,26 @@ export const searchSimilarArtworks = (
 
   return collection
     .map((artwork) => {
-      const legacyScore = vectorSimilarity(queryVector, artwork.featureVector);
-      const advancedScore =
+      const baseScore = vectorSimilarity(queryVector, artwork.featureVector);
+      const advanced =
         querySignature && artwork.imageSignature
           ? signatureSimilarity(querySignature, artwork.imageSignature)
           : null;
-      const score = advancedScore === null
-        ? Math.min(legacyScore * 100, 62)
-        : advancedScore * 88 + legacyScore * 12;
+
+      let score = advanced === null ? baseScore * 58 : advanced.score * 94 + baseScore * 6;
+
+      if (advanced && advanced.shapeAgreement < 0.38) {
+        score = Math.min(score, 42);
+      } else if (advanced && advanced.shapeAgreement < 0.5) {
+        score = Math.min(score, 58);
+      }
 
       return {
         artwork,
         score: Math.round(clampScore(score)),
       };
     })
-    .sort((a, b) => b.score - a.score);
+    .sort((left, right) => right.score - left.score);
 };
 
 export const getFeatureInsights = (

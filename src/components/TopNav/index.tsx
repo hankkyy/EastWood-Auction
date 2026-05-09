@@ -104,7 +104,7 @@ const mockdata = [
   },
   {
     labelKey: "nav.support",
-    link: "/support",
+    link: "/cases",
   },
   {
     labelKey: "nav.collections",
