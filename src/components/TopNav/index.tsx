@@ -13,13 +13,23 @@ import {
   Stack,
   Text,
   UnstyledButton,
+  Avatar,
+  Menu,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
+import dynamic from "next/dynamic";
+
+// 动态导入认证相关组件，禁用 SSR
+const AuthModal = dynamic(() => import("@/components/AuthModal"), { ssr: false });
+const ProfileModal = dynamic(() => import("@/components/ProfileModal"), { ssr: false });
+
+// 动态导入 useAuth hook
+const useAuthModule = typeof window !== "undefined" ? require("@/hooks/useAuth") : null;
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -119,9 +129,22 @@ const mockdata = [
 export default function TopNav() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
+  const [authModalOpened, { open: openAuthModal, close: closeAuthModal }] =
+    useDisclosure(false);
+  const [profileModalOpened, { open: openProfileModal, close: closeProfileModal }] =
+    useDisclosure(false);
+  
   const { classes, cx, theme } = useStyles();
   const router = useRouter();
   const { t } = useI18n();
+  
+  // 仅在客户端使用 useAuth
+  const { user, loading, logout, isAdmin } = useAuthModule?.useAuth?.() || {
+    user: null,
+    loading: false,
+    logout: async () => {},
+    isAdmin: false,
+  };
 
   const urlResolver = (url: string): boolean => {
     return router.pathname === url;
@@ -143,6 +166,75 @@ export default function TopNav() {
       {t(item.labelKey)}
     </Button>
   ));
+
+  // 用户菜单渲染
+  const renderUserMenu = () => {
+    // 加载中状态：显示占位符，避免 Hydration 错误
+    if (loading) {
+      return (
+        <Avatar
+          color="gray"
+          radius="xl"
+          size="md"
+          sx={{ cursor: "default", opacity: 0.5 }}
+        >
+          ...
+        </Avatar>
+      );
+    }
+
+    if (!user) {
+      return (
+        <Button onClick={openAuthModal} variant="filled" color="violet">
+          登录 / 注册
+        </Button>
+      );
+    }
+
+    // 已登录，显示用户头像和菜单
+    const initials = user.email
+      ? user.email.substring(0, 2).toUpperCase()
+      : "U";
+    const avatarColor = isAdmin ? "red" : "blue";
+
+    return (
+      <Menu position="bottom-end" withinPortal>
+        <Menu.Target>
+          <UnstyledButton>
+            <Avatar
+              color={avatarColor}
+              radius="xl"
+              size="md"
+              sx={{ cursor: "pointer" }}
+            >
+              {initials}
+            </Avatar>
+          </UnstyledButton>
+        </Menu.Target>
+
+        <Menu.Dropdown>
+          <Menu.Label>
+            {user.email}
+            {isAdmin && (
+              <Text size="xs" color="red" weight={600}>
+                角色: admin
+              </Text>
+            )}
+          </Menu.Label>
+          <Menu.Item onClick={openProfileModal}>个人资料</Menu.Item>
+          {isAdmin && (
+            <Menu.Item component={Link} href="/image-search">
+              管理后台
+            </Menu.Item>
+          )}
+          <Menu.Divider />
+          <Menu.Item color="red" onClick={() => logout()}>
+            退出登录
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    );
+  };
 
   return (
     <Box>
@@ -171,6 +263,7 @@ export default function TopNav() {
             className={classes.hiddenTablet}
           >
             {links}
+            {renderUserMenu()}
           </Group>
 
           <Burger
@@ -207,9 +300,16 @@ export default function TopNav() {
             <Button variant="subtle">{t("top.joinGive")}</Button>
             <Button variant="subtle">{t("top.shop")}</Button>
             <LanguagePicker mobile />
+            {renderUserMenu()}
           </Stack>
         </ScrollArea>
       </Drawer>
+
+      {/* 认证模态框 */}
+      <AuthModal opened={authModalOpened} onClose={closeAuthModal} />
+      
+      {/* 个人资料模态框 */}
+      <ProfileModal opened={profileModalOpened} onClose={closeProfileModal} />
     </Box>
   );
 }

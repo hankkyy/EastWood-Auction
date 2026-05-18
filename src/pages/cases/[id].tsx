@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatedBox, Wrapper } from "@/layout";
-import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import {
@@ -41,7 +41,7 @@ export default function CaseDetailPage() {
   const caseId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
-    setItems(getKnowledgeBase());
+    void fetchKnowledgeBase().then(setItems);
   }, []);
 
   const item = useMemo(

@@ -1,15 +1,16 @@
 import { artworks } from "@/data/artworks";
 import type { Artwork } from "@/data/artworks";
+import {
+  isSupabaseConfigured,
+  normalizeArtwork,
+} from "@/features/image-search/artworkCloud";
 import { extractImageFeatureFromUrl } from "@/features/image-search/imageSearch";
 
 const KNOWLEDGE_BASE_KEY = "museum-art-image-knowledge-base";
 const KNOWLEDGE_BASE_OVERRIDES_KEY = "museum-art-image-knowledge-base-overrides";
 const KNOWLEDGE_BASE_DELETED_KEY = "museum-art-image-knowledge-base-deleted";
 
-const normalizeArtwork = (artwork: Artwork): Artwork => ({
-  ...artwork,
-  listingType: artwork.listingType ?? "product",
-});
+let cloudKnowledgeBaseCache: Artwork[] | null = null;
 
 const readImportedArtworks = (): Artwork[] => {
   if (typeof window === "undefined") {
@@ -70,7 +71,7 @@ const readDeletedIds = (): string[] => {
   }
 };
 
-export const getKnowledgeBase = (): Artwork[] => {
+const getLocalKnowledgeBase = (): Artwork[] => {
   const seededArtworks = artworks.map(normalizeArtwork);
 
   if (typeof window === "undefined") {
@@ -90,9 +91,23 @@ export const getKnowledgeBase = (): Artwork[] => {
   return [...mergedSeeded, ...mergedImported];
 };
 
-export const getImportedArtworks = (): Artwork[] => readImportedArtworks();
+export const getKnowledgeBase = (): Artwork[] => {
+  if (isSupabaseConfigured() && cloudKnowledgeBaseCache) {
+    return cloudKnowledgeBaseCache;
+  }
 
-const writeImportedArtworks = (artworks: Artwork[]) => {
+  return getLocalKnowledgeBase();
+};
+
+export const getImportedArtworks = (): Artwork[] => {
+  if (isSupabaseConfigured() && cloudKnowledgeBaseCache) {
+    return cloudKnowledgeBaseCache.filter((artwork) => artwork.id.startsWith("imported-"));
+  }
+
+  return readImportedArtworks();
+};
+
+const writeImportedArtworks = (nextArtworks: Artwork[]) => {
   if (typeof window === "undefined") {
     return;
   }
@@ -100,7 +115,7 @@ const writeImportedArtworks = (artworks: Artwork[]) => {
   try {
     window.localStorage.setItem(
       KNOWLEDGE_BASE_KEY,
-      JSON.stringify(artworks.map(normalizeArtwork))
+      JSON.stringify(nextArtworks.map(normalizeArtwork))
     );
   } catch (error) {
     if (error instanceof DOMException && error.name === "QuotaExceededError") {
@@ -133,41 +148,144 @@ const writeDeletedIds = (deletedIds: string[]) => {
   window.localStorage.setItem(KNOWLEDGE_BASE_DELETED_KEY, JSON.stringify(deletedIds));
 };
 
-export const saveImportedArtwork = (artwork: Artwork) => {
-  const importedArtworks = getImportedArtworks();
-  writeImportedArtworks([normalizeArtwork(artwork), ...importedArtworks]);
+export const fetchKnowledgeBase = async (): Promise<Artwork[]> => {
+  if (!isSupabaseConfigured() || typeof window === "undefined") {
+    return getLocalKnowledgeBase();
+  }
+
+  try {
+    const response = await fetch("/api/artworks");
+    const payload = (await response.json()) as {
+      artworks?: Artwork[];
+      error?: string;
+    };
+
+    if (!response.ok) {
+      throw new Error(payload.error || "Unable to load artworks.");
+    }
+
+    const nextArtworks = (payload.artworks ?? []).map(normalizeArtwork);
+    cloudKnowledgeBaseCache = nextArtworks;
+    return nextArtworks;
+  } catch {
+    return getLocalKnowledgeBase();
+  }
 };
 
-export const updateImportedArtwork = (artwork: Artwork) => {
-  if (!artwork.id.startsWith("imported-")) {
-    const overrides = readOverrides();
-    writeOverrides({
-      ...overrides,
-      [artwork.id]: normalizeArtwork(artwork),
-    });
+export const fetchImportedArtworks = async (): Promise<Artwork[]> => {
+  const allArtworks = await fetchKnowledgeBase();
+
+  if (isSupabaseConfigured()) {
+    return allArtworks.filter((artwork) => artwork.id.startsWith("imported-"));
+  }
+
+  return readImportedArtworks();
+};
+
+export const saveImportedArtwork = async (artwork: Artwork) => {
+  if (!isSupabaseConfigured() || typeof window === "undefined") {
+    const importedArtworks = getImportedArtworks();
+    writeImportedArtworks([normalizeArtwork(artwork), ...importedArtworks]);
+    return normalizeArtwork(artwork);
+  }
+
+  const response = await fetch("/api/artworks", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
+  });
+
+  const payload = (await response.json()) as {
+    artwork?: Artwork;
+    error?: string;
+  };
+
+  if (!response.ok || !payload.artwork) {
+    throw new Error(payload.error || "Unable to save artwork.");
+  }
+
+  const savedArtwork = normalizeArtwork(payload.artwork);
+  cloudKnowledgeBaseCache = [
+    savedArtwork,
+    ...(cloudKnowledgeBaseCache ?? []).filter((item) => item.id !== savedArtwork.id),
+  ];
+  return savedArtwork;
+};
+
+export const updateImportedArtwork = async (artwork: Artwork) => {
+  if (!isSupabaseConfigured() || typeof window === "undefined") {
+    if (!artwork.id.startsWith("imported-")) {
+      const overrides = readOverrides();
+      writeOverrides({
+        ...overrides,
+        [artwork.id]: normalizeArtwork(artwork),
+      });
+      return normalizeArtwork(artwork);
+    }
+
+    const importedArtworks = getImportedArtworks();
+    writeImportedArtworks(
+      importedArtworks.map((item) =>
+        item.id === artwork.id ? normalizeArtwork(artwork) : item
+      )
+    );
+    return normalizeArtwork(artwork);
+  }
+
+  const response = await fetch(`/api/artworks/${artwork.id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
+  });
+
+  const payload = (await response.json()) as {
+    artwork?: Artwork;
+    error?: string;
+  };
+
+  if (!response.ok || !payload.artwork) {
+    throw new Error(payload.error || "Unable to update artwork.");
+  }
+
+  const updatedArtwork = normalizeArtwork(payload.artwork);
+  cloudKnowledgeBaseCache = (cloudKnowledgeBaseCache ?? []).map((item) =>
+    item.id === updatedArtwork.id ? updatedArtwork : item
+  );
+  return updatedArtwork;
+};
+
+export const deleteImportedArtwork = async (artworkId: string) => {
+  if (!isSupabaseConfigured() || typeof window === "undefined") {
+    if (!artworkId.startsWith("imported-")) {
+      const deletedIds = new Set(readDeletedIds());
+      deletedIds.add(artworkId);
+      writeDeletedIds(Array.from(deletedIds));
+      return;
+    }
+
+    const importedArtworks = getImportedArtworks();
+    writeImportedArtworks(importedArtworks.filter((item) => item.id !== artworkId));
     return;
   }
 
-  const importedArtworks = getImportedArtworks();
-  writeImportedArtworks(
-    importedArtworks.map((item) =>
-      item.id === artwork.id ? normalizeArtwork(artwork) : item
-    )
+  const response = await fetch(`/api/artworks/${artworkId}`, {
+    method: "DELETE",
+  });
+
+  const payload = (await response.json()) as { ok?: boolean; error?: string };
+
+  if (!response.ok || !payload.ok) {
+    throw new Error(payload.error || "Unable to delete artwork.");
+  }
+
+  cloudKnowledgeBaseCache = (cloudKnowledgeBaseCache ?? []).filter(
+    (item) => item.id !== artworkId
   );
 };
-
-export const deleteImportedArtwork = (artworkId: string) => {
-  if (!artworkId.startsWith("imported-")) {
-    const deletedIds = new Set(readDeletedIds());
-    deletedIds.add(artworkId);
-    writeDeletedIds(Array.from(deletedIds));
-    return;
-  }
-
-  const importedArtworks = getImportedArtworks();
-  writeImportedArtworks(importedArtworks.filter((item) => item.id !== artworkId));
-};
-
 
 const needsSignatureRefresh = (artwork: Artwork) =>
   !artwork.imageSignature?.rowProfile ||
@@ -176,7 +294,7 @@ const needsSignatureRefresh = (artwork: Artwork) =>
   !artwork.imageSignature?.edgeOrientationHistogram;
 
 export const rehydrateImportedArtworkSignatures = async () => {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || isSupabaseConfigured()) {
     return false;
   }
 

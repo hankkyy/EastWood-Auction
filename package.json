@@ -21,6 +21,7 @@
     "@mantine/next": "^6.0.2",
     "@mantine/notifications": "^6.0.2",
     "@mantine/nprogress": "^6.0.2",
+    "@supabase/supabase-js": "^2.105.4",
     "@tabler/icons-react": "^2.10.0",
     "@types/node": "18.15.3",
     "@types/react": "18.0.28",
