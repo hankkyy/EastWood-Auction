@@ -16,7 +16,7 @@ import {
   FileButton,
   Group,
   Image,
-  NumberInput,
+  Loader,
   Paper,
   Select,
   SimpleGrid,
@@ -32,11 +32,13 @@ import {
   IconEdit,
   IconLock,
   IconPhoto,
+  IconPlus,
   IconStar,
   IconTrash,
   IconX,
 } from "@tabler/icons-react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, memo, useCallback } from "react";
+import { useRouter } from "next/router";
 
 const collectionCategoryOptions = [
   { value: "calligraphy", labelKey: "collections.tabCalligraphy" },
@@ -47,19 +49,39 @@ const collectionCategoryOptions = [
 ] as const;
 
 const currencyOptions = [
-  { value: "USD", label: "美元 (USD)" },
-  { value: "CNY", label: "人民币 (CNY)" },
+  { value: "USD", labelKey: "collections.currencyUSD" },
+  { value: "CNY", labelKey: "collections.currencyCNY" },
 ] as const;
 
 type CollectionsManagementProps = {
   userId?: string;
   isAdmin?: boolean;
   embedded?: boolean; // 是否作为嵌入式组件使用（移除外层容器）
+  mode?: "upload" | "manage"; // 模式：上传或管理
+  onCancel?: () => void; // 取消时的回调函数
+  onDataUpdate?: () => void; // 数据更新时的回调函数（用于通知父组件刷新）
 };
 
-export default function CollectionsManagementSection({ userId, isAdmin, embedded = false }: CollectionsManagementProps) {
-  const { t } = useI18n();
+// 辅助组件：根据 embedded 属性渲染外层容器（必须在组件外部定义，避免每次渲染重新创建）
+const OuterWrapper = ({ children, embedded }: { children: React.ReactNode; embedded?: boolean }) => {
+  if (embedded) {
+    return <>{children}</>;
+  }
+  return <Container fluid pt={80} pb={120}>{children}</Container>;
+};
+
+const CollectionsManagementSection = memo(function CollectionsManagementSection({ 
+  userId, 
+  isAdmin, 
+  embedded = false, 
+  mode = "upload",
+  onCancel,
+  onDataUpdate 
+}: CollectionsManagementProps) {
+  const { t, locale } = useI18n();
+  const router = useRouter();
   const [items, setItems] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true); // 添加加载状态
   
   // 多图片上传状态
   const [adminImages, setAdminImages] = useState<string[]>([]); // 所有图片URL数组
@@ -72,7 +94,7 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
   
   // 可售相关字段
   const [adminIsForSale, setAdminIsForSale] = useState(false);
-  const [adminPrice, setAdminPrice] = useState<number | "">("");
+  const [adminPrice, setAdminPrice] = useState<string>(""); // 改为 string 类型以支持小数点输入
   const [adminCurrency, setAdminCurrency] = useState<"USD" | "CNY">("USD");
   
   const [adminError, setAdminError] = useState<string | null>(null);
@@ -83,13 +105,50 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
   const [editItemDetails, setEditItemDetails] = useState("");
   const [editCategory, setEditCategory] = useState("misc");
   
-  // 编辑时的可售字段
+  // 编辑时的图片管理状态
+  const [editImages, setEditImages] = useState<string[]>([]);
+  const [editCoverIndex, setEditCoverIndex] = useState(0);
+  const [editNewImageFiles, setEditNewImageFiles] = useState<File[]>([]);
+  
   const [editIsForSale, setEditIsForSale] = useState(false);
-  const [editPrice, setEditPrice] = useState<number | "">("");
+  const [editPrice, setEditPrice] = useState<string>(""); // 改为 string 类型以支持小数点输入
   const [editCurrency, setEditCurrency] = useState<"USD" | "CNY">("USD");
 
+  // 使用 useCallback 缓存输入处理函数，避免每次渲染创建新函数导致焦点丢失
+  const handleCollectionIdChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setAdminCollectionId(event.currentTarget.value);
+  }, []);
+
+  const handleItemNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setAdminItemName(event.currentTarget.value);
+  }, []);
+
+  const handleItemDetailsChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setAdminItemDetails(event.currentTarget.value);
+  }, []);
+
+  const handleEditCollectionIdChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditCollectionId(event.currentTarget.value);
+  }, []);
+
+  const handleEditItemNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditItemName(event.currentTarget.value);
+  }, []);
+
+  const handleEditItemDetailsChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditItemDetails(event.currentTarget.value);
+  }, []);
+
   useEffect(() => {
-    void fetchKnowledgeBase().then(setItems);
+    setIsLoading(true);
+    void fetchKnowledgeBase()
+      .then((data) => {
+        setItems(data);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   // 根据用户角色过滤藏品列表
@@ -105,14 +164,39 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     return false;
   });
 
-  const handleAdminUpload = (files: File[] | null) => {
+  const handleAdminUpload = async (files: File[] | null) => {
     if (!files || files.length === 0) return;
     
-    // 将选择的文件转换为 URL 数组
-    const urls = files.map(file => URL.createObjectURL(file));
-    setAdminImages(urls);
-    setAdminCoverIndex(0); // 默认第一张为封面
-    setAdminError(null);
+    try {
+      // 将文件转换为 Base64 Data URL
+      const newUrls = await Promise.all(
+        files.map(file => {
+          return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+      
+      // 追加到现有图片数组（而不是替换）
+      setAdminImages(prevImages => {
+        const updatedImages = [...prevImages, ...newUrls];
+        console.log('[Collections] Updated images count:', updatedImages.length);
+        return updatedImages;
+      });
+      
+      // 如果是第一次上传，设置封面索引为 0
+      if (adminImages.length === 0) {
+        setAdminCoverIndex(0);
+      }
+      
+      setAdminError(null);
+    } catch (error) {
+      console.error('[Collections] Failed to convert images to base64:', error);
+      setAdminError("图片转换失败，请重试");
+    }
   };
 
   const handleSetCoverImage = (index: number) => {
@@ -148,6 +232,23 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     setAdminIsForSale(false);
     setAdminPrice("");
     setAdminCurrency("USD");
+    setAdminError(null);
+    setManageMessage(null);
+  };
+
+  const handleCancel = () => {
+    resetForm();
+    if (onCancel) {
+      // 如果提供了 onCancel 回调，使用它（嵌入式模式）
+      onCancel();
+    } else {
+      // 否则使用浏览器后退（独立页面模式）
+      router.back();
+    }
+  };
+
+  const handleViewDetail = (artworkId: string) => {
+    router.push(`/collections/${artworkId}`);
   };
 
   const handleSaveToKnowledgeBase = async () => {
@@ -162,17 +263,33 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     }
 
     try {
+      console.log('[Collections] Starting save process...');
+      console.log('[Collections] Admin images count:', adminImages.length);
+      console.log('[Collections] First image preview:', adminImages[0]?.substring(0, 100) + '...');
+      console.log('[Collections] Is first image a Data URL?', adminImages[0]?.startsWith('data:'));
+
       // 生成或使用手动输入的藏品编号
       const collectionId = adminCollectionId.trim() || generateCollectionId();
       
       // 检查藏品编号是否已存在
       const existingArtwork = items.find(item => item.collectionId === collectionId);
       if (existingArtwork) {
-        setAdminError(`藏品编号 "${collectionId}" 已存在，请使用其他编号`);
+        setAdminError(`藏品编号 "${collectionId}" 已存在,请使用其他编号`);
         return;
       }
 
-      // 封面照片作为 image，所有照片（包括封面）存入 galleryImages
+      // 验证价格格式
+      let priceValue: number | undefined = undefined;
+      if (adminIsForSale && adminPrice.trim()) {
+        const parsed = parseFloat(adminPrice);
+        if (isNaN(parsed) || parsed < 0) {
+          setAdminError("请输入有效的价格");
+          return;
+        }
+        priceValue = parsed;
+      }
+
+      // 封面照片作为 image,所有照片(包括封面)存入 galleryImages
       const newArtwork: Artwork = {
         id: `imported-${Date.now()}`,
         title: adminItemName.trim(),
@@ -183,20 +300,29 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
         description: adminItemDetails || "",
         listingType: "collection",
         uploadedBy: userId, // 记录上传者
-        featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // 占位符，8个元素
+        featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // 占位符,8个元素
         collectionId: collectionId, // 藏品编号
         isForSale: adminIsForSale, // 是否可售
-        price: adminIsForSale && adminPrice !== "" ? Number(adminPrice) : undefined, // 售价
+        price: adminIsForSale && priceValue ? priceValue : undefined, // 售价
         currency: adminIsForSale ? adminCurrency : undefined, // 货币单位
       };
 
+      console.log('[Collections] Calling saveImportedArtwork...');
       await saveImportedArtwork(newArtwork);
+      console.log('[Collections] Save completed successfully');
 
       setManageMessage("导入成功");
       resetForm();
+      
+      // ✅ 通知父组件刷新数据
+      if (onDataUpdate) {
+        onDataUpdate();
+      }
+      
       const updated = await fetchKnowledgeBase();
       setItems(updated);
     } catch (error: any) {
+      console.error('[Collections] Save failed:', error);
       setAdminError(error.message || "导入失败");
     }
   };
@@ -207,8 +333,17 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     setEditItemName(artwork.title || "");
     setEditItemDetails(artwork.description || "");
     setEditCategory(artwork.category || "misc");
+    
+    // 初始化图片状态 - 使用 galleryImages 字段
+    const images = artwork.galleryImages && artwork.galleryImages.length > 0 
+      ? artwork.galleryImages 
+      : [artwork.image];
+    setEditImages(images);
+    setEditCoverIndex(0); // 默认封面为第一张
+    setEditNewImageFiles([]);
+    
     setEditIsForSale(artwork.isForSale || false);
-    setEditPrice(artwork.price || "");
+    setEditPrice(artwork.price ? artwork.price.toString() : ""); // 将数字转换为字符串
     setEditCurrency(artwork.currency || "USD");
   };
 
@@ -218,6 +353,9 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     setEditItemName("");
     setEditItemDetails("");
     setEditCategory("misc");
+    setEditImages([]);
+    setEditCoverIndex(0);
+    setEditNewImageFiles([]);
     setEditIsForSale(false);
     setEditPrice("");
     setEditCurrency("USD");
@@ -230,14 +368,51 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     }
 
     try {
+      let finalImages = [...editImages];
+      
+      // 如果有新上传的图片,需要转换为 Base64 并添加到列表
+      if (editNewImageFiles.length > 0) {
+        const newBase64Images = await Promise.all(
+          editNewImageFiles.map(file => {
+            return new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(file);
+            });
+          })
+        );
+        finalImages = [...finalImages, ...newBase64Images];
+      }
+
+      // 将选中的封面移到数组第一位
+      if (finalImages.length > 0 && editCoverIndex > 0) {
+        const coverImage = finalImages[editCoverIndex];
+        finalImages.splice(editCoverIndex, 1); // 删除原位置
+        finalImages.unshift(coverImage); // 添加到第一位
+      }
+
+      // 验证价格格式
+      let priceValue: number | undefined = undefined;
+      if (editIsForSale && editPrice.trim()) {
+        const parsed = parseFloat(editPrice);
+        if (isNaN(parsed) || parsed < 0) {
+          setAdminError("请输入有效的价格");
+          return;
+        }
+        priceValue = parsed;
+      }
+
       const updatedArtwork: Artwork = {
         ...artwork,
         title: editItemName.trim(),
         description: editItemDetails || artwork.description,
         category: editCategory,
         collectionId: editCollectionId || artwork.collectionId,
+        image: finalImages[0] || artwork.image, // 封面照片(数组第一个)
+        galleryImages: finalImages.length > 0 ? finalImages : [artwork.image], // 所有照片
         isForSale: editIsForSale,
-        price: editIsForSale && editPrice !== "" ? Number(editPrice) : undefined,
+        price: editIsForSale && priceValue ? priceValue : undefined,
         currency: editIsForSale ? editCurrency : undefined,
       };
 
@@ -245,11 +420,75 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
 
       setManageMessage("更新成功");
       resetEditForm();
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
+      
+      // ✅ 方案1: 直接在本地状态中更新该藏品(立即生效)
+      setItems(prevItems => 
+        prevItems.map(item => 
+          item.id === artwork.id ? updatedArtwork : item
+        )
+      );
+      
+      // ✅ 方案2: 通知父组件刷新数据(确保父组件也同步更新)
+      if (onDataUpdate) {
+        onDataUpdate();
+      }
+      
+      // ✅ 方案3: 同时后台刷新数据(确保与服务器同步)
+      setTimeout(async () => {
+        try {
+          const refreshed = await fetchKnowledgeBase();
+          console.log('[Collections] Background refresh completed, items:', refreshed.length);
+          setItems(refreshed);
+        } catch (error) {
+          console.error('[Collections] Background refresh failed:', error);
+        }
+      }, 500);
     } catch (error: any) {
+      console.error('[Collections] Update failed:', error);
       setAdminError(error.message || "更新失败");
     }
+  };
+
+  // 编辑模式下的图片管理函数
+  const handleEditAddImages = async (files: File[] | null) => {
+    if (!files || files.length === 0) return;
+    
+    try {
+      setEditNewImageFiles(prev => [...prev, ...Array.from(files)]);
+      
+      // 立即转换为 Base64 用于预览
+      const newUrls = await Promise.all(
+        Array.from(files).map(file => {
+          return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+      
+      setEditImages(prev => [...prev, ...newUrls]);
+    } catch (error) {
+      console.error('[Collections] Failed to convert images:', error);
+      setAdminError("图片转换失败，请重试");
+    }
+  };
+
+  const handleEditRemoveImage = (index: number) => {
+    const newImages = editImages.filter((_, i) => i !== index);
+    setEditImages(newImages);
+    
+    // 调整封面索引
+    if (editCoverIndex >= newImages.length) {
+      setEditCoverIndex(Math.max(0, newImages.length - 1));
+    } else if (editCoverIndex > index) {
+      setEditCoverIndex(editCoverIndex - 1);
+    }
+  };
+
+  const handleEditSetCoverImage = (index: number) => {
+    setEditCoverIndex(index);
   };
 
   const handleDeleteImportedArtwork = async (id: string) => {
@@ -264,54 +503,84 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
     }
   };
 
-  // 辅助组件：根据 embedded 属性渲染外层容器
-  const OuterWrapper = ({ children }: { children: React.ReactNode }) => {
-    if (embedded) {
-      return <>{children}</>;
-    }
-    return <Container fluid pt={80} pb={120}>{children}</Container>;
-  };
-
-  // 如果未登录，显示提示
+  // 如果未登录，显示提示并自动触发登录模态框
   if (!userId) {
+    useEffect(() => {
+      // 触发打开登录模态框
+      window.dispatchEvent(new CustomEvent('open-auth-modal'));
+    }, []);
+    
     return (
-      <OuterWrapper>
+      <OuterWrapper embedded={embedded}>
         <Paper p="xl">
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
             <Title order={2} color="red">需要登录</Title>
             <Text color="dark.1" align="center">
-              请先登录后才能查看藏品信息。<br />
-              仅管理员可以上传和管理藏品。
+              请先登录后才能{mode === "upload" ? "上传藏品" : "管理藏品"}。<br />
+              {mode === "upload" ? "仅管理员可以上传新藏品。" : "您可以管理自己上传的藏品。"}
             </Text>
+            <Button 
+              onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
+              color="violet"
+            >
+              立即登录
+            </Button>
           </Stack>
         </Paper>
       </OuterWrapper>
     );
   }
 
-  // 如果不是管理员，只显示浏览功能（不显示上传表单）
-  if (!isAdmin) {
+  // 如果是管理模式，显示可编辑的列表
+  if (mode === "manage") {
     return (
-      <OuterWrapper>
-        <Paper p="xl">
-          <Stack spacing="md">
-            <Group position="apart">
-              <Title order={3}>藏品展示</Title>
+      <OuterWrapper embedded={embedded}>
+        <Stack spacing="xl">
+          <Group position="apart">
+            <Title order={3}>
+              {locale === "zh" ? "管理藏品" : "Manage Collections"}
+            </Title>
+            {!isLoading && (
               <Badge color="blue" size="lg">
                 {collections.length} 件
               </Badge>
-            </Group>
+            )}
+          </Group>
 
-            {collections.length === 0 ? (
-              <Text color="dark.1" align="center" py="xl">
-                暂无藏品展示。
+          {isLoading ? (
+            <Box py="xl" sx={{ textAlign: "center" }}>
+              <Loader size="lg" />
+              <Text mt="md" color="dark.1">
+                {locale === "zh" ? "加载中..." : "Loading..."}
               </Text>
-            ) : (
-              <SimpleGrid cols={3} spacing="lg">
-                {collections.map((artwork) => (
-                  <Paper key={artwork.id} p="md" withBorder>
-                    <Stack spacing="md">
+            </Box>
+          ) : collections.length === 0 ? (
+            <Text color="dark.1" align="center" py="xl">
+              {isAdmin 
+                ? (locale === "zh" ? "暂无藏品。" : "No collections yet.")
+                : (locale === "zh" ? "您还没有上传任何藏品。" : "You haven't uploaded any collections yet.")}
+            </Text>
+          ) : (
+            <SimpleGrid cols={3} spacing="lg">
+              {collections.map((artwork) => (
+                <Paper 
+                  key={artwork.id} 
+                  p="md" 
+                  withBorder
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'transform 200ms ease, box-shadow 200ms ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',
+                    },
+                  }}
+                  onClick={() => handleViewDetail(artwork.id)}
+                >
+                  <Stack spacing="md">
+                    {/* 非编辑模式下显示静态图片 */}
+                    {editingArtworkId !== artwork.id && (
                       <Box
                         sx={{
                           height: 200,
@@ -329,32 +598,308 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
                           sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                         />
                       </Box>
-                      <Text weight={600}>{artwork.title}</Text>
-                      <Text size="sm" color="dark.1" lineClamp={2}>
-                        {artwork.description}
-                      </Text>
-                      {artwork.collectionId && (
-                        <Badge variant="outline" size="sm">
-                          编号: {artwork.collectionId}
-                        </Badge>
-                      )}
-                      {artwork.isForSale && artwork.price && (
-                        <Badge color="green" size="sm">
-                          可售: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
-                        </Badge>
-                      )}
-                    </Stack>
-                  </Paper>
-                ))}
-              </SimpleGrid>
-            )}
-          </Stack>
-        </Paper>
+                    )}
+
+                    {editingArtworkId === artwork.id ? (
+                      <Stack spacing="sm" onClick={(e) => e.stopPropagation()}>
+                        {/* 图片管理区域 */}
+                        <Box>
+                          <Text size="sm" weight={500} mb="xs">藏品图片</Text>
+                          
+                          {/* 大图预览 - 显示当前选中的封面 */}
+                          <Box
+                            sx={{
+                              height: 240,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: "rgba(34, 39, 47, 0.5)",
+                              borderRadius: 6,
+                              marginBottom: "md",
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={editImages[editCoverIndex] || editImages[0] || artwork.image}
+                              alt={artwork.title}
+                              sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                            />
+                          </Box>
+                          
+                          {/* 缩略图网格 */}
+                          <SimpleGrid cols={3} spacing="xs">
+                            {editImages.map((img, index) => (
+                              <Box 
+                                key={index}
+                                sx={{
+                                  position: "relative",
+                                  height: 80,
+                                  border: editCoverIndex === index ? "2px solid #d8b76d" : "1px solid rgba(255,255,255,0.1)",
+                                  borderRadius: 4,
+                                  overflow: "hidden",
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                  backgroundColor: "rgba(34, 39, 47, 0.5)",
+                                  "&:hover": {
+                                    borderColor: "#d8b76d",
+                                  }
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditSetCoverImage(index);
+                                }}
+                              >
+                                <Box
+                                  component="img"
+                                  src={img}
+                                  alt={`Image ${index + 1}`}
+                                  sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "contain",
+                                  }}
+                                />
+                                
+                                {/* 封面标记 */}
+                                {editCoverIndex === index && (
+                                  <Box
+                                    sx={{
+                                      position: "absolute",
+                                      top: 4,
+                                      left: 4,
+                                      backgroundColor: "#d8b76d",
+                                      borderRadius: 4,
+                                      padding: "2px 6px",
+                                      fontSize: 10,
+                                      fontWeight: 600,
+                                      color: "#000",
+                                    }}
+                                  >
+                                    封面
+                                  </Box>
+                                )}
+                                
+                                {/* 删除按钮 */}
+                                <Box
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (editImages.length > 1) {
+                                      handleEditRemoveImage(index);
+                                    }
+                                  }}
+                                  sx={{
+                                    position: "absolute",
+                                    top: 4,
+                                    right: 4,
+                                    backgroundColor: editImages.length > 1 ? "rgba(255, 0, 0, 0.85)" : "rgba(128, 128, 128, 0.5)",
+                                    borderRadius: "50%",
+                                    width: 20,
+                                    height: 20,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: editImages.length > 1 ? "pointer" : "not-allowed",
+                                    zIndex: 10
+                                  }}
+                                >
+                                  <IconX size={12} color="#fff" />
+                                </Box>
+                              </Box>
+                            ))}
+                            
+                            {/* 添加图片按钮 */}
+                            <FileButton
+                              onChange={handleEditAddImages}
+                              accept="image/png,image/jpeg,image/jpg,image/webp"
+                              multiple
+                            >
+                              {(props) => (
+                                <Box
+                                  {...props}
+                                  sx={{
+                                    height: 80,
+                                    border: "2px dashed rgba(216, 183, 109, 0.4)",
+                                    borderRadius: 4,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: "rgba(34, 39, 47, 0.3)",
+                                    cursor: "pointer",
+                                    transition: "all 0.2s",
+                                    "&:hover": {
+                                      borderColor: "#d8b76d",
+                                      background: "rgba(216, 183, 109, 0.1)"
+                                    }
+                                  }}
+                                >
+                                  <IconPlus size={24} color="#d8b76d" />
+                                  <Text size="xs" color="dark.1" mt="xs">
+                                    添加
+                                  </Text>
+                                </Box>
+                              )}
+                            </FileButton>
+                          </SimpleGrid>
+                          <Text size="xs" color="dimmed" mt="xs">
+                            点击缩略图设置为封面，至少保留一张图片
+                          </Text>
+                        </Box>
+
+                        <TextInput
+                          label="藏品名称"
+                          value={editItemName}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleEditItemNameChange(e);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Textarea
+                          label="藏品详情"
+                          value={editItemDetails}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            handleEditItemDetailsChange(e);
+                          }}
+                          minRows={2}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Select
+                          label="藏品分类"
+                          value={editCategory}
+                          onChange={(value) => setEditCategory(value || "misc")}
+                          data={collectionCategoryOptions.map((option) => ({
+                            value: option.value,
+                            label: t(option.labelKey),
+                          }))}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        
+                        {/* 编辑时的可售字段 */}
+                        <Checkbox
+                          label="是否可售"
+                          checked={editIsForSale}
+                          onChange={(event) => {
+                            event.stopPropagation();
+                            setEditIsForSale(event.currentTarget.checked);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+
+                        {editIsForSale && (
+                          <SimpleGrid cols={2} spacing="xs">
+                            <TextInput
+                              label="售价"
+                              value={editPrice}
+                              onChange={(event) => {
+                                event.stopPropagation();
+                                setEditPrice(event.currentTarget.value);
+                              }}
+                              placeholder="请输入售价(如: 199.99)"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+
+                            <Select
+                              label="货币单位"
+                              value={editCurrency}
+                              onChange={(value) => setEditCurrency((value as "USD" | "CNY") || "USD")}
+                              data={currencyOptions}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </SimpleGrid>
+                        )}
+                        
+                        <Group position="right">
+                          <Button
+                            variant="default"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              resetEditForm();
+                            }}
+                            leftIcon={<IconX size={14} />}
+                          >
+                            取消
+                          </Button>
+                          <Button
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSaveEdit(artwork);
+                            }}
+                            leftIcon={<IconCheck size={14} />}
+                          >
+                            保存
+                          </Button>
+                        </Group>
+                      </Stack>
+                    ) : (
+                      <>
+                        <Text weight={600}>{artwork.title}</Text>
+                        <Text size="sm" color="dark.1" lineClamp={2}>
+                          {artwork.description}
+                        </Text>
+                        {artwork.collectionId && (
+                          <Badge variant="outline" size="sm">
+                            编号: {artwork.collectionId}
+                          </Badge>
+                        )}
+                        {artwork.isForSale && artwork.price && (
+                          <Badge color="green" size="sm">
+                            可售: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
+                          </Badge>
+                        )}
+                        <Group position="right">
+                          <Button
+                            variant="light"
+                            size="xs"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStartEdit(artwork);
+                            }}
+                            leftIcon={<IconEdit size={14} />}
+                          >
+                            编辑
+                          </Button>
+                          {(isAdmin || artwork.uploadedBy === userId) && (
+                            <Button
+                              variant="light"
+                              color="red"
+                              size="xs"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteImportedArtwork(artwork.id);
+                              }}
+                              leftIcon={<IconTrash size={14} />}
+                            >
+                              删除
+                            </Button>
+                          )}
+                        </Group>
+                      </>
+                    )}
+                  </Stack>
+                </Paper>
+              ))}
+            </SimpleGrid>
+          )}
+
+          <Group position="right">
+            <Button
+              variant="default"
+              onClick={onCancel || (() => router.back())}
+              leftIcon={<IconX size={16} />}
+            >
+              {locale === "zh" ? "返回" : "Back"}
+            </Button>
+          </Group>
+        </Stack>
       </OuterWrapper>
     );
   }
 
-  // 管理员模式：显示上传和管理功能
+  // 上传模式（默认）
   return (
     <OuterWrapper>
       <Stack spacing="xl">
@@ -397,7 +942,7 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
             )}
 
             {/* 多图片上传区域 */}
-            {adminImages.length > 0 ? (
+            {adminImages.length > 0 && (
               <Stack spacing="md">
                 {/* 封面照片大图预览 */}
                 <Box 
@@ -444,14 +989,16 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
 
                 {/* 所有图片缩略图网格 */}
                 <div>
-                  <Text weight={600} mb="sm">所有照片（点击星号设为封面）</Text>
+                  <Text weight={600} mb="sm">
+                    所有照片（共 {adminImages.length} 张）
+                  </Text>
                   <SimpleGrid cols={4} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
                     {adminImages.map((imgUrl, index) => (
                       <Box 
                         key={index}
                         sx={{ 
                           position: "relative",
-                          border: adminCoverIndex === index ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
+                          border: adminCoverIndex === index ? "3px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
                           borderRadius: 6,
                           overflow: "hidden",
                           cursor: "pointer",
@@ -461,12 +1008,12 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
                             transform: "scale(1.02)"
                           }
                         }}
+                        onClick={() => handleSetCoverImage(index)}
                       >
                         <Box
                           component="img"
                           src={imgUrl} 
                           alt={`Photo ${index + 1}`}
-                          onClick={() => handleSetCoverImage(index)}
                           sx={{
                             width: "100%",
                             height: 120,
@@ -476,24 +1023,22 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
                           }}
                         />
                         
-                        {/* 封面标记 */}
+                        {/* 封面标记徽章 */}
                         {adminCoverIndex === index && (
-                          <Box
-                            sx={{
+                          <Badge 
+                            variant="filled" 
+                            color="yellow"
+                            sx={{ 
                               position: "absolute",
-                              top: 4,
-                              left: 4,
-                              backgroundColor: "#d8b76d",
-                              borderRadius: "50%",
-                              width: 24,
-                              height: 24,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center"
+                              top: 6,
+                              left: 6,
+                              fontSize: 11,
+                              padding: "2px 8px",
+                              fontWeight: 600
                             }}
                           >
-                            <IconStar size={14} color="#fff" />
-                          </Box>
+                            封面
+                          </Badge>
                         )}
 
                         {/* 删除按钮 */}
@@ -504,9 +1049,9 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
                           }}
                           sx={{
                             position: "absolute",
-                            top: 4,
-                            right: 4,
-                            backgroundColor: "rgba(255, 0, 0, 0.8)",
+                            top: 6,
+                            right: 6,
+                            backgroundColor: "rgba(255, 0, 0, 0.85)",
                             borderRadius: "50%",
                             width: 24,
                             height: 24,
@@ -514,19 +1059,50 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
                             alignItems: "center",
                             justifyContent: "center",
                             cursor: "pointer",
+                            transition: "all 0.2s",
                             "&:hover": {
-                              backgroundColor: "rgba(255, 0, 0, 1)"
-                            }
+                              backgroundColor: "rgba(255, 0, 0, 1)",
+                              transform: "scale(1.1)"
+                            },
+                            zIndex: 10
                           }}
                         >
                           <IconX size={14} color="#fff" />
                         </Box>
                       </Box>
                     ))}
+                    
+                    {/* 添加更多图片按钮 */}
+                    <Box
+                      onClick={() => document.getElementById('collection-upload-input')?.click()}
+                      sx={{
+                        height: 120,
+                        border: "2px dashed rgba(216, 183, 109, 0.4)",
+                        borderRadius: 6,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: "rgba(34, 39, 47, 0.3)",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          borderColor: "#d8b76d",
+                          background: "rgba(216, 183, 109, 0.1)"
+                        }
+                      }}
+                    >
+                      <IconPlus size={32} color="#d8b76d" />
+                      <Text size="sm" color="dark.1" mt="xs">
+                        添加图片
+                      </Text>
+                    </Box>
                   </SimpleGrid>
                 </div>
               </Stack>
-            ) : (
+            )}
+
+            {adminImages.length === 0 && (
               <Box sx={{ height: 300, border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(34, 39, 47, 0.5)" }}>
                 <Stack spacing="sm" align="center">
                   <IconPhoto size={44} color="#d8b76d" />
@@ -536,27 +1112,25 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
               </Box>
             )}
 
-            <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-              <TextInput
-                label="藏品编号"
-                value={adminCollectionId}
-                onChange={(event) => setAdminCollectionId(event.currentTarget.value)}
-                placeholder="留空则自动生成（格式：COL-XXXXX-XXXX）"
-              />
+            <TextInput
+              label="藏品编号"
+              value={adminCollectionId}
+              onChange={handleCollectionIdChange}
+              placeholder="留空则自动生成（格式：COL-XXXXX-XXXX）"
+            />
 
-              <TextInput
-                label="藏品名称 *"
-                value={adminItemName}
-                onChange={(event) => setAdminItemName(event.currentTarget.value)}
-                placeholder="请输入藏品名称（必填）"
-                required
-              />
-            </SimpleGrid>
+            <TextInput
+              label="藏品名称 *"
+              value={adminItemName}
+              onChange={handleItemNameChange}
+              placeholder="请输入藏品名称（必填）"
+              required
+            />
 
             <Textarea
               label="藏品介绍"
               value={adminItemDetails}
-              onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
+              onChange={handleItemDetailsChange}
               placeholder="请输入藏品的详细介绍、历史背景、工艺特点等"
               minRows={3}
             />
@@ -581,13 +1155,11 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
 
             {adminIsForSale && (
               <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                <NumberInput
+                <TextInput
                   label="售价 *"
                   value={adminPrice}
-                  onChange={(value) => setAdminPrice(value === "" ? "" : Number(value))}
-                  placeholder="请输入售价"
-                  min={0}
-                  precision={2}
+                  onChange={(event) => setAdminPrice(event.currentTarget.value)}
+                  placeholder="请输入售价(如: 199.99)"
                   required
                 />
 
@@ -604,7 +1176,7 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
             <Group position="right">
               <Button
                 variant="default"
-                onClick={resetForm}
+                onClick={handleCancel}
                 leftIcon={<IconX size={16} />}
               >
                 取消
@@ -612,7 +1184,7 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
               <Button
                 onClick={handleSaveToKnowledgeBase}
                 leftIcon={<IconCheck size={16} />}
-                disabled={adminImages.length === 0 || !adminItemName.trim() || (adminIsForSale && (adminPrice === "" || adminPrice === 0))}
+                disabled={adminImages.length === 0 || !adminItemName.trim() || (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0))}
               >
                 保存藏品
               </Button>
@@ -625,162 +1197,9 @@ export default function CollectionsManagementSection({ userId, isAdmin, embedded
             {manageMessage}
           </Alert>
         )}
-
-        <Paper p="xl">
-          <Stack spacing="md">
-            <Group position="apart">
-              <Title order={3}>已上传的藏品</Title>
-              <Badge color="blue" size="lg">
-                {collections.length} 件
-              </Badge>
-            </Group>
-
-            {collections.length === 0 ? (
-              <Text color="dark.1" align="center" py="xl">
-                暂无藏品。请上传新藏品。
-              </Text>
-            ) : (
-              <SimpleGrid cols={3} spacing="lg">
-                {collections.map((artwork) => (
-                  <Paper key={artwork.id} p="md" withBorder>
-                    <Stack spacing="md">
-                      <Box
-                        sx={{
-                          height: 200,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          background: "rgba(34, 39, 47, 0.5)",
-                          borderRadius: 6,
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src={artwork.image}
-                          alt={artwork.title}
-                          sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-                        />
-                      </Box>
-
-                      {editingArtworkId === artwork.id ? (
-                        <Stack spacing="sm">
-                          <SimpleGrid cols={2} spacing="xs">
-                            <TextInput
-                              label="藏品编号"
-                              value={editCollectionId}
-                              onChange={(event) => setEditCollectionId(event.currentTarget.value)}
-                            />
-                            <TextInput
-                              label="藏品名称"
-                              value={editItemName}
-                              onChange={(event) => setEditItemName(event.currentTarget.value)}
-                            />
-                          </SimpleGrid>
-                          <Textarea
-                            label="藏品详情"
-                            value={editItemDetails}
-                            onChange={(event) => setEditItemDetails(event.currentTarget.value)}
-                            minRows={2}
-                          />
-                          <Select
-                            label="藏品分类"
-                            value={editCategory}
-                            onChange={(value) => setEditCategory(value || "misc")}
-                            data={collectionCategoryOptions.map((option) => ({
-                              value: option.value,
-                              label: t(option.labelKey),
-                            }))}
-                          />
-                          
-                          {/* 编辑时的可售字段 - 使用 Checkbox */}
-                          <Checkbox
-                            label="是否可售"
-                            checked={editIsForSale}
-                            onChange={(event) => setEditIsForSale(event.currentTarget.checked)}
-                          />
-
-                          {editIsForSale && (
-                            <SimpleGrid cols={2} spacing="xs">
-                              <NumberInput
-                                label="售价"
-                                value={editPrice}
-                                onChange={(value) => setEditPrice(value === "" ? "" : Number(value))}
-                                min={0}
-                                precision={2}
-                              />
-
-                              <Select
-                                label="货币单位"
-                                value={editCurrency}
-                                onChange={(value) => setEditCurrency((value as "USD" | "CNY") || "USD")}
-                                data={currencyOptions}
-                              />
-                            </SimpleGrid>
-                          )}
-                          
-                          <Group position="right">
-                            <Button
-                              variant="default"
-                              size="xs"
-                              onClick={resetEditForm}
-                              leftIcon={<IconX size={14} />}
-                            >
-                              取消
-                            </Button>
-                            <Button
-                              size="xs"
-                              onClick={() => handleSaveEdit(artwork)}
-                              leftIcon={<IconCheck size={14} />}
-                            >
-                              保存
-                            </Button>
-                          </Group>
-                        </Stack>
-                      ) : (
-                        <>
-                          <Text weight={600}>{artwork.title}</Text>
-                          <Text size="sm" color="dark.1" lineClamp={2}>
-                            {artwork.description}
-                          </Text>
-                          {artwork.collectionId && (
-                            <Badge variant="outline" size="sm">
-                              编号: {artwork.collectionId}
-                            </Badge>
-                          )}
-                          {artwork.isForSale && artwork.price && (
-                            <Badge color="green" size="sm">
-                              可售: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
-                            </Badge>
-                          )}
-                          <Group position="right">
-                            <Button
-                              variant="light"
-                              size="xs"
-                              onClick={() => handleStartEdit(artwork)}
-                              leftIcon={<IconEdit size={14} />}
-                            >
-                              编辑
-                            </Button>
-                            <Button
-                              variant="light"
-                              color="red"
-                              size="xs"
-                              onClick={() => handleDeleteImportedArtwork(artwork.id)}
-                              leftIcon={<IconTrash size={14} />}
-                            >
-                              删除
-                            </Button>
-                          </Group>
-                        </>
-                      )}
-                    </Stack>
-                  </Paper>
-                ))}
-              </SimpleGrid>
-            )}
-          </Stack>
-        </Paper>
       </Stack>
     </OuterWrapper>
   );
-}
+});
+
+export default CollectionsManagementSection;

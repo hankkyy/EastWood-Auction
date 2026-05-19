@@ -2,12 +2,13 @@ import Link from "next/link";
 import { Box, Button, Container, createStyles, Group, Overlay, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
-import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { getKnowledgeBase, fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import type { Artwork } from "@/data/artworks";
 import { useEffect, useMemo, useState } from "react";
-import { IconDatabaseImport, IconX } from "@tabler/icons-react";
+import { IconDatabaseImport, IconEdit, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import CollectionsManagementSection from "./CollectionsManagement";
+import { useRouter } from "next/router";
 
 const categories = [
   { value: "all", labelKey: "collections.tabAll" },
@@ -166,12 +167,49 @@ export default function Collections() {
   const { t, locale } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { user, isAdmin } = useAuth();
+  const router = useRouter();
   const [knowledgeBaseItems, setKnowledgeBaseItems] = useState<Artwork[]>([]);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
 
   useEffect(() => {
     setKnowledgeBaseItems(getKnowledgeBase());
   }, []);
+
+  // ✅ 监听路由变化，当进入主页面时重置所有模式状态
+  useEffect(() => {
+    // 当路由为 /collections（不包含子路径如 /collections/[id]）时，重置到浏览模式
+    if (router.pathname === '/collections') {
+      setShowUploadForm(false);
+      setShowManageMode(false);
+    }
+  }, [router.asPath]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
+
+  // 检查登录状态并跳转
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      // 未登录，跳转到登录页面
+      window.dispatchEvent(new CustomEvent('open-auth-modal'));
+      return false;
+    }
+    return true;
+  };
+
+  const handleUploadClick = () => {
+    if (!checkAuthAndRedirect()) return;
+    if (!isAdmin) {
+      // 非管理员不能上传
+      return;
+    }
+    setShowUploadForm(true);
+    setShowManageMode(false);
+  };
+
+  const handleManageClick = () => {
+    if (!checkAuthAndRedirect()) return;
+    setShowManageMode(true);
+    setShowUploadForm(false);
+  };
 
   const cards = useMemo<CollectionCard[]>(() => {
     return knowledgeBaseItems
@@ -203,97 +241,171 @@ export default function Collections() {
 
       {/* Content Section - 上传按钮和藏品列表在图片下面 */}
       <Box className={classes.contentWrapper}>
-        <Container fluid px={smallerThan ? "md" : 72}>
+        <Container fluid>
           <Stack spacing="xl">
-            {/* 上传按钮 - 仅管理员可见 */}
-            {isAdmin && !showUploadForm && (
+            {/* ✅ 操作按钮区域 - 仅管理员可见(普通用户不需要看到) */}
+            {isAdmin && !showUploadForm && !showManageMode && (
               <Group position="right">
+                {/* 上传按钮 - 仅管理员可见 */}
                 <Button
-                  onClick={() => setShowUploadForm(true)}
+                  onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
                 >
-                  {locale === "zh" ? "导入新藏品" : "Import New Collection"}
+                  {t("collections.importNewCollection")}
+                </Button>
+                
+                {/* 管理按钮 - 仅管理员可见 */}
+                <Button
+                  onClick={handleManageClick}
+                  variant="default"
+                  leftIcon={<IconEdit size={18} />}
+                >
+                  {t("collections.manageCollections")}
                 </Button>
               </Group>
             )}
 
             {/* 上传表单 - 仅管理员可见 */}
             {showUploadForm && isAdmin && (
-              <CollectionsManagementSection userId={user?.id} isAdmin={isAdmin} embedded={true} />
+              <Box sx={{ width: "100%" }}>
+                <CollectionsManagementSection 
+                  userId={user?.id} 
+                  isAdmin={isAdmin} 
+                  embedded={true}
+                  onDataUpdate={async () => {
+                    // ✅ 保存成功后立即刷新父组件数据
+                    try {
+                      const updated = await fetchKnowledgeBase();
+                      setKnowledgeBaseItems(updated);
+                      console.log('[Collections] Data refreshed after upload');
+                    } catch (error) {
+                      console.error('[Collections] Failed to refresh data:', error);
+                    }
+                  }}
+                  onCancel={async () => {
+                    setShowUploadForm(false);
+                    setShowManageMode(false);
+                    
+                    // ✅ 重新从服务器加载最新数据（取消时也需要确保同步）
+                    try {
+                      const updated = await fetchKnowledgeBase();
+                      setKnowledgeBaseItems(updated);
+                    } catch (error) {
+                      console.error('[Collections] Failed to refresh data:', error);
+                    }
+                  }}
+                />
+              </Box>
             )}
 
-            {/* 藏品列表 */}
-            <Tabs defaultValue="all" className={classes.tabs} variant="outline">
-              <Tabs.List>
-                {categories.map((category) => (
-                  <Tabs.Tab key={category.value} value={category.value}>
-                    {t(category.labelKey)}
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
+            {/* 管理模式 - 显示可编辑的藏品列表 */}
+            {showManageMode && (
+              <Box sx={{ width: "100%" }}>
+                <CollectionsManagementSection 
+                  userId={user?.id} 
+                  isAdmin={isAdmin} 
+                  embedded={true}
+                  mode="manage"
+                  onDataUpdate={async () => {
+                    // ✅ 保存成功后立即刷新父组件数据
+                    try {
+                      const updated = await fetchKnowledgeBase();
+                      setKnowledgeBaseItems(updated);
+                      console.log('[Collections] Data refreshed after edit');
+                    } catch (error) {
+                      console.error('[Collections] Failed to refresh data:', error);
+                    }
+                  }}
+                  onCancel={async () => {
+                    setShowManageMode(false);
+                    setShowUploadForm(false);
+                    
+                    // ✅ 重新从服务器加载最新数据（取消时也需要确保同步）
+                    try {
+                      const updated = await fetchKnowledgeBase();
+                      setKnowledgeBaseItems(updated);
+                    } catch (error) {
+                      console.error('[Collections] Failed to refresh data:', error);
+                    }
+                  }}
+                />
+              </Box>
+            )}
 
-              {categories.map((category) => {
-                const visibleItems =
-                  category.value === "all"
-                    ? cards
-                    : cards.filter((item) => item.category === category.value);
+            {/* 藏品列表 - 仅在非管理/上传模式下显示 */}
+            {!showManageMode && !showUploadForm && (
+              <Tabs defaultValue="all" className={classes.tabs} variant="outline">
+                <Tabs.List>
+                  {categories.map((category) => (
+                    <Tabs.Tab key={category.value} value={category.value}>
+                      {t(category.labelKey)}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
 
-                return (
-                  <Tabs.Panel key={category.value} value={category.value} pt="xl">
-                    <SimpleGrid
-                      cols={3}
-                      spacing={36}
-                      breakpoints={[
-                        { maxWidth: "md", cols: 2, spacing: "lg" },
-                        { maxWidth: "sm", cols: 1, spacing: "md" },
-                      ]}
-                    >
-                      {visibleItems.map((item) => {
-                        // 获取原始 artwork 数据以检查 galleryImages
-                        const artwork = knowledgeBaseItems.find(a => a.id === item.key);
-                        const photoCount = artwork?.galleryImages?.length || 0;
-                        
-                        return (
-                          <Box
-                            key={item.key}
-                            component={Link}
-                            href={item.href}
-                            sx={{ textDecoration: "none", display: "block" }}
-                          >
-                            <Box className={classes.imageWrap} sx={{ position: "relative" }}>
-                              <Box component="img" src={item.image} alt={item.title} className={classes.image} />
-                              
-                              {/* 照片数量提示 */}
-                              {photoCount > 1 && (
-                                <Box
-                                  sx={{
-                                    position: "absolute",
-                                    bottom: 12,
-                                    right: 12,
-                                    backgroundColor: "rgba(0, 0, 0, 0.75)",
-                                    color: "#fff",
-                                    padding: "6px 10px",
-                                    borderRadius: 6,
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    backdropFilter: "blur(4px)",
-                                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                                    zIndex: 10
-                                  }}
-                                >
-                                  📷 {photoCount} 张照片
-                                </Box>
-                              )}
+                {categories.map((category) => {
+                  const visibleItems =
+                    category.value === "all"
+                      ? cards
+                      : cards.filter((item) => item.category === category.value);
+
+                  return (
+                    <Tabs.Panel key={category.value} value={category.value} pt="xl">
+                      <SimpleGrid
+                        cols={3}
+                        spacing={36}
+                        breakpoints={[
+                          { maxWidth: "md", cols: 2, spacing: "lg" },
+                          { maxWidth: "sm", cols: 1, spacing: "md" },
+                        ]}
+                      >
+                        {visibleItems.map((item) => {
+                          // 获取原始 artwork 数据以检查 galleryImages
+                          const artwork = knowledgeBaseItems.find(a => a.id === item.key);
+                          const photoCount = artwork?.galleryImages?.length || 0;
+                          
+                          return (
+                            <Box
+                              key={item.key}
+                              component={Link}
+                              href={item.href}
+                              sx={{ textDecoration: "none", display: "block" }}
+                            >
+                              <Box className={classes.imageWrap} sx={{ position: "relative" }}>
+                                <Box component="img" src={item.image} alt={item.title} className={classes.image} />
+                                
+                                {/* 照片数量提示 */}
+                                {photoCount > 1 && (
+                                  <Box
+                                    sx={{
+                                      position: "absolute",
+                                      bottom: 12,
+                                      right: 12,
+                                      backgroundColor: "rgba(0, 0, 0, 0.75)",
+                                      color: "#fff",
+                                      padding: "6px 10px",
+                                      borderRadius: 6,
+                                      fontSize: 13,
+                                      fontWeight: 600,
+                                      backdropFilter: "blur(4px)",
+                                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+                                      zIndex: 10
+                                    }}
+                                  >
+                                    📷 {photoCount} 张照片
+                                  </Box>
+                                )}
+                              </Box>
+                              <Text className={classes.itemTitle}>{item.title}</Text>
                             </Box>
-                            <Text className={classes.itemTitle}>{item.title}</Text>
-                          </Box>
-                        );
-                      })}
-                    </SimpleGrid>
-                  </Tabs.Panel>
-                );
-              })}
-            </Tabs>
+                          );
+                        })}
+                      </SimpleGrid>
+                    </Tabs.Panel>
+                  );
+                })}
+              </Tabs>
+            )}
           </Stack>
         </Container>
       </Box>

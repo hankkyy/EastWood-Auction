@@ -36,22 +36,35 @@ export default function CaseDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [items, setItems] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const caseId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
-    void fetchKnowledgeBase().then(setItems);
+    void fetchKnowledgeBase().then((data) => {
+      setItems(data);
+      setIsLoading(false);
+    });
   }, []);
 
   const item = useMemo(
     () => items.find((entry) => entry.id === caseId && entry.caseRecord),
     [caseId, items]
   );
-  const gallery = useMemo(
-    () => (item ? [item.image, ...(item.galleryImages ?? []).filter((imageUrl) => imageUrl !== item.image)] : []),
-    [item]
-  );
+  
+  // 构建画廊图片数组（直接使用 galleryImages，如果没有则使用 image）
+  const gallery = useMemo(() => {
+    if (!item) return [];
+    
+    // 优先使用 galleryImages
+    if (item.galleryImages && item.galleryImages.length > 0) {
+      return item.galleryImages;
+    }
+    
+    // 如果没有 galleryImages，使用 image 作为单张图片
+    return [item.image];
+  }, [item]);
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
 
   useEffect(() => {
@@ -84,6 +97,19 @@ export default function CaseDetailPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gallery, lightboxOpened]);
+
+  // 数据加载中，显示统一的 Loading 状态
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <AnimatedBox>
+          <Container py={80}>
+            <Text align="center">{locale === "zh" ? "加载中..." : "Loading..."}</Text>
+          </Container>
+        </AnimatedBox>
+      </Wrapper>
+    );
+  }
 
   if (!item || !item.caseRecord) {
     return (
@@ -136,11 +162,19 @@ export default function CaseDetailPage() {
               </Button>
 
               <Stack spacing="sm">
-                <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
-                  {t("support.caseDetailTitle")}
-                </Badge>
+                {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
+                <Group spacing="xs">
+                  <Badge 
+                    color={item.isOfficial === true ? "blue" : "green"} 
+                    variant="outline"
+                    sx={{ alignSelf: "flex-start" }}
+                  >
+                    {item.isOfficial === true 
+                      ? t("cases.platformUpload")
+                      : t("cases.personalUserUpload")}
+                  </Badge>
+                </Group>
                 <Title order={1}>{title}</Title>
-                <Text color="dark.1">{description}</Text>
               </Stack>
 
               <Box sx={{ position: "relative" }}>
@@ -248,6 +282,13 @@ export default function CaseDetailPage() {
                   </Group>
                 </ScrollArea>
               ) : null}
+
+              {/* ✅ 案例详情描述 - 放在图片展示下方 */}
+              {description && (
+                <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+                  <Text size="lg" color="dark.1">{description}</Text>
+                </Box>
+              )}
 
               <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>

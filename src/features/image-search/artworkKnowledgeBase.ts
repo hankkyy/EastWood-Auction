@@ -5,6 +5,7 @@ import {
   normalizeArtwork,
 } from "@/features/image-search/artworkCloud";
 import { extractImageFeatureFromUrl } from "@/features/image-search/imageSearch";
+import { supabase } from "@/lib/supabase/client";
 
 const KNOWLEDGE_BASE_KEY = "museum-art-image-knowledge-base";
 const KNOWLEDGE_BASE_OVERRIDES_KEY = "museum-art-image-knowledge-base-overrides";
@@ -189,10 +190,18 @@ export const saveImportedArtwork = async (artwork: Artwork) => {
     return normalizeArtwork(artwork);
   }
 
+  // ✅ 获取当前用户的认证 token
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.access_token) {
+    throw new Error("请先登录");
+  }
+
   const response = await fetch("/api/artworks", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.access_token}`, // ✅ 携带认证 token
     },
     body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
   });
@@ -234,10 +243,18 @@ export const updateImportedArtwork = async (artwork: Artwork) => {
     return normalizeArtwork(artwork);
   }
 
+  // ✅ 获取当前用户的认证 token
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.access_token) {
+    throw new Error("请先登录");
+  }
+
   const response = await fetch(`/api/artworks/${artwork.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${session.access_token}`, // ✅ 携带认证 token
     },
     body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
   });
@@ -272,8 +289,18 @@ export const deleteImportedArtwork = async (artworkId: string) => {
     return;
   }
 
+  // ✅ 获取当前用户的认证 token
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.access_token) {
+    throw new Error("请先登录");
+  }
+
   const response = await fetch(`/api/artworks/${artworkId}`, {
     method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${session.access_token}`, // ✅ 携带认证 token
+    },
   });
 
   const payload = (await response.json()) as { ok?: boolean; error?: string };

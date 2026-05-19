@@ -23,6 +23,7 @@ export type ArtworkRow = {
   image_signature: ArtworkImageSignature | null;
   case_record: ArtworkCaseRecord | null;
   uploaded_by: string | null; // 上传者用户ID (UUID)
+  is_official: boolean | null; // 是否为官方/平台内容
   is_for_sale: boolean | null; // 是否可售
   price: number | null; // 售价
   currency: 'USD' | 'CNY' | null; // 货币单位
@@ -60,6 +61,7 @@ export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
   image_signature: artwork.imageSignature ?? null,
   case_record: artwork.caseRecord ?? null,
   uploaded_by: artwork.uploadedBy ?? null,
+  is_official: artwork.isOfficial ?? false,
   is_for_sale: artwork.isForSale ?? false,
   price: artwork.price ?? null,
   currency: artwork.currency ?? 'CNY',
@@ -84,6 +86,7 @@ export const rowToArtwork = (row: ArtworkRow): Artwork =>
     imageSignature: row.image_signature ?? undefined,
     caseRecord: row.case_record ?? undefined,
     uploadedBy: row.uploaded_by ?? undefined,
+    isOfficial: row.is_official ?? false,
     isForSale: row.is_for_sale ?? false,
     price: row.price ?? undefined,
     currency: row.currency ?? 'CNY',

@@ -8,6 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import type { Artwork, ArtworkCaseRecord } from "@/data/artworks";
+import { useRouter } from "next/router"; // ✅ 导入 useRouter
 import {
   Alert,
   Badge,
@@ -15,7 +16,6 @@ import {
   Button,
   Card,
   Container,
-  FileButton,
   Group,
   Paper,
   SimpleGrid,
@@ -29,22 +29,70 @@ import {
   IconCalendarEvent,
   IconCheck,
   IconDatabaseImport,
-  IconEdit,
+  IconLayoutList,
   IconLock,
+  IconPhoto,
+  IconPlus,
+  IconStar,
   IconTrash,
   IconUser,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import CasesManagementSection from "./CasesManagement"; // 导入管理组件
 
 export default function CasesSection() {
   const { locale, t } = useI18n();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const router = useRouter(); // ✅ 获取 router 实例
   const [items, setItems] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // 文件输入引用
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // 多图片上传状态
+  const [adminImages, setAdminImages] = useState<string[]>([]); // 所有图片URL数组
+  const [adminCoverIndex, setAdminCoverIndex] = useState<number>(0); // 封面照片索引
   
   // 管理状态
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [adminPreviewUrl, setAdminPreviewUrl] = useState<string | null>(null);
+  const [showManageMode, setShowManageMode] = useState(false); // ✅ 新增管理模式状态
+  
+  // ✅ 监听路由变化，当进入主页面时重置所有模式状态
+  useEffect(() => {
+    // 当路由为 /cases（不包含子路径如 /cases/[id]）时，重置到浏览模式
+    if (router.pathname === '/cases') {
+      setShowUploadForm(false);
+      setShowManageMode(false);
+    }
+  }, [router.asPath]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
+  
+  // 辅助函数：检查权限并处理重定向（如果需要）
+  // 注意：如果项目中 checkAuthAndRedirect 是全局或 hook 的一部分，请替换为实际调用
+  // 这里我们基于现有的 useAuth 简单实现逻辑判断
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      // 可以根据需要添加重定向逻辑，例如 router.push('/login')
+      // 目前仅依靠 UI 状态控制，因为原代码也是通过 user 状态控制显示
+      return false;
+    }
+    return true;
+  };
+
+  const handleUploadClick = () => {
+    if (!checkAuthAndRedirect()) return;
+    setShowUploadForm(true);
+    setShowManageMode(false); // ✅ 关闭管理模式
+  };
+
+  const handleManageClick = () => {
+    if (!checkAuthAndRedirect()) return;
+    setShowManageMode(true); // ✅ 开启管理模式
+    setShowUploadForm(false); // ✅ 关闭上传模式
+  };
+
+  const [adminCaseName, setAdminCaseName] = useState(""); // ✅ 案例名称(必填)
   const [adminItemDetails, setAdminItemDetails] = useState("");
   const [adminCaseId, setAdminCaseId] = useState("");
   const [adminSalePrice, setAdminSalePrice] = useState("");
@@ -58,48 +106,95 @@ export default function CasesSection() {
   const [adminError, setAdminError] = useState<string | null>(null);
   const [manageMessage, setManageMessage] = useState<string | null>(null);
   
-  // 编辑状态
-  const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
-  const [editItemDetails, setEditItemDetails] = useState("");
-  const [editCaseId, setEditCaseId] = useState("");
-  const [editSalePrice, setEditSalePrice] = useState("");
-  const [editSaleTime, setEditSaleTime] = useState("");
-  const [editSalePlatform, setEditSalePlatform] = useState("");
-  const [editClientRegion, setEditClientRegion] = useState("");
-  const [editLogisticsCost, setEditLogisticsCost] = useState("");
-  const [editPurchaseChannel, setEditPurchaseChannel] = useState("");
-  const [editPurchaseCost, setEditPurchaseCost] = useState("");
-  const [editRiskAdvice, setEditRiskAdvice] = useState("");
+  // ✅ 移除主展示页面的编辑功能,编辑只在管理模式中进行
 
   useEffect(() => {
-    void fetchKnowledgeBase().then(setItems);
+    void fetchKnowledgeBase().then((data) => {
+      setItems(data);
+      setIsLoading(false);
+    });
   }, []);
 
   // 根据用户角色过滤回流案例列表
   const cases = useMemo(() => {
     return items.filter((item) => {
+      // 只过滤掉没有 caseRecord 的数据
       if (!item.caseRecord) return false;
-      
-      // 管理员可以看到所有内容
-      if (isAdmin) return true;
-      
-      // 普通用户只能看到自己上传的内容或平台案例（没有 uploadedBy 的旧数据）
-      if (user && (item.uploadedBy === user.id || !item.uploadedBy)) return true;
-      
-      // 未登录用户只能看到平台案例
-      return !item.uploadedBy;
+      return true;
     });
-  }, [items, user, isAdmin]);
+  }, [items]);
 
-  const handleUpload = (file: File | null) => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setAdminPreviewUrl(url);
-    setAdminError(null);
+  const visibleItems = useMemo(() => {
+    return items.filter((item) => {
+      // ✅ 所有用户(包括未登录)都能看到所有回流案例
+      return true;
+    });
+  }, [items]);
+
+  const handleAdminUpload = async (files: File[] | null) => {
+    console.log('[Cases] handleAdminUpload called with files:', files);
+    if (!files || files.length === 0) {
+      console.log('[Cases] No files selected');
+      return;
+    }
+    
+    console.log('[Cases] Processing', files.length, 'files');
+    
+    try {
+      // ✅ 将文件转换为 Base64 Data URL (而不是 Blob URL)
+      const newUrls = await Promise.all(
+        files.map(file => {
+          return new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+      
+      console.log('[Cases] Created Base64 URLs:', newUrls.length, 'images');
+      
+      // 追加到现有图片数组（而不是替换）
+      setAdminImages(prevImages => {
+        const updatedImages = [...prevImages, ...newUrls];
+        console.log('[Cases] Updated images count:', updatedImages.length);
+        return updatedImages;
+      });
+      
+      // 如果是第一次上传，设置封面索引为 0
+      if (adminImages.length === 0) {
+        setAdminCoverIndex(0);
+      }
+      
+      setAdminError(null);
+    } catch (error) {
+      console.error('[Cases] Failed to convert images to base64:', error);
+      setAdminError(t("cases.imageConversionFailed"));
+    }
+  };
+
+  const handleSetCoverImage = (index: number) => {
+    setAdminCoverIndex(index);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = adminImages.filter((_, i) => i !== index);
+    setAdminImages(newImages);
+    // 如果删除的是封面，重置封面索引
+    if (index === adminCoverIndex) {
+      setAdminCoverIndex(0);
+    } else if (index < adminCoverIndex) {
+      setAdminCoverIndex(adminCoverIndex - 1);
+    }
   };
 
   const resetForm = () => {
-    setAdminPreviewUrl(null);
+    // 释放 URL 对象
+    adminImages.forEach(url => URL.revokeObjectURL(url));
+    setAdminImages([]);
+    setAdminCoverIndex(0);
+    setAdminCaseName(""); // ✅ 重置案例名称
     setAdminItemDetails("");
     setAdminCaseId("");
     setAdminSalePrice("");
@@ -110,23 +205,33 @@ export default function CasesSection() {
     setAdminPurchaseChannel("");
     setAdminPurchaseCost("");
     setAdminRiskAdvice("");
+    setManageMessage(null); // 清除成功消息
     setShowUploadForm(false);
   };
 
   const handleSaveToKnowledgeBase = async () => {
-    if (!adminPreviewUrl) {
-      setAdminError("请上传图片");
+    if (adminImages.length === 0) {
+      setAdminError(t("cases.atLeastOneImage"));
       return;
     }
 
     if (!user) {
-      setAdminError("请先登录");
+      setAdminError(locale === "zh" ? "请先登录" : "Please login first");
       return;
     }
 
     try {
+      // ✅ 验证案例名称必填
+      if (!adminCaseName.trim()) {
+        setAdminError(t("cases.pleaseEnterCaseName"));
+        return;
+      }
+
+      // ✅ 自动生成案例编号(如果用户未填写)
+      const generatedCaseId = adminCaseId || `CASE-${Date.now()}`;
+      
       const caseRecord: ArtworkCaseRecord = {
-        caseId: adminCaseId || "",
+        caseId: generatedCaseId,
         salePrice: adminSalePrice || "",
         saleTime: adminSaleTime || "",
         salePlatform: adminSalePlatform || "",
@@ -137,13 +242,17 @@ export default function CasesSection() {
         riskAdvice: adminRiskAdvice || "",
       };
 
+      // 使用选定的封面作为主图，所有图片放入 galleryImages
+      const coverImage = adminImages[adminCoverIndex];
+      
       const newArtwork: Artwork = {
         id: `imported-${Date.now()}`,
-        title: adminItemDetails || "未命名案例",
+        title: adminCaseName, // ✅ 使用独立的案例名称字段
         category: "misc",
         period: "",
-        image: adminPreviewUrl,
-        description: adminItemDetails || "",
+        image: coverImage,
+        galleryImages: adminImages,
+        description: adminItemDetails || "", // ✅ 描述使用详情字段
         listingType: "product",
         caseRecord,
         uploadedBy: user.id, // 记录上传者
@@ -152,85 +261,24 @@ export default function CasesSection() {
 
       await saveImportedArtwork(newArtwork);
 
-      setManageMessage("导入成功");
+      setManageMessage(t("cases.importSuccess"));
       resetForm();
       const updated = await fetchKnowledgeBase();
       setItems(updated);
     } catch (error: any) {
-      setAdminError(error.message || "导入失败");
-    }
-  };
-
-  const handleStartEdit = (artwork: Artwork) => {
-    setEditingArtworkId(artwork.id);
-    setEditItemDetails(artwork.description || "");
-    const cr = artwork.caseRecord;
-    setEditCaseId(cr?.caseId || "");
-    setEditSalePrice(cr?.salePrice || "");
-    setEditSaleTime(cr?.saleTime || "");
-    setEditSalePlatform(cr?.salePlatform || "");
-    setEditClientRegion(cr?.clientRegion || "");
-    setEditLogisticsCost(cr?.logisticsCost || "");
-    setEditPurchaseChannel(cr?.purchaseChannel || "");
-    setEditPurchaseCost(cr?.purchaseCost || "");
-    setEditRiskAdvice(cr?.riskAdvice || "");
-  };
-
-  const resetEditForm = () => {
-    setEditingArtworkId(null);
-    setEditItemDetails("");
-    setEditCaseId("");
-    setEditSalePrice("");
-    setEditSaleTime("");
-    setEditSalePlatform("");
-    setEditClientRegion("");
-    setEditLogisticsCost("");
-    setEditPurchaseChannel("");
-    setEditPurchaseCost("");
-    setEditRiskAdvice("");
-  };
-
-  const handleSaveEdit = async (artwork: Artwork) => {
-    try {
-      const caseRecord: ArtworkCaseRecord = {
-        caseId: editCaseId || "",
-        salePrice: editSalePrice || "",
-        saleTime: editSaleTime || "",
-        salePlatform: editSalePlatform || "",
-        clientRegion: editClientRegion || "",
-        logisticsCost: editLogisticsCost || "",
-        purchaseChannel: editPurchaseChannel || "",
-        purchaseCost: editPurchaseCost || "",
-        riskAdvice: editRiskAdvice || "",
-      };
-
-      const updatedArtwork: Artwork = {
-        ...artwork,
-        title: editItemDetails || artwork.title,
-        description: editItemDetails || artwork.description,
-        caseRecord,
-      };
-
-      await updateImportedArtwork(updatedArtwork);
-
-      setManageMessage("更新成功");
-      resetEditForm();
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
-    } catch (error: any) {
-      setAdminError(error.message || "更新失败");
+      setAdminError(error.message || t("cases.importFailed"));
     }
   };
 
   const handleDeleteImportedArtwork = async (id: string) => {
-    if (!confirm("确定要删除这个案例吗？")) return;
+    if (!confirm(t("cases.deleteConfirm"))) return;
     try {
       await deleteImportedArtwork(id);
-      setManageMessage("删除成功");
+      setManageMessage(t("cases.deleteSuccess"));
       const updated = await fetchKnowledgeBase();
       setItems(updated);
     } catch (error: any) {
-      setAdminError(error.message || "删除失败");
+      setAdminError(error.message || t("cases.deleteFailed"));
     }
   };
 
@@ -245,45 +293,90 @@ export default function CasesSection() {
 
   // 获取上传者显示名称
   const getUploaderInfo = (artwork: Artwork) => {
+    // 如果没有上传者信息，返回 null
     if (!artwork.uploadedBy) return null;
     
     // 只有管理员可以看到具体用户信息
     if (isAdmin) {
-      return artwork.uploadedBy === user?.id 
-        ? (locale === "zh" ? "我（管理员）" : "Me (Admin)")
-        : (locale === "zh" ? "其他用户" : "Other User");
+      // 如果是自己上传的
+      if (artwork.uploadedBy === user?.id) {
+        return t("cases.meAdmin");
+      }
+      
+      // 如果有 uploaderName（user_id），显示它；否则显示"其他用户"
+      if ((artwork as any).uploaderName) {
+        return (artwork as any).uploaderName;
+      }
+      
+      return t("cases.otherUser");
     }
     
     // 普通用户和未登录用户只能看到通用提示
-    return locale === "zh" ? "个人用户上传" : "Uploaded by Personal User";
+    return locale === "zh" ? "个人上传" : "Personal Upload";
   };
+
+  // 数据或认证加载中，显示统一的 Loading 状态
+  if (isLoading || authLoading) {
+    return (
+      <Container fluid pt={80} pb={120}>
+        <Text align="center">{t("cases.loading")}</Text>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid pt={80} pb={120}>
       <Stack spacing="xl">
-        {/* 标题和上传按钮 */}
+        {/* 标题和操作按钮 */}
         <Group position="apart">
           <Box>
             <Title order={2}>{t("support.caseTitle")}</Title>
             {user && !isAdmin && (
               <Text size="sm" color="dimmed" mt={4}>
-                {locale === "zh" ? "个人用户模式：您可以上传和管理自己的回流案例" : "Personal User Mode: You can upload and manage your own cases"}
+                {t("cases.personalUserModeText")}
               </Text>
             )}
             {isAdmin && (
               <Text size="sm" color="dimmed" mt={4}>
-                {locale === "zh" ? "管理员模式：您可以管理所有用户的回流案例" : "Admin Mode: You can manage all users' cases"}
+                {t("cases.adminModeText")}
               </Text>
             )}
           </Box>
-          {user && !showUploadForm && (
-            <Button
-              onClick={() => setShowUploadForm(true)}
-              leftIcon={<IconDatabaseImport size={18} />}
-            >
-              {locale === "zh" ? "上传新案例" : "Upload New Case"}
-            </Button>
-          )}
+          <Group spacing="sm">
+            {/* ✅ 上传按钮 - 所有登录用户可见(回流案例允许普通用户上传) */}
+            {user && !showUploadForm && !showManageMode && (
+              <>
+                <Button
+                  onClick={handleUploadClick}
+                  leftIcon={<IconDatabaseImport size={18} />}
+                >
+                  {t("cases.uploadNewCaseButton")}
+                </Button>
+                
+                {/* 管理按钮 - 所有登录用户可见 */}
+                <Button
+                  variant={isAdmin ? "default" : "filled"}
+                  color={isAdmin ? undefined : "violet"}
+                  onClick={handleManageClick}
+                  leftIcon={<IconLayoutList size={18} />}
+                >
+                  {t("cases.manageCasesButton")}
+                </Button>
+              </>
+            )}
+            {(showUploadForm || showManageMode) && (
+              <Button
+                variant="subtle"
+                onClick={() => {
+                  setShowUploadForm(false);
+                  setShowManageMode(false);
+                }}
+                leftIcon={<IconX size={16} />}
+              >
+                {t("cases.exitOperation")}
+              </Button>
+            )}
+          </Group>
         </Group>
 
         {/* 上传表单 */}
@@ -291,100 +384,270 @@ export default function CasesSection() {
           <Paper p="xl">
             <Stack spacing="lg">
               <Group position="apart">
-                <Title order={3}>{locale === "zh" ? "上传回流案例" : "Upload Return Case"}</Title>
+                <Title order={3}>{t("cases.uploadReturnCaseTitle")}</Title>
                 <Button
                   variant="subtle"
-                  onClick={() => setShowUploadForm(false)}
+                  onClick={() => {
+                    setShowUploadForm(false);
+                    resetForm();
+                  }}
                   leftIcon={<IconX size={16} />}
                 >
-                  {locale === "zh" ? "取消" : "Cancel"}
+                  {t("cases.cancelButton")}
                 </Button>
               </Group>
 
               {adminError && (
-                <Alert color="red" title={locale === "zh" ? "错误" : "Error"}>
+                <Alert color="red" title={t("cases.error")}>
                   {adminError}
                 </Alert>
               )}
 
-              <FileButton onChange={handleUpload} accept="image/*">
-                {(props) => (
-                  <Button {...props} leftIcon={<IconDatabaseImport size={18} />}>
-                    {locale === "zh" ? "选择图片" : "Select Image"}
-                  </Button>
-                )}
-              </FileButton>
+              <TextInput
+                label={t("cases.caseNameRequired")}
+                value={adminCaseName}
+                onChange={(event) => setAdminCaseName(event.currentTarget.value)}
+                placeholder={t("cases.enterCaseNameRequired")}
+                required
+              />
 
-              {adminPreviewUrl && (
-                <Box sx={{ height: 300, border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(34, 39, 47, 0.5)" }}>
-                  <Box component="img" src={adminPreviewUrl} alt="Preview" sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-                </Box>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  console.log('[Cases] Input onChange triggered');
+                  const files = Array.from(e.target.files || []);
+                  console.log('[Cases] Files selected:', files.length, files);
+                  handleAdminUpload(files);
+                  // 清空 input 值，允许重复选择相同文件
+                  e.target.value = '';
+                }}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[Cases] Native button clicked');
+                  console.log('[Cases] File input ref:', fileInputRef.current);
+                  if (fileInputRef.current) {
+                    console.log('[Cases] Triggering click via ref');
+                    fileInputRef.current.click();
+                  } else {
+                    console.error('[Cases] File input ref is null!');
+                  }
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  backgroundColor: '#d8b76d',
+                  color: '#000',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '14px'
+                }}
+              >
+                <IconDatabaseImport size={18} />
+                {locale === "zh" ? "可上传多张图片" : t("cases.uploadImagesMultiple")}
+              </button>
+
+              {adminImages.length > 0 && (
+                <Stack spacing="md">
+                  {/* 封面照片大图预览 */}
+                  <Box 
+                    sx={{ 
+                      height: 300, 
+                      border: "2px solid rgba(216, 183, 109, 0.4)", 
+                      borderRadius: 8, 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "center", 
+                      background: "rgba(34, 39, 47, 0.5)",
+                      position: "relative",
+                      overflow: "hidden"
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={adminImages[adminCoverIndex]} 
+                      alt="Cover Preview" 
+                      sx={{ 
+                        maxWidth: "100%", 
+                        maxHeight: "100%", 
+                        width: "auto",
+                        height: "auto",
+                        objectFit: "contain",
+                        display: "block"
+                      }}
+                    />
+                    <Badge 
+                      color="yellow" 
+                      variant="filled"
+                      sx={{ 
+                        position: "absolute", 
+                        top: 10, 
+                        right: 10,
+                        fontSize: 14,
+                        padding: "6px 12px"
+                      }}
+                    >
+                      <IconStar size={14} style={{ marginRight: 4 }} />
+                      {t("cases.coverPhoto")}
+                    </Badge>
+                  </Box>
+
+                  {/* 所有图片缩略图网格 */}
+                  <div>
+                    <Text weight={600} mb="sm">
+                      {t("cases.allPhotos")} ({adminImages.length} {t("cases.photosCount")})
+                    </Text>
+                    <SimpleGrid cols={4} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
+                      {adminImages.map((url, index) => (
+                        <Box 
+                          key={index} 
+                          sx={{ 
+                            position: "relative",
+                            border: adminCoverIndex === index ? "2px solid #D8B76D" : "1px solid rgba(216, 183, 109, 0.18)",
+                            borderRadius: 8, 
+                            height: 120, 
+                            display: "flex", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            background: "rgba(34, 39, 47, 0.5)",
+                            cursor: "pointer"
+                          }}
+                          onClick={() => handleSetCoverImage(index)}
+                        >
+                          <Box component="img" src={url} alt={`Preview ${index}`} sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                          {adminCoverIndex === index && (
+                            <Badge 
+                              variant="filled" 
+                              color="yellow" 
+                              sx={{ position: "absolute", top: -8, right: -8, zIndex: 2 }}
+                            >
+                              {t("cases.cover")}
+                            </Badge>
+                          )}
+                          <Button
+                            variant="subtle"
+                            color="red"
+                            size="xs"
+                            sx={{ position: "absolute", bottom: 4, right: 4, opacity: 0.8 }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveImage(index);
+                            }}
+                          >
+                            <IconTrash size={14} />
+                          </Button>
+                        </Box>
+                      ))}
+                      
+                      {/* 添加更多图片按钮 */}
+                      <Box
+                        onClick={() => fileInputRef.current?.click()}
+                        sx={{
+                          height: 120,
+                          border: "2px dashed rgba(216, 183, 109, 0.4)",
+                          borderRadius: 8,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background: "rgba(34, 39, 47, 0.3)",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            borderColor: "#d8b76d",
+                            background: "rgba(216, 183, 109, 0.1)"
+                          }
+                        }}
+                      >
+                        <IconPlus size={32} color="#d8b76d" />
+                        <Text size="sm" color="dark.1" mt="xs">
+                          {t("cases.addImages")}
+                        </Text>
+                      </Box>
+                    </SimpleGrid>
+                  </div>
+                </Stack>
               )}
 
               <Textarea
-                label={locale === "zh" ? "案例详情" : "Case Details"}
+                label={t("cases.caseDetails")}
                 value={adminItemDetails}
                 onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
-                placeholder={locale === "zh" ? "请输入案例的详细介绍、背景信息等" : "Enter case details and background information"}
+                placeholder={t("cases.enterCaseDetails")}
                 minRows={3}
               />
 
-              <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                <TextInput
-                  label={locale === "zh" ? "回流编号" : "Case ID"}
-                  value={adminCaseId}
-                  onChange={(event) => setAdminCaseId(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "留空则自动生成（格式：CASE-XXXXX-XXXX）" : "Leave empty for auto-generation (Format: CASE-XXXXX-XXXX)"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "成交价格" : "Sale Price"}
-                  value={adminSalePrice}
-                  onChange={(event) => setAdminSalePrice(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: ¥50,000" : "e.g., ¥50,000"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "成交时间" : "Sale Time"}
-                  value={adminSaleTime}
-                  onChange={(event) => setAdminSaleTime(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: 2024-01-15" : "e.g., 2024-01-15"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "交易平台" : "Platform"}
-                  value={adminSalePlatform}
-                  onChange={(event) => setAdminSalePlatform(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: 苏富比" : "e.g., Sotheby's"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "客户地区" : "Client Region"}
-                  value={adminClientRegion}
-                  onChange={(event) => setAdminClientRegion(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: 北京" : "e.g., Beijing"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "物流成本" : "Logistics Cost"}
-                  value={adminLogisticsCost}
-                  onChange={(event) => setAdminLogisticsCost(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: ¥2,000" : "e.g., ¥2,000"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "收购渠道" : "Purchase Channel"}
-                  value={adminPurchaseChannel}
-                  onChange={(event) => setAdminPurchaseChannel(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: 私人收藏" : "e.g., Private Collection"}
-                />
-                <TextInput
-                  label={locale === "zh" ? "收购成本" : "Purchase Cost"}
-                  value={adminPurchaseCost}
-                  onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)}
-                  placeholder={locale === "zh" ? "例如: ¥30,000" : "e.g., ¥30,000"}
-                />
-              </SimpleGrid>
+              <TextInput
+                label={t("cases.caseIdLabel")}
+                value={adminCaseId}
+                onChange={(event) => setAdminCaseId(event.currentTarget.value)}
+                placeholder={t("cases.autoGenerateCaseId")}
+              />
+
+              <TextInput
+                label={t("cases.salePriceLabel")}
+                value={adminSalePrice}
+                onChange={(event) => setAdminSalePrice(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：¥50,000" : "e.g., ¥50,000"}
+              />
+
+              <TextInput
+                label={t("cases.saleTimeLabel")}
+                value={adminSaleTime}
+                onChange={(event) => setAdminSaleTime(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：2024-01-15" : "e.g., 2024-01-15"}
+              />
+
+              <TextInput
+                label={t("cases.platformLabel")}
+                value={adminSalePlatform}
+                onChange={(event) => setAdminSalePlatform(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：苏富比" : "e.g., Sotheby's"}
+              />
+
+              <TextInput
+                label={t("cases.clientRegionLabel")}
+                value={adminClientRegion}
+                onChange={(event) => setAdminClientRegion(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：北京" : "e.g., Beijing"}
+              />
+
+              <TextInput
+                label={t("cases.logisticsCostLabel")}
+                value={adminLogisticsCost}
+                onChange={(event) => setAdminLogisticsCost(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：¥2,000" : "e.g., ¥2,000"}
+              />
+
+              <TextInput
+                label={t("cases.purchaseChannelLabel")}
+                value={adminPurchaseChannel}
+                onChange={(event) => setAdminPurchaseChannel(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：私人收藏" : "e.g., Private Collection"}
+              />
+
+              <TextInput
+                label={t("cases.purchaseCostLabel")}
+                value={adminPurchaseCost}
+                onChange={(event) => setAdminPurchaseCost(event.currentTarget.value)}
+                placeholder={locale === "zh" ? "例如：¥30,000" : "e.g., ¥30,000"}
+              />
 
               <Textarea
-                label={locale === "zh" ? "避坑建议" : "Risk Advice"}
+                label={t("cases.riskAdviceLabel")}
                 value={adminRiskAdvice}
                 onChange={(event) => setAdminRiskAdvice(event.currentTarget.value)}
-                placeholder={locale === "zh" ? "请输入相关的避坑建议和经验分享" : "Enter risk advice and experience sharing"}
+                placeholder={t("cases.enterRiskAdvice")}
                 minRows={2}
               />
 
@@ -394,14 +657,14 @@ export default function CasesSection() {
                   onClick={resetForm}
                   leftIcon={<IconX size={16} />}
                 >
-                  {locale === "zh" ? "取消" : "Cancel"}
+                  {t("cases.cancel")}
                 </Button>
                 <Button
                   onClick={handleSaveToKnowledgeBase}
                   leftIcon={<IconCheck size={16} />}
-                  disabled={!adminPreviewUrl}
+                  disabled={adminImages.length === 0}
                 >
-                  {locale === "zh" ? "保存案例" : "Save Case"}
+                  {t("cases.saveCase")}
                 </Button>
               </Group>
             </Stack>
@@ -410,20 +673,54 @@ export default function CasesSection() {
 
         {/* 操作消息提示 */}
         {manageMessage && (
-          <Alert color="green" title={locale === "zh" ? "操作成功" : "Success"}>
+          <Alert color="green" title={t("cases.success")}>
             {manageMessage}
           </Alert>
         )}
 
-        {/* 案例列表 */}
-        {cases.length === 0 ? (
+        {/* ✅ 管理模式 - 显示可编辑的案例列表 */}
+        {showManageMode && (
+          <Box sx={{ width: "100%" }}>
+            <CasesManagementSection 
+              userId={user?.id} 
+              isAdmin={isAdmin} 
+              embedded={true}
+              mode="manage"
+              onDataUpdate={async () => {
+                // ✅ 保存成功后立即刷新父组件数据
+                try {
+                  const updated = await fetchKnowledgeBase();
+                  setItems(updated);
+                  console.log('[Cases] Data refreshed after edit');
+                } catch (error) {
+                  console.error('[Cases] Failed to refresh data:', error);
+                }
+              }}
+              onCancel={async () => {
+                setShowManageMode(false);
+                setShowUploadForm(false);
+                
+                // ✅ 重新从服务器加载最新数据（取消时也需要确保同步）
+                try {
+                  const updated = await fetchKnowledgeBase();
+                  setItems(updated);
+                } catch (error) {
+                  console.error('[Cases] Failed to refresh data:', error);
+                }
+              }}
+            />
+          </Box>
+        )}
+
+        {/* 案例列表 - 仅在非管理/上传模式下显示 */}
+        {!showManageMode && !showUploadForm && cases.length === 0 ? (
           <Alert color="blue">
             {!user 
-              ? (locale === "zh" ? "暂无公开的回流案例。登录后可以上传个人案例。" : "No public return cases yet. Login to upload your own cases.")
-              : (locale === "zh" ? "暂无回流案例。点击上方的\"上传新案例\"按钮开始上传。" : "No return cases yet. Click \"Upload New Case\" above to start uploading.")
+              ? t("cases.noPublicCasesLogin")
+              : t("cases.noCasesUploadPrompt")
             }
           </Alert>
-        ) : (
+        ) : !showManageMode && !showUploadForm && (
           <SimpleGrid cols={3} spacing="xl" breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}>
             {cases.map((item) => {
               const caseRecord = item.caseRecord;
@@ -433,11 +730,12 @@ export default function CasesSection() {
               const itemDescription = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
 
               // 判断案例类型
-              // 如果是管理员上传的（当前用户是管理员且上传者是当前用户），或者没有 uploadedBy（旧数据），则显示"平台上传"
-              const isPlatformCase = !item.uploadedBy || (isAdmin && item.uploadedBy === user?.id);
+              // ✅ isOfficial=true → "平台上传"(管理员上传)
+              // ✅ isOfficial=false 或 undefined → "个人用户上传"
+              const isPlatformCase = item.isOfficial === true;
               const caseTypeLabel = isPlatformCase 
-                ? (locale === "zh" ? "平台上传" : "Platform Upload")
-                : (locale === "zh" ? "个人用户上传" : "Personal User Upload");
+                ? t("cases.platformUpload")
+                : t("cases.personalUserUpload");
 
               const uploaderInfo = getUploaderInfo(item);
 
@@ -465,7 +763,7 @@ export default function CasesSection() {
                             zIndex: 10
                           }}
                         >
-                          📷 {item.galleryImages.length} 张照片
+                          📷 {item.galleryImages.length}{t("cases.photosCountBadge")}
                         </Badge>
                       )}
                     </Box>
@@ -473,9 +771,7 @@ export default function CasesSection() {
                   
                   <Stack spacing="sm" mt="md">
                     <Group spacing="xs">
-                      <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
-                        {t("support.caseCardBadge")}
-                      </Badge>
+                      {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
                       <Badge 
                         color={isPlatformCase ? "blue" : "green"} 
                         variant="outline"
@@ -483,8 +779,8 @@ export default function CasesSection() {
                       >
                         {caseTypeLabel}
                       </Badge>
-                      {/* 上传者信息 - 仅对非平台案例显示 */}
-                      {!isPlatformCase && uploaderInfo && (
+                      {/* ✅ 管理员可见的详细上传者信息 */}
+                      {isAdmin && !isPlatformCase && uploaderInfo && (
                         <Badge 
                           color="gray" 
                           variant="light"
@@ -498,94 +794,16 @@ export default function CasesSection() {
                     
                     <Title order={3} size="h3">{itemTitle}</Title>
                     
-                    <Group spacing={8} color="dark.1">
-                      <IconCalendarEvent size={16} />
-                      <Text size="sm" color="dark.1">{caseRecord.saleTime}</Text>
-                    </Group>
-                    
-                    <Text size="sm" color="dark.1" lineClamp={3}>
-                      {itemDescription}
-                    </Text>
-
-                    {/* 编辑表单 */}
-                    {editingArtworkId === item.id ? (
-                      <Stack spacing="sm">
-                        <Textarea
-                          label={locale === "zh" ? "案例详情" : "Case Details"}
-                          value={editItemDetails}
-                          onChange={(event) => setEditItemDetails(event.currentTarget.value)}
-                          minRows={2}
-                        />
-                        <SimpleGrid cols={2} spacing="xs">
-                          <TextInput
-                            label={locale === "zh" ? "回流编号" : "Case ID"}
-                            value={editCaseId}
-                            onChange={(event) => setEditCaseId(event.currentTarget.value)}
-                          />
-                          <TextInput
-                            label={locale === "zh" ? "成交价格" : "Sale Price"}
-                            value={editSalePrice}
-                            onChange={(event) => setEditSalePrice(event.currentTarget.value)}
-                          />
-                          <TextInput
-                            label={locale === "zh" ? "成交时间" : "Sale Time"}
-                            value={editSaleTime}
-                            onChange={(event) => setEditSaleTime(event.currentTarget.value)}
-                          />
-                          <TextInput
-                            label={locale === "zh" ? "交易平台" : "Platform"}
-                            value={editSalePlatform}
-                            onChange={(event) => setEditSalePlatform(event.currentTarget.value)}
-                          />
-                        </SimpleGrid>
-                        <Group position="right">
-                          <Button
-                            variant="default"
-                            size="xs"
-                            onClick={resetEditForm}
-                            leftIcon={<IconX size={14} />}
-                          >
-                            {locale === "zh" ? "取消" : "Cancel"}
-                          </Button>
-                          <Button
-                            size="xs"
-                            onClick={() => handleSaveEdit(item)}
-                            leftIcon={<IconCheck size={14} />}
-                          >
-                            {locale === "zh" ? "保存" : "Save"}
-                          </Button>
-                        </Group>
-                      </Stack>
-                    ) : (
-                      <>
-                        <Button component={Link} href={`/cases/${item.id}`} variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
-                          {t("image.caseOpen")}
-                        </Button>
-                        
-                        {/* 编辑和删除按钮 - 仅对可编辑的案例显示 */}
-                        {canEdit(item) && (
-                          <Group spacing="xs">
-                            <Button
-                              variant="subtle"
-                              size="xs"
-                              onClick={() => handleStartEdit(item)}
-                              leftIcon={<IconEdit size={14} />}
-                            >
-                              {locale === "zh" ? "编辑" : "Edit"}
-                            </Button>
-                            <Button
-                              variant="subtle"
-                              color="red"
-                              size="xs"
-                              onClick={() => handleDeleteImportedArtwork(item.id)}
-                              leftIcon={<IconTrash size={14} />}
-                            >
-                              {locale === "zh" ? "删除" : "Delete"}
-                            </Button>
-                          </Group>
-                        )}
-                      </>
+                    {caseRecord.saleTime && (
+                      <Group spacing={8} color="dark.1">
+                        <Text size="sm" color="dark.1">{caseRecord.saleTime}</Text>
+                      </Group>
                     )}
+
+                    {/* ✅ 移除编辑功能,只保留查看链接 */}
+                    <Button component={Link} href={`/cases/${item.id}`} variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+                      {t("image.caseOpen")}
+                    </Button>
                   </Stack>
                 </Card>
               );

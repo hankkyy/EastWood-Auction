@@ -58,10 +58,12 @@ export type Artwork = {
   imageSignature?: ArtworkImageSignature;
   caseRecord?: ArtworkCaseRecord;
   uploadedBy?: string; // 上传者用户ID (UUID)
+  uploaderName?: string; // 上传者显示名称 (user_id)
   isForSale?: boolean; // 是否可售
   price?: number; // 售价
   currency?: 'USD' | 'CNY'; // 货币单位
   collectionId?: string; // 藏品编号（唯一标识）
+  isOfficial?: boolean; // 是否为平台上传（管理员上传）
 };
 
 export const artworks: Artwork[] = [];

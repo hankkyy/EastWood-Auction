@@ -23,13 +23,11 @@ import React, { useState, useEffect } from "react";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/hooks/useAuth";
 
 // 动态导入认证相关组件，禁用 SSR
 const AuthModal = dynamic(() => import("@/components/AuthModal"), { ssr: false });
 const ProfileModal = dynamic(() => import("@/components/ProfileModal"), { ssr: false });
-
-// 动态导入 useAuth hook
-const useAuthModule = typeof window !== "undefined" ? require("@/hooks/useAuth") : null;
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -138,13 +136,8 @@ export default function TopNav() {
   const router = useRouter();
   const { t } = useI18n();
   
-  // 仅在客户端使用 useAuth
-  const { user, loading, logout, isAdmin } = useAuthModule?.useAuth?.() || {
-    user: null,
-    loading: false,
-    logout: async () => {},
-    isAdmin: false,
-  };
+  // 直接使用 useAuth hook
+  const { user, loading, logout, isAdmin } = useAuth();
 
   const urlResolver = (url: string): boolean => {
     return router.pathname === url;

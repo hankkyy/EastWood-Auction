@@ -27,12 +27,16 @@ export default function CollectionDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [items, setItems] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const collectionId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
-    void fetchKnowledgeBase().then(setItems);
+    void fetchKnowledgeBase().then((data) => {
+      setItems(data);
+      setIsLoading(false);
+    });
   }, []);
 
   const item = useMemo(
@@ -40,19 +44,17 @@ export default function CollectionDetailPage() {
     [collectionId, items]
   );
 
-  // 构建画廊图片数组（包含封面和所有 galleryImages）
+  // 构建画廊图片数组（直接使用 galleryImages，如果没有则使用 image）
   const gallery = useMemo(() => {
     if (!item) return [];
-    const allImages = [item.image];
+    
+    // 优先使用 galleryImages
     if (item.galleryImages && item.galleryImages.length > 0) {
-      // 添加 galleryImages 中不等于封面的图片
-      item.galleryImages.forEach((img) => {
-        if (img !== item.image) {
-          allImages.push(img);
-        }
-      });
+      return item.galleryImages;
     }
-    return allImages;
+    
+    // 如果没有 galleryImages，使用 image 作为单张图片
+    return [item.image];
   }, [item]);
 
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
@@ -87,6 +89,19 @@ export default function CollectionDetailPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gallery, lightboxOpened]);
+
+  // 数据加载中，显示统一的 Loading 状态
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <AnimatedBox>
+          <Container py={80}>
+            <Text align="center">{locale === "zh" ? "加载中..." : "Loading..."}</Text>
+          </Container>
+        </AnimatedBox>
+      </Wrapper>
+    );
+  }
 
   if (!item) {
     return (
@@ -223,7 +238,12 @@ export default function CollectionDetailPage() {
                             component="img"
                             src={imageUrl}
                             alt={`Photo ${index + 1}`}
-                            sx={{ width: "100%", height: 80, objectFit: "cover" }}
+                            sx={{ 
+                              width: "100%", 
+                              height: 80, 
+                              objectFit: "contain",
+                              backgroundColor: "rgba(34, 39, 47, 0.5)"
+                            }}
                           />
                         </Box>
                       ))}
