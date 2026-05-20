@@ -338,7 +338,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   }
 
   return (
-    <Container fluid pt={80} pb={120}>
+    <Container fluid pt={80} pb={120} px={72}> {/* ✅ 增加左右内边距 */}
       <Stack spacing="xl">
         {/* 标题和操作按钮 */}
         <Group position="apart">
@@ -736,11 +736,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
         ) : !showManageMode && !showUploadForm && (
           <SimpleGrid 
             cols={3} 
-            spacing="xl" 
+            spacing={56} // ✅ 增加卡片间距（从 xl 改为 56px）
             breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}
             sx={{ 
               paddingLeft: 48, // ✅ 增加左边距
-              paddingRight: 48 // ✅ 增加右边距
+              paddingRight: 48, // ✅ 增加右边距
+              marginTop: 64, // ✅ 增加顶部间距
+              marginBottom: 64 // ✅ 增加底部间距
             }}
           >
             {cases.map((item) => {

@@ -34,7 +34,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   bg: {
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学画廊背景（明亮、典雅）
+      : `url(https://images.unsplash.com/photo-1566054719594-bf2e32c769a2?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
@@ -263,7 +263,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
       {/* Content Section - 上传按钮和藏品列表在图片下面 */}
       <Box className={classes.contentWrapper}>
-        <Container fluid>
+        <Container fluid px={72}> {/* ✅ 增加左右内边距 */}
           <Stack spacing="xl">
             {/* ✅ 操作按钮区域 - 仅管理员可见(普通用户不需要看到) */}
             {isAdmin && !showUploadForm && !showManageMode && (
@@ -380,13 +380,13 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     <Tabs.Panel key={category.value} value={category.value} pt="xl">
                       <SimpleGrid
                         cols={3}
-                        spacing={48} // ✅ 增加左右间距（从 36 改为 48）
+                        spacing={56} // ✅ 增加左右间距（从 48 改为 56）
                         breakpoints={[
                           { maxWidth: "md", cols: 2, spacing: "lg" },
                           { maxWidth: "sm", cols: 1, spacing: "md" },
                         ]}
                         sx={{ 
-                          marginTop: 64, // ✅ 增加上下间距（从 48 改为 64）
+                          marginTop: 64, // ✅ 增加上下间距
                           paddingLeft: 48, // ✅ 增加左边距
                           paddingRight: 48 // ✅ 增加右边距
                         }}
