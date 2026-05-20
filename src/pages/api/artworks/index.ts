@@ -8,8 +8,8 @@ import {
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
+import { verifySupabaseUser } from "@/lib/supabase/auth";
 import { getSupabaseAdmin, getSupabaseBucket } from "@/lib/supabase/server";
-import { createClient } from "@supabase/supabase-js";
 
 export const config = {
   api: {
@@ -38,98 +38,6 @@ const parseDataUrl = (value: string) => {
     extension: extension === "jpeg" ? "jpg" : extension,
     buffer: Buffer.from(base64Payload, "base64"),
   };
-};
-
-// ✅ 验证用户权限（返回用户信息，包含角色）
-const verifyUser = async (req: NextApiRequest) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.warn('[API] No authorization header provided');
-    return { isAuthenticated: false, error: "Authorization required" };
-  }
-
-  const token = authHeader.substring(7);
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('[API] Supabase not configured');
-    return { isAuthenticated: false, error: "Supabase not configured" };
-  }
-
-  try {
-    console.log('[API] Verifying user token...');
-    
-    // 使用匿名密钥验证用户身份
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-
-    if (authError) {
-      console.error('[API] Auth verification failed:', authError.message);
-      return { isAuthenticated: false, error: "Invalid token" };
-    }
-
-    if (!user) {
-      console.error('[API] No user found in token');
-      return { isAuthenticated: false, error: "Invalid token" };
-    }
-
-    console.log('[API] User authenticated:', user.id);
-
-    // 使用服务角色密钥查询用户角色
-    const supabaseAdmin = getSupabaseAdmin();
-    
-    let { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    // 如果 profile 不存在，自动创建一个默认 user 角色的 profile
-    if (profileError || !profile) {
-      console.log(`[API] Profile not found for user ${user.id}, creating default profile...`);
-      
-      const lastName = user.email?.split('@')[0] || 'User';
-      const baseUserId = lastName.toLowerCase().replace(/[^a-z]/g, '');
-      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-      const tempUserId = (baseUserId || 'user') + randomNum;
-      
-      const { data: newProfile, error: createError } = await supabaseAdmin
-        .from("profiles")
-        .insert({
-          id: user.id,
-          email: user.email,
-          role: 'user',
-          first_name: '',
-          last_name: lastName,
-          user_id: tempUserId,
-        } as any)
-        .select("role")
-        .single();
-
-      if (createError || !newProfile) {
-        console.error('[API] Failed to create profile:', createError);
-        return { isAuthenticated: false, error: "Failed to create user profile" };
-      }
-
-      profile = newProfile as any;
-      console.log(`[API] Created default profile for user ${user.id} with role: ${(profile as any)?.role}`);
-    }
-
-    console.log('[API] User verification successful, role:', (profile as any)?.role);
-    
-    return { 
-      isAuthenticated: true, 
-      userId: user.id,
-      isAdmin: (profile as any)?.role === "admin",
-      role: (profile as any)?.role
-    };
-  } catch (error) {
-    console.error('[API] Authentication error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return { isAuthenticated: false, error: `Authentication failed: ${errorMessage}` };
-  }
 };
 
 const persistGalleryImages = async (
@@ -250,13 +158,13 @@ export default async function handler(
     }
 
     // 验证用户登录状态（不限制角色）
-    const { isAuthenticated, userId, isAdmin, error: authError } = await verifyUser(req);
-    if (!isAuthenticated) {
-      return res.status(403).json({ error: authError || "Forbidden" });
+    const auth = await verifySupabaseUser(req);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ error: auth.error });
     }
 
     try {
-      const sanitizedArtwork = sanitizeArtworkForCreate(artwork, Boolean(isAdmin), userId);
+      const sanitizedArtwork = sanitizeArtworkForCreate(artwork, auth.isAdmin, auth.userId);
       const uploadedImages = await persistGalleryImages(sanitizedArtwork);
       const supabase = getSupabaseAdmin();
 

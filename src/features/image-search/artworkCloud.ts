@@ -5,6 +5,7 @@ import type {
   ArtworkImageSignature,
   ArtworkListingType,
 } from "@/data/artworks";
+import { hasSupabaseClientConfig } from "@/lib/supabase/config";
 
 export type ArtworkRow = {
   id: string;
@@ -32,10 +33,7 @@ export type ArtworkRow = {
   updated_at?: string;
 };
 
-export const isSupabaseConfigured = () =>
-  Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+export const isSupabaseConfigured = hasSupabaseClientConfig;
 
 export const normalizeArtwork = (artwork: Artwork): Artwork => ({
   ...artwork,

@@ -1,15 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import { assertSupabaseClientConfig } from "@/lib/supabase/config";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const { url, anonKey } = assertSupabaseClientConfig();
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Supabase client credentials are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
-  );
-}
-
-export const supabase = createClient<any>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<any>(url, anonKey);
 
 // Profile 类型定义（对应数据库 profiles 表）
 export type Profile = {

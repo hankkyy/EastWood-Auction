@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { verifySupabaseUser } from "@/lib/supabase/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 type AdminProfileRow = {
@@ -13,62 +13,16 @@ type AdminProfileRow = {
   updated_at: string;
 };
 
-type VerifyAdminResult =
-  | {
-      ok: true;
-      userId: string;
-    }
-  | {
-      ok: false;
-      status: number;
-      error: string;
-    };
-
-const verifyAdmin = async (req: NextApiRequest): Promise<VerifyAdminResult> => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return { ok: false, status: 401, error: "Authorization required" };
-  }
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return { ok: false, status: 500, error: "Supabase not configured" };
-  }
-
-  const token = authHeader.substring(7);
-  const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-  const {
-    data: { user },
-    error: authError,
-  } = await supabaseClient.auth.getUser(token);
-
-  if (authError || !user) {
-    return { ok: false, status: 401, error: "Invalid token" };
-  }
-
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data: profile, error: profileError } = await supabaseAdmin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profileError || !profile || (profile as any).role !== "admin") {
-    return { ok: false, status: 403, error: "Admin access required" };
-  }
-
-  return { ok: true, userId: user.id };
-};
-
 const toSerializable = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const auth = await verifyAdmin(req);
+  const auth = await verifySupabaseUser(req);
   if (!auth.ok) {
     return res.status(auth.status).json({ error: auth.error });
+  }
+
+  if (!auth.isAdmin) {
+    return res.status(403).json({ error: "Admin access required" });
   }
 
   const supabase = getSupabaseAdmin();

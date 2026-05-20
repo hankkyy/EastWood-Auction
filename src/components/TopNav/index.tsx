@@ -24,6 +24,8 @@ import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/useAuth";
+import { notifications } from "@mantine/notifications";
+import { IconInbox } from "@tabler/icons-react";
 
 // 动态导入认证相关组件，禁用 SSR
 const AuthModal = dynamic(() => import("@/components/AuthModal"), { ssr: false });
@@ -154,6 +156,22 @@ export default function TopNav() {
   
   // 直接使用 useAuth hook
   const { user, loading, logout, isAdmin } = useAuth();
+
+  const handleInquiryClick = () => {
+    closeDrawer();
+
+    if (!loading && !user) {
+      notifications.show({
+        title: t("inquiry.loginRequiredTitle"),
+        message: t("inquiry.loginRequiredMessage"),
+        color: "yellow",
+      });
+      void router.push("/inquiries?authRequired=1");
+      return;
+    }
+
+    void router.push("/inquiries");
+  };
 
   const urlResolver = (url: string): boolean => {
     return router.pathname === url;
@@ -333,6 +351,16 @@ export default function TopNav() {
             
             {/* 辅助操作按钮 */}
             <Stack spacing="md">
+              <Button
+                variant="light"
+                color="yellow"
+                fullWidth
+                size="md"
+                onClick={handleInquiryClick}
+                leftIcon={<IconInbox size={18} />}
+              >
+                {t("inquiry.entryButton")}
+              </Button>
               {/* 语言选择器 */}
               <Box sx={{ marginTop: 8 }}>
                 <LanguagePicker mobile />

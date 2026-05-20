@@ -1,19 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { assertSupabaseServerConfig } from "@/lib/supabase/config";
 
 let cachedClient: ReturnType<typeof createClient<any>> | null = null;
 
 export const getSupabaseAdmin = () => {
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Supabase server credentials are missing. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
-    );
-  }
+  const { url, serviceRoleKey } = assertSupabaseServerConfig();
 
   if (!cachedClient) {
-    cachedClient = createClient<any>(supabaseUrl, serviceRoleKey, {
+    cachedClient = createClient<any>(url, serviceRoleKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
