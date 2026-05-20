@@ -164,9 +164,10 @@ const mapArtworkCategory = (artwork: Artwork): string => {
 
 interface CollectionsSectionProps {
   initialData?: Artwork[];
+  shopMode?: boolean; // ✅ 商店模式：只显示可售藏品
 }
 
-export default function Collections({ initialData = [] }: CollectionsSectionProps) {
+export default function Collections({ initialData = [], shopMode = false }: CollectionsSectionProps) {
   const { classes } = useStyles();
   const { t, locale } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
@@ -224,16 +225,21 @@ export default function Collections({ initialData = [] }: CollectionsSectionProp
   };
 
   const cards = useMemo<CollectionCard[]>(() => {
-    return knowledgeBaseItems
-      .filter((item) => !item.caseRecord)
-      .map((item) => ({
-        key: item.id,
-        image: item.image,
-        title: locale === "zh" && item.titleZh ? item.titleZh : item.title,
-        category: mapArtworkCategory(item),
-        href: `/collections/${item.id}`,
-      }));
-  }, [knowledgeBaseItems, locale]);
+    let filteredItems = knowledgeBaseItems.filter((item) => !item.caseRecord);
+    
+    // ✅ 商店模式：只显示可售藏品
+    if (shopMode) {
+      filteredItems = filteredItems.filter((item) => item.isForSale === true);
+    }
+    
+    return filteredItems.map((item) => ({
+      key: item.id,
+      image: item.image,
+      title: locale === "zh" && item.titleZh ? item.titleZh : item.title,
+      category: mapArtworkCategory(item),
+      href: `/collections/${item.id}`,
+    }));
+  }, [knowledgeBaseItems, locale, shopMode]);
 
   return (
     <>

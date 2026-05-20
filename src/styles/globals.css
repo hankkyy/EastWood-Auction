@@ -17,12 +17,24 @@ body {
     linear-gradient(180deg, #171b21 0%, #12161b 44%, #0f1216 100%);
   color: #f6efe3;
   -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
-  overscroll-behavior-y: none; /* 防止下拉刷新 */
+}
+
+/* 仅在移动端禁用下拉刷新 */
+@media (max-width: 768px) {
+  html, body {
+    overscroll-behavior-y: none; /* 防止移动端下拉刷新 */
+  }
 }
 
 body {
   top: 0 !important;
-  touch-action: manipulation; /* 优化触摸响应 */
+}
+
+/* 仅在移动端优化触摸响应 */
+@media (max-width: 768px) {
+  body {
+    touch-action: manipulation; /* 优化触摸响应 */
+  }
 }
 
 #__next {

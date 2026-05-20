@@ -111,12 +111,16 @@ const mockdata = [
     link: "/exhibitions",
   },
   {
-    labelKey: "nav.support",
-    link: "/cases",
-  },
-  {
     labelKey: "nav.collections",
     link: "/collections",
+  },
+  {
+    labelKey: "nav.shop",
+    link: "/shop",
+  },
+  {
+    labelKey: "nav.support",
+    link: "/cases",
   },
   {
     labelKey: "nav.search",
