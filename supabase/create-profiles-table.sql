@@ -123,19 +123,52 @@ $$ LANGUAGE plpgsql;
 -- 6. 创建自动为新用户生成 user_id 的触发器
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  new_user_id text;
+  provided_user_id text;
 BEGIN
+  -- 检查是否提供了自定义 user_id
+  provided_user_id := NEW.raw_user_meta_data->>'user_id';
+  
+  IF provided_user_id IS NOT NULL AND provided_user_id != '' THEN
+    -- 使用用户提供的 user_id（需要验证唯一性）
+    IF EXISTS (SELECT 1 FROM public.profiles WHERE user_id = provided_user_id) THEN
+      -- 如果 user_id 已存在，自动生成一个新的
+      new_user_id := public.generate_unique_user_id(
+        COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
+        COALESCE(NEW.raw_user_meta_data->>'last_name', '')
+      );
+    ELSE
+      -- 验证 user_id 格式（3-20位字母数字）
+      IF provided_user_id ~ '^[a-zA-Z0-9]{3,20}$' THEN
+        new_user_id := lower(provided_user_id);
+      ELSE
+        -- 格式不正确，自动生成
+        new_user_id := public.generate_unique_user_id(
+          COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
+          COALESCE(NEW.raw_user_meta_data->>'last_name', '')
+        );
+      END IF;
+    END IF;
+  ELSE
+    -- 未提供 user_id，自动生成
+    new_user_id := public.generate_unique_user_id(
+      COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
+      COALESCE(NEW.raw_user_meta_data->>'last_name', '')
+    );
+  END IF;
+  
+  -- 插入 profiles 记录
   INSERT INTO public.profiles (id, first_name, last_name, user_id, email, role)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
     COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
-    public.generate_unique_user_id(
-      COALESCE(NEW.raw_user_meta_data->>'first_name', ''),
-      COALESCE(NEW.raw_user_meta_data->>'last_name', '')
-    ),
+    new_user_id,
     NEW.email,
     'user'
   );
+  
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
