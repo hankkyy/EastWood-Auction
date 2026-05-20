@@ -58,6 +58,7 @@ type CollectionsManagementProps = {
   isAdmin?: boolean;
   embedded?: boolean; // 是否作为嵌入式组件使用（移除外层容器）
   mode?: "upload" | "manage"; // 模式：上传或管理
+  shopMode?: boolean; // ✅ 是否为商店模式（强制要求价格，自动设置 isForSale=true）
   onCancel?: () => void; // 取消时的回调函数
   onDataUpdate?: () => void; // 数据更新时的回调函数（用于通知父组件刷新）
   onSuccess?: () => void; // ✅ 保存成功后的回调函数（用于自动关闭表单）
@@ -76,6 +77,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   isAdmin, 
   embedded = false, 
   mode = "upload",
+  shopMode = false, // ✅ 默认为 false（藏品展示模式）
   onCancel,
   onDataUpdate,
   onSuccess // ✅ 保存成功后的回调
@@ -95,7 +97,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   const [adminCategory, setAdminCategory] = useState("misc");
   
   // 可售相关字段
-  const [adminIsForSale, setAdminIsForSale] = useState(false);
+  const [adminIsForSale, setAdminIsForSale] = useState(shopMode); // ✅ 商店模式默认开启可售
   const [adminPrice, setAdminPrice] = useState<string>(""); // 改为 string 类型以支持小数点输入
   const [adminCurrency, setAdminCurrency] = useState<"USD" | "CNY">("USD");
   
@@ -193,6 +195,9 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   // 根据用户角色过滤藏品列表
   const collections = items.filter((item) => {
     if (!item.caseRecord) {
+      // ✅ 商店模式：只显示可售商品
+      if (shopMode && !item.isForSale) return false;
+      
       // 管理员可以看到所有内容
       if (isAdmin) return true;
       // 普通用户只能看到自己上传的内容
@@ -268,7 +273,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     setAdminItemName("");
     setAdminItemDetails("");
     setAdminCategory("misc");
-    setAdminIsForSale(false);
+    setAdminIsForSale(shopMode); // ✅ 商店模式保持 isForSale=true
     setAdminPrice("");
     setAdminCurrency("USD");
     setAdminError(null);
@@ -301,6 +306,19 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       return;
     }
 
+    // ✅ 商店模式：强制要求填写价格和货币类型
+    if (shopMode) {
+      if (!adminPrice.trim()) {
+        setAdminError(locale === "zh" ? "请填写售价" : "Please enter the price");
+        return;
+      }
+      const parsed = parseFloat(adminPrice);
+      if (isNaN(parsed) || parsed <= 0) {
+        setAdminError(t("collections.invalidPriceError"));
+        return;
+      }
+    }
+
     try {
       console.log('[Collections] Starting save process...');
       console.log('[Collections] Admin images count:', adminImages.length);
@@ -319,7 +337,17 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
       // 验证价格格式
       let priceValue: number | undefined = undefined;
-      if (adminIsForSale && adminPrice.trim()) {
+      
+      // ✅ 商店模式：强制使用价格和货币
+      if (shopMode) {
+        const parsed = parseFloat(adminPrice);
+        if (isNaN(parsed) || parsed <= 0) {
+           setAdminError(t("collections.invalidPriceError"));
+          return;
+        }
+        priceValue = parsed;
+      } else if (adminIsForSale && adminPrice.trim()) {
+        // 藏品展示模式：可选填写
         const parsed = parseFloat(adminPrice);
         if (isNaN(parsed) || parsed < 0) {
            setAdminError(t("collections.invalidPriceError"));
@@ -341,9 +369,9 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         uploadedBy: userId, // 记录上传者
         featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // 占位符,8个元素
         collectionId: collectionId, // 藏品编号
-        isForSale: adminIsForSale, // 是否可售
-        price: adminIsForSale && priceValue ? priceValue : undefined, // 售价
-        currency: adminIsForSale ? adminCurrency : undefined, // 货币单位
+        isForSale: shopMode ? true : adminIsForSale, // ✅ 商店模式强制设置为 true
+        price: priceValue, // 售价
+        currency: priceValue ? adminCurrency : undefined, // 货币单位（有价格时才设置）
       };
 
       console.log('[Collections] Calling saveImportedArtwork...');
@@ -1166,33 +1194,36 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               }))}
             />
 
-            {/* 可售相关字段 - 使用 Checkbox */}
-            <Checkbox
-              label={t("collections.forSaleLabel")}
-              checked={adminIsForSale}
-              onChange={(event) => setAdminIsForSale(event.currentTarget.checked)}
-              description={t("collections.forSaleDescription")}
-            />
+            {/* ✅ 可售相关字段 - 商店模式隐藏 Checkbox（强制为 true） */}
+            {!shopMode && (
+              <Checkbox
+                label={t("collections.forSaleLabel")}
+                checked={adminIsForSale}
+                onChange={(event) => setAdminIsForSale(event.currentTarget.checked)}
+                description={t("collections.forSaleDescription")}
+              />
+            )}
 
-            {adminIsForSale && (
+            {/* ✅ 商店模式始终显示价格和货币输入框，藏品展示模式仅在 isForSale 时显示 */}
+            {(shopMode || adminIsForSale) && (
               <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                 <TextInput
-                  label={t("collections.priceLabel")}
+                  label={`${t("collections.priceLabel")}${shopMode ? ' *' : ''}`} // ✅ 商店模式标记为必填
                   value={adminPrice}
                   onChange={(event) => setAdminPrice(event.currentTarget.value)}
                   placeholder={t("collections.pricePlaceholderExample")}
-                  required
+                  required={shopMode} // ✅ 商店模式设为必填
                 />
 
                 <Select
-                  label={t("collections.currencyLabel")}
+                  label={`${t("collections.currencyLabel")}${shopMode ? ' *' : ''}`} // ✅ 商店模式标记为必填
                   value={adminCurrency}
                   onChange={(value) => setAdminCurrency((value as "USD" | "CNY") || "USD")}
                   data={[
                     { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
                     { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
                   ]}
-                  required
+                  required={shopMode} // ✅ 商店模式设为必填
                 />
               </SimpleGrid>
             )}
@@ -1208,7 +1239,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               <Button
                 onClick={handleSaveToKnowledgeBase}
                 leftIcon={<IconCheck size={16} />}
-                disabled={adminImages.length === 0 || !adminItemName.trim() || (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0))}
+                disabled={
+                  adminImages.length === 0 || 
+                  !adminItemName.trim() || 
+                  (shopMode ? !adminPrice.trim() || parseFloat(adminPrice) <= 0 : (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0)))
+                } // ✅ 商店模式强制要求价格，藏品展示模式仅在 isForSale 时要求
               >
                 {t("collections.saveButton")}
               </Button>

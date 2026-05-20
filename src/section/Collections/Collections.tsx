@@ -33,11 +33,11 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
   bg: {
     backgroundImage: shopMode 
-      ? `url(https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1566054719594-bf2e32c769a2?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
+      ? `url(https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
+      : `url(https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
     backgroundColor: shopMode ? "#2c1810" : "#f5f5f0", // ✅ 添加备用背景色：古董商店深棕色，藏品展示浅米色
     minHeight: rem(650),
-    backgroundAttachment: "fixed",
+    backgroundAttachment: "scroll", // ✅ 改为 scroll 而不是 fixed，避免移动端兼容性问题
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
@@ -295,6 +295,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   userId={user?.id} 
                   isAdmin={isAdmin} 
                   embedded={true}
+                  shopMode={shopMode} // ✅ 传递 shopMode 参数
                   onDataUpdate={async () => {
                     // ✅ 保存成功后立即刷新父组件数据
                     try {
@@ -334,6 +335,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   isAdmin={isAdmin} 
                   embedded={true}
                   mode="manage"
+                  shopMode={shopMode} // ✅ 传递 shopMode 参数
                   onDataUpdate={async () => {
                     // ✅ 保存成功后立即刷新父组件数据
                     try {
@@ -402,7 +404,14 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               key={item.key}
                               component={Link}
                               href={item.href}
-                              sx={{ textDecoration: "none", display: "block" }}
+                              sx={{ 
+                                textDecoration: "none", 
+                                display: "block",
+                                cursor: "pointer", // ✅ 明确设置鼠标指针样式
+                                "&:hover": {
+                                  opacity: 0.95 // ✅ 添加悬停效果，提供视觉反馈
+                                }
+                              }}
                             >
                               <Box className={classes.imageWrap} sx={{ position: "relative" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
