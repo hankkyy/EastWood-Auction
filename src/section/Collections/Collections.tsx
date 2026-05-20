@@ -433,10 +433,10 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
                                 <Text 
-                                  size="lg" 
-                                  weight={700} 
+                                  size="md" // ✅ 进一步减小字体（从 lg 改为 md），更加精致
+                                  weight={600} // ✅ 降低字重（从 700 改为 600）
                                   sx={{ 
-                                    color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
+                                    color: "rgba(246, 239, 227, 0.65)", // ✅ 价格使用更灰的颜色（65%透明度），更加低调
                                     marginTop: 8,
                                     lineHeight: 1.2,
                                     textAlign: "center" // ✅ 与标题保持居中对齐
