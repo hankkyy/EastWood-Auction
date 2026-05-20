@@ -137,9 +137,43 @@ const persistGalleryImages = async (
     })
   );
 
+  const coverIndex = sourceGallery.findIndex((imageUrl) => imageUrl === artwork.image);
+  const coverImage =
+    (coverIndex >= 0 ? uploadedGallery[coverIndex] : undefined) ??
+    uploadedGallery[0] ??
+    artwork.image;
+
   return {
-    image: uploadedGallery[0] ?? artwork.image,
+    image: coverImage,
     galleryImages: uploadedGallery.length ? uploadedGallery : [artwork.image],
+  };
+};
+
+const buildAllowedArtworkUpdate = (existingArtwork: Artwork, incomingArtwork: Artwork): Artwork => {
+  const normalizedIncoming = normalizeArtwork(incomingArtwork);
+
+  return {
+    ...existingArtwork,
+    title: normalizedIncoming.title,
+    titleZh: normalizedIncoming.titleZh,
+    category: normalizedIncoming.category,
+    categoryZh: normalizedIncoming.categoryZh,
+    period: normalizedIncoming.period,
+    periodZh: normalizedIncoming.periodZh,
+    image: normalizedIncoming.image,
+    galleryImages: normalizedIncoming.galleryImages,
+    description: normalizedIncoming.description,
+    descriptionZh: normalizedIncoming.descriptionZh,
+    featureVector: normalizedIncoming.featureVector,
+    imageSignature: normalizedIncoming.imageSignature,
+    collectionId: existingArtwork.caseRecord ? undefined : normalizedIncoming.collectionId,
+    caseRecord: existingArtwork.caseRecord ? normalizedIncoming.caseRecord : undefined,
+    isForSale: existingArtwork.caseRecord ? false : normalizedIncoming.isForSale,
+    price: existingArtwork.caseRecord ? undefined : normalizedIncoming.price,
+    currency: existingArtwork.caseRecord ? undefined : normalizedIncoming.currency,
+    listingType: existingArtwork.listingType,
+    uploadedBy: existingArtwork.uploadedBy,
+    isOfficial: existingArtwork.isOfficial,
   };
 };
 
@@ -177,10 +211,22 @@ export default async function handler(
         return res.status(403).json({ error: "Forbidden" });
       }
 
-      const uploadedImages = await persistGalleryImages(normalizeArtwork(artwork));
       const supabase = getSupabaseAdmin();
+      const { data: existingRow, error: existingError } = await supabase
+        .from(TABLE_NAME)
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (existingError || !existingRow) {
+        return res.status(404).json({ error: "Artwork not found." });
+      }
+
+      const existingArtwork = rowToArtwork(existingRow as ArtworkRow);
+      const safeArtwork = buildAllowedArtworkUpdate(existingArtwork, artwork);
+      const uploadedImages = await persistGalleryImages(safeArtwork);
       const row = artworkToRow({
-        ...normalizeArtwork(artwork),
+        ...safeArtwork,
         id,
         image: uploadedImages.image,
         galleryImages: uploadedImages.galleryImages,

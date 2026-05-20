@@ -177,7 +177,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     if (mode === "upload" && !adminCollectionId) {
       setAdminCollectionId(generateCollectionId());
     }
-  }, [mode]);
+  }, [adminCollectionId, mode]);
 
   // 如果未登录，显示提示
   if (!userId) {
@@ -245,11 +245,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       );
       
       // 追加到现有图片数组（而不是替换）
-      setAdminImages(prevImages => {
-        const updatedImages = [...prevImages, ...newUrls];
-        console.log('[Collections] Updated images count:', updatedImages.length);
-        return updatedImages;
-      });
+      setAdminImages(prevImages => [...prevImages, ...newUrls]);
       
       // 如果是第一次上传，设置封面索引为 0
       if (adminImages.length === 0) {
@@ -442,7 +438,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       ? artwork.galleryImages 
       : [artwork.image];
     setEditImages(images);
-    setEditCoverIndex(0); // 默认封面为第一张
+    const currentCoverIndex = images.findIndex((image) => image === artwork.image);
+    setEditCoverIndex(currentCoverIndex >= 0 ? currentCoverIndex : 0);
     setEditNewImageFiles([]);
     
     setEditIsForSale(artwork.isForSale || false);
@@ -465,6 +462,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   };
 
   const handleSaveEdit = async (artwork: Artwork) => {
+    if (isSaving) return;
+
     if (!editItemName.trim()) {
       setAdminError(t("collections.collectionNamePlaceholder"));
       return;
@@ -495,6 +494,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     }
 
     try {
+      setIsSaving(true);
+      setAdminError(null);
       let finalImages = [...editImages];
       
       // 如果有新上传的图片,需要转换为 Base64 并添加到列表
@@ -557,6 +558,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     } catch (error: any) {
       console.error('[Collections] Update failed:', error);
       setAdminError(error.message || t("collections.updateFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -967,6 +970,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                               e.stopPropagation();
                               handleSaveEdit(artwork);
                             }}
+                            loading={isSaving}
+                            disabled={isSaving}
                             leftIcon={<IconCheck size={14} />}
                           >
                             {t("collections.saveButton")}
@@ -1390,6 +1395,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               </Button>
               <Button
                 onClick={handleSaveToKnowledgeBase}
+                loading={isSaving}
                 leftIcon={<IconCheck size={16} />}
                 disabled={
                   isSaving ||

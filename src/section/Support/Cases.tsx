@@ -35,7 +35,6 @@ import {
   IconPlus,
   IconStar,
   IconTrash,
-  IconUser,
   IconX,
 } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -71,7 +70,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       setShowUploadForm(false);
       setShowManageMode(false);
     }
-  }, [router.asPath]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
+  }, [router.asPath, router.pathname]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
   
   // 辅助函数：检查权限并处理重定向（如果需要）
   // 注意：如果项目中 checkAuthAndRedirect 是全局或 hook 的一部分，请替换为实际调用
@@ -186,7 +185,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     if (!adminCaseId) {
       setAdminCaseId(generateCaseId());
     }
-  }, []);
+  }, [adminCaseId]);
 
   // 根据用户角色过滤回流案例列表
   const cases = useMemo(() => {
@@ -205,13 +204,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   }, [items]);
 
   const handleAdminUpload = async (files: File[] | null) => {
-    console.log('[Cases] handleAdminUpload called with files:', files);
-    if (!files || files.length === 0) {
-      console.log('[Cases] No files selected');
-      return;
-    }
-    
-    console.log('[Cases] Processing', files.length, 'files');
+    if (!files || files.length === 0) return;
     
     try {
       // ✅ 将文件转换为 Base64 Data URL (而不是 Blob URL)
@@ -226,14 +219,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
         })
       );
       
-      console.log('[Cases] Created Base64 URLs:', newUrls.length, 'images');
-      
       // 追加到现有图片数组（而不是替换）
-      setAdminImages(prevImages => {
-        const updatedImages = [...prevImages, ...newUrls];
-        console.log('[Cases] Updated images count:', updatedImages.length);
-        return updatedImages;
-      });
+      setAdminImages(prevImages => [...prevImages, ...newUrls]);
       
       // 如果是第一次上传，设置封面索引为 0
       if (adminImages.length === 0) {
@@ -362,39 +349,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     }
   };
 
-  // 检查当前用户是否可以编辑该案例
-  const canEdit = (artwork: Artwork) => {
-    if (!user) return false;
-    // 管理员可以编辑所有案例
-    if (isAdmin) return true;
-    // 普通用户只能编辑自己的案例
-    return artwork.uploadedBy === user.id;
-  };
-
-  // 获取上传者显示名称
-  const getUploaderInfo = (artwork: Artwork) => {
-    // 如果没有上传者信息，返回 null
-    if (!artwork.uploadedBy) return null;
-    
-    // 只有管理员可以看到具体用户信息
-    if (isAdmin) {
-      // 如果是自己上传的
-      if (artwork.uploadedBy === user?.id) {
-        return t("cases.meAdmin");
-      }
-      
-      // 如果有 uploaderName（user_id），显示它；否则显示"其他用户"
-      if ((artwork as any).uploaderName) {
-        return (artwork as any).uploaderName;
-      }
-      
-      return t("cases.otherUser");
-    }
-    
-    // 普通用户和未登录用户只能看到通用提示
-    return locale === "zh" ? "个人上传" : "Personal Upload";
-  };
-
   // 数据或认证加载中，显示统一的 Loading 状态
   if (isLoading || authLoading) {
     return (
@@ -478,9 +432,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   accept="image/*"
                   multiple
                   onChange={(e) => {
-                    console.log('[Cases] Input onChange triggered');
                     const files = Array.from(e.target.files || []);
-                    console.log('[Cases] Files selected:', files.length, files);
                     handleAdminUpload(files);
                     // 清空 input 值，允许重复选择相同文件
                     e.target.value = '';
@@ -741,6 +693,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 </Button>
                 <Button
                   onClick={handleSaveToKnowledgeBase}
+                  loading={isSaving}
                   leftIcon={<IconCheck size={16} />}
                   disabled={isSaving || adminImages.length === 0}
                 >
@@ -809,20 +762,26 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               if (!caseRecord) return null;
 
               const itemTitle = locale === "zh" && item.titleZh ? item.titleZh : item.title;
-              const itemDescription = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
-
-              // 判断案例类型
-              // ✅ isOfficial=true → "平台上传"(管理员上传)
-              // ✅ isOfficial=false 或 undefined → "个人用户上传"
-              const isPlatformCase = item.isOfficial === true;
-              const caseTypeLabel = isPlatformCase 
-                ? t("cases.platformUpload")
-                : t("cases.personalUserUpload");
-
-              const uploaderInfo = getUploaderInfo(item);
 
               return (
-                <Card key={item.id} padding="md" radius="sm" sx={{ backgroundColor: "rgba(34, 39, 47, 0.96)", border: "1px solid rgba(216, 183, 109, 0.16)" }}>
+                <Card
+                  key={item.id}
+                  component={Link}
+                  href={`/cases/${item.id}`}
+                  padding="md"
+                  radius="sm"
+                  sx={{
+                    backgroundColor: "rgba(34, 39, 47, 0.96)",
+                    border: "1px solid rgba(216, 183, 109, 0.16)",
+                    textDecoration: "none",
+                    color: "inherit",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 8px 18px rgba(0, 0, 0, 0.24)",
+                    },
+                  }}
+                >
                   <Card.Section>
                     <Box sx={{ height: 220, background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, position: "relative" }}>
                       <Box component="img" src={item.image} alt={itemTitle} sx={{ width: "100%", height: "100%", objectFit: "contain" }} />
@@ -851,40 +810,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   </Card.Section>
                   
                   <Stack spacing="sm" mt="md">
-                    <Group spacing="xs">
-                      {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
-                      <Badge 
-                        color={isPlatformCase ? "blue" : "green"} 
-                        variant="outline"
-                        sx={{ alignSelf: "flex-start" }}
-                      >
-                        {caseTypeLabel}
-                      </Badge>
-                      {/* ✅ 管理员可见的详细上传者信息 */}
-                      {isAdmin && !isPlatformCase && uploaderInfo && (
-                        <Badge 
-                          color="gray" 
-                          variant="light"
-                          sx={{ alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 4 }}
-                        >
-                          <IconUser size={12} />
-                          {uploaderInfo}
-                        </Badge>
-                      )}
-                    </Group>
-                    
                     <Title order={3} size="h3">{itemTitle}</Title>
-                    
-                    {caseRecord.saleTime && (
-                      <Group spacing={8} color="dark.1">
-                        <Text size="sm" color="dark.1">{caseRecord.saleTime}</Text>
-                      </Group>
-                    )}
-
-                    {/* ✅ 移除编辑功能,只保留查看链接 */}
-                    <Button component={Link} href={`/cases/${item.id}`} variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
-                      {t("image.caseOpen")}
-                    </Button>
                   </Stack>
                 </Card>
               );

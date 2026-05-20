@@ -1,7 +1,7 @@
 import { AnimatedBox, Wrapper } from "@/layout";
 import Head from "next/head";
 import { CasesSection, HeroSection } from "@/section/Support";
-import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import type { Artwork } from "@/data/artworks";
 import { GetStaticProps } from "next";
 
@@ -28,8 +28,7 @@ export default function Support({ initialData }: CasesPageProps) {
 // ✅ 使用 getStaticProps 在构建时预加载数据
 export const getStaticProps: GetStaticProps<CasesPageProps> = async () => {
   try {
-    // 在服务端获取数据
-    const data = await fetchKnowledgeBase();
+    const data = await fetchKnowledgeBaseServer();
     
     return {
       props: {

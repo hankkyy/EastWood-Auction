@@ -141,7 +141,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
     if (mode === "upload" && !adminCaseId) {
       setAdminCaseId(generateCaseId());
     }
-  }, [mode]);
+  }, [adminCaseId, mode]);
 
   // 如果未登录，显示提示
   if (!userId) {
@@ -186,13 +186,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   });
 
   const handleAdminUpload = async (files: File[] | null) => {
-    console.log('[CasesManagement] handleAdminUpload called with files:', files);
-    if (!files || files.length === 0) {
-      console.log('[CasesManagement] No files selected');
-      return;
-    }
-    
-    console.log('[CasesManagement] Processing', files.length, 'files');
+    if (!files || files.length === 0) return;
     
     try {
       // 将文件转换为 Base64 Data URL
@@ -207,7 +201,6 @@ const CasesManagementSection = memo(function CasesManagementSection({
         })
       );
       
-      console.log('[CasesManagement] Created Base64 URLs:', urls.length, 'images');
       setAdminImages(urls);
       setAdminCoverIndex(0); // 默认第一张为封面
       setAdminError(null);
@@ -348,10 +341,6 @@ const CasesManagementSection = memo(function CasesManagementSection({
   };
 
   const handleStartEdit = (artwork: Artwork) => {
-    console.log('[CasesManagement] Starting edit for artwork:', artwork.id);
-    console.log('[CasesManagement] Gallery images:', artwork.galleryImages);
-    console.log('[CasesManagement] Case record:', artwork.caseRecord);
-    
     setEditingArtworkId(artwork.id);
     setEditCaseName(artwork.title || ""); // ✅ 初始化案例名称
     setEditItemDetails(artwork.description || "");
@@ -360,9 +349,9 @@ const CasesManagementSection = memo(function CasesManagementSection({
     const images = artwork.galleryImages && artwork.galleryImages.length > 0
       ? [...artwork.galleryImages]
       : [artwork.image];
-    console.log('[CasesManagement] Edit images initialized:', images.length, 'images');
     setEditImages(images);
-    setEditCoverIndex(0); // 默认第一张为封面
+    const currentCoverIndex = images.findIndex((image) => image === artwork.image);
+    setEditCoverIndex(currentCoverIndex >= 0 ? currentCoverIndex : 0);
     
     const cr = artwork.caseRecord;
     setEditCaseId(cr?.caseId || "");
@@ -401,6 +390,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
     }
 
     try {
+      setIsSaving(true);
+      setAdminError(null);
       // ✅ 验证案例名称必填
       if (!editCaseName.trim()) {
         setAdminError(t("cases.pleaseEnterCaseName"));
@@ -448,6 +439,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
     } catch (error: any) {
       console.error('[Cases] Update failed:', error);
       setAdminError(error.message || t("cases.updateFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -511,39 +504,22 @@ const CasesManagementSection = memo(function CasesManagementSection({
     }
   };
 
+  const currentEditingArtwork = editingArtworkId
+    ? cases.find((item) => item.id === editingArtworkId) ?? null
+    : null;
+
   // 如果是管理模式，显示可编辑的列表
   if (mode === "manage") {
     return (
       <OuterWrapper embedded={embedded}>
         <Stack spacing="xl">
           {/* ✅ 编辑模式下显示单个案例编辑表单 */}
-          {editingArtworkId ? (
+          {editingArtworkId && currentEditingArtwork ? (
             <Paper p="xl" withBorder>
               <Stack spacing="lg">
-                <Group position="apart">
-                  <Title order={3}>
-                    {locale === "zh" ? "编辑案例" : "Edit Case"}
-                  </Title>
-                  <Button
-                    variant="filled"
-                    color="blue"
-                    size="md"
-                    onClick={resetEditForm}
-                    leftIcon={<IconX size={18} />}
-                    sx={{
-                      fontWeight: 600,
-                      padding: '12px 24px',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-                      },
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {locale === "zh" ? "返回列表" : "Back to List"}
-                  </Button>
-                </Group>
+                <Title order={3}>
+                  {locale === "zh" ? "编辑案例" : "Edit Case"}
+                </Title>
 
                 {/* ✅ 图片管理区域 */}
                 <Box>
@@ -789,21 +765,29 @@ const CasesManagementSection = memo(function CasesManagementSection({
                   <Button
                     variant="filled"
                     color="blue"
-                    size="md"
+                    size="sm"
                     onClick={resetEditForm}
-                    leftIcon={<IconX size={18} />}
+                    leftIcon={<IconX size={16} />}
                     sx={{
                       fontWeight: 600,
-                      padding: '12px 24px',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                      boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
                       },
                       transition: 'all 0.2s ease',
                     }}
                   >
                     {locale === "zh" ? "取消" : "Cancel"}
+                  </Button>
+                  <Button
+                    size="xs"
+                    onClick={() => handleSaveEdit(currentEditingArtwork)}
+                    loading={isSaving}
+                    disabled={isSaving}
+                    leftIcon={<IconCheck size={14} />}
+                  >
+                    {t("cases.saveCase")}
                   </Button>
                 </Group>
               </Stack>
@@ -934,32 +918,25 @@ const CasesManagementSection = memo(function CasesManagementSection({
                     : t("cases.userModeDescription")}
                 </Text>
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => {
-                  console.log('[CasesManagement] Input onChange triggered');
-                  const files = Array.from(e.target.files || []);
-                  console.log('[CasesManagement] Files selected:', files.length, files);
-                  handleAdminUpload(files);
-                  // 清空 input 值，允许重复选择相同文件
-                  e.target.value = '';
-                }}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    handleAdminUpload(files);
+                    // 清空 input 值，允许重复选择相同文件
+                    e.target.value = '';
+                  }}
                 style={{ display: 'none' }}
               />
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('[CasesManagement] Native button clicked');
-                  console.log('[CasesManagement] File input ref:', fileInputRef.current);
                   if (fileInputRef.current) {
-                    console.log('[CasesManagement] Triggering click via ref');
                     fileInputRef.current.click();
-                  } else {
-                    console.error('[CasesManagement] File input ref is null!');
                   }
                 }}
                 style={{

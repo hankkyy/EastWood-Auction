@@ -51,12 +51,6 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
         // 清空表单
         setEmail("");
         setPassword("");
-      } else {
-        notifications.show({
-          title: t("auth.loginFailed"),
-          message: result.error || t("auth.loginError"),
-          color: "red",
-        });
       }
     } finally {
       setLoading(false);
@@ -100,11 +94,6 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       if (result.success) {
         // 注册成功后切换到登录标签
         setActiveTab("login");
-        notifications.show({
-          title: "提示",
-          message: "注册成功！请登录",
-          color: "green",
-        });
         // 清空表单
         setEmail("");
         setPassword("");

@@ -68,8 +68,15 @@ export default function CaseDetailPage() {
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
 
   useEffect(() => {
-    setSelectedImage(gallery[0] ?? "");
-  }, [item?.id, gallery]);
+    if (!item) {
+      setSelectedImage("");
+      return;
+    }
+
+    const initialImage =
+      gallery.find((imageUrl) => imageUrl === item.image) ?? gallery[0] ?? "";
+    setSelectedImage(initialImage);
+  }, [item, gallery]);
 
   useEffect(() => {
     if (!lightboxOpened || gallery.length <= 1) {

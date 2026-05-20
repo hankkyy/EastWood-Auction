@@ -4,9 +4,9 @@ import {
   artworkToRow,
   isSupabaseConfigured,
   normalizeArtwork,
-  rowToArtwork,
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
+import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import { getSupabaseAdmin, getSupabaseBucket } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -140,36 +140,15 @@ const persistGalleryImages = async (
     ? artwork.galleryImages
     : [artwork.image];
 
-  console.log('[API] persistGalleryImages - Processing artwork:', {
-    id: artwork.id,
-    title: artwork.title,
-    listingType: artwork.listingType,
-    imageCount: sourceGallery.length,
-    firstImagePreview: sourceGallery[0]?.substring(0, 100) + '...'
-  });
-
   const uploadedGallery = await Promise.all(
     sourceGallery.map(async (imageUrl, index) => {
-      console.log(`[API] Processing image ${index}:`, {
-        isDataUrl: isDataUrl(imageUrl),
-        preview: imageUrl.substring(0, 50) + '...'
-      });
-
       if (!isDataUrl(imageUrl)) {
-        console.log(`[API] Image ${index} is not a Data URL, returning as-is`);
         return imageUrl;
       }
 
       try {
         const { buffer, mimeType, extension } = parseDataUrl(imageUrl);
-        console.log(`[API] Parsed image ${index}:`, {
-          bufferSize: buffer.length,
-          mimeType,
-          extension
-        });
-
         const objectPath = `${artwork.listingType}/${artwork.id}/${Date.now()}-${index}.${extension}`;
-        console.log(`[API] Uploading image ${index} to:`, objectPath);
 
         const { error } = await supabase.storage
           .from(bucket)
@@ -183,10 +162,7 @@ const persistGalleryImages = async (
           throw new Error(error.message);
         }
 
-        console.log(`[API] Successfully uploaded image ${index}`);
-
         const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
-        console.log(`[API] Public URL for image ${index}:`, data.publicUrl);
         return data.publicUrl;
       } catch (error) {
         console.error(`[API] Error processing image ${index}:`, error);
@@ -195,12 +171,43 @@ const persistGalleryImages = async (
     })
   );
 
-  console.log('[API] All images processed successfully');
+  const coverIndex = sourceGallery.findIndex((imageUrl) => imageUrl === artwork.image);
+  const coverImage =
+    (coverIndex >= 0 ? uploadedGallery[coverIndex] : undefined) ??
+    uploadedGallery[0] ??
+    artwork.image;
 
   return {
-    image: uploadedGallery[0] ?? artwork.image,
+    image: coverImage,
     galleryImages: uploadedGallery.length ? uploadedGallery : [artwork.image],
   };
+};
+
+const sanitizeArtworkForCreate = (artwork: Artwork, isAdmin: boolean, userId?: string): Artwork => {
+  const normalized = normalizeArtwork(artwork);
+
+  if (!isAdmin && !normalized.caseRecord) {
+    throw new Error("Only administrators can create collections or shop items.");
+  }
+
+  const baseArtwork: Artwork = {
+    ...normalized,
+    uploadedBy: userId,
+    isOfficial: isAdmin || false,
+  };
+
+  if (!isAdmin) {
+    return {
+      ...baseArtwork,
+      listingType: "product",
+      collectionId: undefined,
+      isForSale: false,
+      price: undefined,
+      currency: undefined,
+    };
+  }
+
+  return baseArtwork;
 };
 
 export default async function handler(
@@ -215,52 +222,7 @@ export default async function handler(
     }
 
     try {
-      const supabase = getSupabaseAdmin();
-      
-      // ✅ 先查询所有 artworks
-      const { data: artworksData, error: artworksError } = await supabase
-        .from(TABLE_NAME)
-        .select("*")
-        .order("updated_at", { ascending: false });
-
-      if (artworksError) {
-        throw artworksError;
-      }
-
-      // ✅ 获取所有唯一的上传者 ID
-      const uploaderIds = Array.from(new Set(
-        (artworksData ?? [])
-          .map((row: any) => row.uploaded_by)
-          .filter(Boolean)
-      ));
-
-      // ✅ 批量查询上传者信息
-      let uploaderMap: Record<string, string> = {};
-      if (uploaderIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("id, user_id")
-          .in("id", uploaderIds);
-        
-        if (profilesData && profilesData.length > 0) {
-          uploaderMap = profilesData.reduce((acc: Record<string, string>, profile: any) => {
-            acc[profile.id] = profile.user_id;
-            return acc;
-          }, {} as Record<string, string>);
-        }
-      }
-
-      // ✅ 将 uploaderName 添加到每个 artwork
-      const artworksWithUploader = ((artworksData ?? []) as any[]).map((row) => {
-        const artwork = rowToArtwork(row);
-        
-        // 如果有上传者且找到了对应的 user_id，添加 uploaderName 字段
-        if (row.uploaded_by && uploaderMap[row.uploaded_by]) {
-          (artwork as any).uploaderName = uploaderMap[row.uploaded_by];
-        }
-        
-        return artwork;
-      });
+      const artworksWithUploader = await fetchKnowledgeBaseServer();
 
       return res.status(200).json({
         artworks: artworksWithUploader,
@@ -293,16 +255,14 @@ export default async function handler(
     }
 
     try {
-      const uploadedImages = await persistGalleryImages(normalizeArtwork(artwork));
+      const sanitizedArtwork = sanitizeArtworkForCreate(artwork, Boolean(isAdmin), userId);
+      const uploadedImages = await persistGalleryImages(sanitizedArtwork);
       const supabase = getSupabaseAdmin();
-      
-      // ✅ 管理员上传的案例设置为官方内容
+
       const artworkWithOfficial = {
-        ...normalizeArtwork(artwork),
+        ...sanitizedArtwork,
         image: uploadedImages.image,
         galleryImages: uploadedImages.galleryImages,
-        isOfficial: isAdmin || false, // 管理员上传的设置为 true
-        uploadedBy: userId, // 记录上传者ID
       };
       
       const row = artworkToRow(artworkWithOfficial);

@@ -237,7 +237,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
       setShowUploadForm(false);
       setShowManageMode(false);
     }
-  }, [router.asPath]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
+  }, [router.asPath, router.pathname]); // ✅ 改为监听 asPath，这样即使在同一页面重新导航也会触发
 
   // 检查登录状态并跳转
   const checkAuthAndRedirect = () => {
