@@ -397,27 +397,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               <Box className={classes.imageWrap} sx={{ position: "relative" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                                 
-                                {/* ✅ 商店模式：显示价格标签 */}
-                                {shopMode && artwork?.isForSale && artwork?.price && (
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      top: 12,
-                                      right: 12,
-                                      backgroundColor: "#51cf66",
-                                      color: "#fff",
-                                      padding: "8px 12px",
-                                      borderRadius: 8,
-                                      fontSize: 14,
-                                      fontWeight: 700,
-                                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                                      zIndex: 10
-                                    }}
-                                  >
-                                    {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
-                                  </Box>
-                                )}
-                                
                                 {/* 照片数量提示 */}
                                 {photoCount > 1 && (
                                   <Box
@@ -442,9 +421,17 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               </Box>
                               <Text className={classes.itemTitle}>{item.title}</Text>
                               
-                              {/* ✅ 商店模式：在标题下方也显示价格 */}
+                              {/* ✅ 商店模式：在标题下方显示价格（参考淘宝/京东设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
-                                <Text size="lg" weight={700} color="yellow" mt="xs">
+                                <Text 
+                                  size="xl" 
+                                  weight={700} 
+                                  sx={{ 
+                                    color: "#ff4d4f", // 电商红，类似淘宝/京东
+                                    marginTop: 8,
+                                    lineHeight: 1.2
+                                  }}
+                                >
                                   {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
                                 </Text>
                               )}

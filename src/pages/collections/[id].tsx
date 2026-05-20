@@ -160,7 +160,7 @@ export default function CollectionDetailPage() {
                     </Text>
                   </Group>
                 ) : (
-                  <Badge color="gray" variant="filled" size="lg">
+                  <Badge color="green" variant="filled" size="lg">
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
