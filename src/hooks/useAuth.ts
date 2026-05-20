@@ -157,9 +157,21 @@ export const useAuth = () => {
     } catch (error: any) {
       const locale = getCurrentLocale();
       const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
+      
+      // 识别特定的错误类型并显示对应的翻译
+      let errorMessage = t("auth.checkCredentials");
+      
+      if (error.message?.includes("Email not confirmed")) {
+        errorMessage = t("auth.emailNotConfirmed");
+      } else if (error.message?.includes("Invalid login credentials")) {
+        errorMessage = t("auth.checkCredentials");
+      } else {
+        errorMessage = error.message || t("auth.loginError");
+      }
+      
       notifications.show({
         title: t("auth.loginFailed"),
-        message: error.message || t("auth.checkCredentials"),
+        message: errorMessage,
         color: "red",
       });
       return { success: false, error: error.message };
@@ -186,7 +198,18 @@ export const useAuth = () => {
 
       if (error) throw error;
 
-      showNotification("auth.registerSuccess", "auth.checkEmailConfirm", "green");
+      // 显示更明确的邮箱验证提示
+      const locale = getCurrentLocale();
+      const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
+      
+      notifications.show({
+        title: t("auth.registerSuccess"),
+        message: locale === "zh" 
+          ? "注册成功！请检查您的邮箱（包括垃圾邮件文件夹）并点击确认链接以激活账户。"
+          : "Registration successful! Please check your email (including spam folder) and click the confirmation link to activate your account.",
+        color: "green",
+        autoClose: 8000, // 延长显示时间
+      });
 
       return { success: true };
     } catch (error: any) {
