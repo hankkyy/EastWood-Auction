@@ -4,6 +4,7 @@ import {
   artworkToRow,
   isSupabaseConfigured,
   normalizeArtwork,
+  rowToArtwork,
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";

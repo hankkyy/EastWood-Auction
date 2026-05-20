@@ -13,7 +13,18 @@ type AdminProfileRow = {
   updated_at: string;
 };
 
-const verifyAdmin = async (req: NextApiRequest) => {
+type VerifyAdminResult =
+  | {
+      ok: true;
+      userId: string;
+    }
+  | {
+      ok: false;
+      status: number;
+      error: string;
+    };
+
+const verifyAdmin = async (req: NextApiRequest): Promise<VerifyAdminResult> => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

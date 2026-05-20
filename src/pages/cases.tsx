@@ -39,11 +39,6 @@ export const getStaticProps: GetStaticProps<CasesPageProps> = async () => {
     };
   } catch (error) {
     console.error("Failed to fetch cases data:", error);
-    return {
-      props: {
-        initialData: [],
-      },
-      revalidate: 60,
-    };
+    throw error;
   }
 };

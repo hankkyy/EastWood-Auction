@@ -47,11 +47,6 @@ export const getStaticProps: GetStaticProps<CollectionsPageProps> = async () => 
     };
   } catch (error) {
     console.error("Failed to fetch collections data:", error);
-    return {
-      props: {
-        initialData: [],
-      },
-      revalidate: 60,
-    };
+    throw error;
   }
 };

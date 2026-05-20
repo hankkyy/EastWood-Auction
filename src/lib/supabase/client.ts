@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<any>(supabaseUrl, supabaseAnonKey);
 
 // Profile 类型定义（对应数据库 profiles 表）
 export type Profile = {
