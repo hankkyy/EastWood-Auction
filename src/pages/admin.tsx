@@ -298,22 +298,40 @@ export default function AdminPage() {
                     : "Make admin"}
               </Button>
             )}
-            <Button
-              size="xs"
-              color="red"
-              variant={isDeleteArmed ? "filled" : "light"}
-              loading={isUpdating && isDeleteArmed}
-              disabled={isUpdating}
-              onClick={() => void deleteProfile(profile)}
-            >
-              {isDeleteArmed
-                ? locale === "zh"
-                  ? "再次确认删除"
-                  : "Confirm delete"
-                : locale === "zh"
-                  ? "删除用户"
-                  : "Delete user"}
-            </Button>
+            {isDeleteArmed ? (
+              <>
+                <Button
+                  size="xs"
+                  color="red"
+                  variant="filled"
+                  loading={isUpdating}
+                  disabled={isUpdating}
+                  onClick={() => void deleteProfile(profile)}
+                >
+                  {locale === "zh" ? "再次确认删除" : "Confirm delete"}
+                </Button>
+                <Button
+                  size="xs"
+                  color="gray"
+                  variant="light"
+                  disabled={isUpdating}
+                  onClick={() => setDeleteArmedId(null)}
+                >
+                  {locale === "zh" ? "取消" : "Cancel"}
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="xs"
+                color="red"
+                variant="light"
+                loading={isUpdating && isDeleteArmed}
+                disabled={isUpdating}
+                onClick={() => void deleteProfile(profile)}
+              >
+                {locale === "zh" ? "删除用户" : "Delete user"}
+              </Button>
+            )}
           </Group>
         </Group>
       </Paper>
