@@ -322,35 +322,8 @@ export default function TopNav() {
               color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
             />
             
-            {/* 辅助操作按钮 */}
+            {/* 辅助操作区域 */}
             <Stack spacing="md">
-              <Button 
-                variant="subtle" 
-                size="lg" 
-                fullWidth
-                styles={{
-                  root: {
-                    minHeight: 52,
-                    fontSize: 16,
-                  },
-                }}
-              >
-                {t("top.joinGive")}
-              </Button>
-              <Button 
-                variant="subtle" 
-                size="lg" 
-                fullWidth
-                styles={{
-                  root: {
-                    minHeight: 52,
-                    fontSize: 16,
-                  },
-                }}
-              >
-                {t("top.shop")}
-              </Button>
-              
               {/* 语言选择器 */}
               <Box sx={{ marginTop: 8 }}>
                 <LanguagePicker mobile />

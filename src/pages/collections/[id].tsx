@@ -147,9 +147,18 @@ export default function CollectionDetailPage() {
               <Button
                 component={Link}
                 href={backPath}
-                variant="subtle"
-                leftIcon={<IconChevronLeft size={16} />}
-                sx={{ alignSelf: "flex-start" }}
+                variant="light"
+                color="yellow"
+                leftIcon={<IconChevronLeft size={18} />}
+                sx={{ 
+                  alignSelf: "flex-start",
+                  fontWeight: 600,
+                  fontSize: 15,
+                  "&:hover": {
+                    transform: "translateX(-4px)",
+                    transition: "all 0.2s ease"
+                  }
+                }}
               >
                 {backPath === "/shop" 
                   ? (locale === "zh" ? "返回古董商店" : "Back to Shop")

@@ -159,7 +159,6 @@ export default function TopBar() {
         </Flex>
         <Group spacing="sm" className={classes.hiddenTablet}>
           <Button {...buttonProps}>{t("top.joinGive")}</Button>
-          <Button {...buttonProps}>{t("top.shop")}</Button>
           <LanguagePicker />
         </Group>
       </Container>

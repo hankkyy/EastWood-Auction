@@ -157,7 +157,23 @@ export default function CaseDetailPage() {
         <AnimatedBox>
           <Container py={64}>
             <Stack spacing="xl">
-              <Button component={Link} href="/cases" variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+              <Button 
+                component={Link} 
+                href="/cases" 
+                variant="light" 
+                color="yellow"
+                leftIcon={<IconChevronLeft size={18} />}
+                px={0} 
+                sx={{ 
+                  alignSelf: "flex-start",
+                  fontWeight: 600,
+                  fontSize: 15,
+                  "&:hover": {
+                    transform: "translateX(-4px)",
+                    transition: "all 0.2s ease"
+                  }
+                }}
+              >
                 {t("support.caseBack")}
               </Button>
 

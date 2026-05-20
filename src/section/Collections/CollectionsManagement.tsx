@@ -951,9 +951,18 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
           <Group position="right">
             <Button
-              variant="default"
+              variant="light"
+              color="yellow"
               onClick={onCancel || (() => router.back())}
               leftIcon={<IconX size={16} />}
+              sx={{
+                fontWeight: 600,
+                fontSize: 15,
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  transition: "all 0.2s ease"
+                }
+              }}
             >
               {shopMode 
                 ? (locale === "zh" ? "返回古董商店" : "Back to Shop")
