@@ -148,9 +148,9 @@ export default function CollectionDetailPage() {
                     variant="light" 
                     size="lg"
                     sx={{
-                      backgroundColor: "rgba(100, 116, 139, 0.25)",
+                      backgroundColor: "rgba(246, 239, 227, 0.15)",
                       color: "#f6efe3",
-                      border: "1px solid rgba(246, 239, 227, 0.2)"
+                      border: "1px solid rgba(246, 239, 227, 0.25)"
                     }}
                   >
                     {t("collections.collectionIdLabel")}: {item.collectionId}

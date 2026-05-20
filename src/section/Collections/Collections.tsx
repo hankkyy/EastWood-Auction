@@ -27,12 +27,14 @@ type CollectionCard = {
   href: string;
 };
 
-const useStyles = createStyles((theme) => ({
+const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => ({
   wrapper: {
     position: "relative",
   },
   bg: {
-    backgroundImage: `url(https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1400&q=80)`,
+    backgroundImage: shopMode 
+      ? `url(https://images.unsplash.com/photo-1548625149-fc4a29cf7092?auto=format&fit=crop&w=1400&q=80)` // ✅ 中式美学背景（古董店/茶室风格）
+      : `url(https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1400&q=80)`, // 藏品展示背景
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
@@ -108,14 +110,14 @@ const useStyles = createStyles((theme) => ({
   imageWrap: {
     background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
     overflow: "hidden",
-    height: remValue(560),
+    height: remValue(480), // ✅ 减小高度（从 560 改为 480），更加精致
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: remValue(16),
 
     [theme.fn.smallerThan("md")]: {
-      height: remValue(420),
+      height: remValue(360), // ✅ 响应式调整（从 420 改为 360）
       padding: remValue(12),
     },
   },
@@ -137,10 +139,10 @@ const useStyles = createStyles((theme) => ({
   },
 
   itemTitle: {
-    marginTop: remValue(22),
+    marginTop: remValue(18), // ✅ 减小上边距（从 22 改为 18）
     textAlign: "center",
     color: theme.colors.dark[0],
-    fontSize: remValue(25),
+    fontSize: remValue(22), // ✅ 减小字体（从 25 改为 22），更加精致
     fontWeight: 800,
   },
 }));
@@ -168,7 +170,7 @@ interface CollectionsSectionProps {
 }
 
 export default function Collections({ initialData = [], shopMode = false }: CollectionsSectionProps) {
-  const { classes } = useStyles();
+  const { classes } = useStyles({ shopMode });
   const { t, locale } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { user, isAdmin } = useAuth();
@@ -252,7 +254,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
             zIndex={0}
           />
           <Container className={classes.heroContainer}>
-            <Title className={classes.title}>{t("collections.exhibitionTitle")}</Title>
+            <Title className={classes.title}>
+              {shopMode ? (locale === "zh" ? "古董商店" : "Antique Shop") : t("collections.exhibitionTitle")}
+            </Title>
           </Container>
         </Box>
       </Box>
@@ -376,11 +380,12 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     <Tabs.Panel key={category.value} value={category.value} pt="xl">
                       <SimpleGrid
                         cols={3}
-                        spacing={36}
+                        spacing={48} // ✅ 增加左右间距（从 36 改为 48）
                         breakpoints={[
                           { maxWidth: "md", cols: 2, spacing: "lg" },
                           { maxWidth: "sm", cols: 1, spacing: "md" },
                         ]}
+                        sx={{ marginTop: 48 }} // ✅ 增加上下间距
                       >
                         {visibleItems.map((item) => {
                           // 获取原始 artwork 数据以检查 galleryImages
