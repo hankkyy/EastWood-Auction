@@ -33,8 +33,8 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
   bg: {
     backgroundImage: shopMode 
-      ? `url(https://images.unsplash.com/photo-1548625149-fc4a29cf7092?auto=format&fit=crop&w=1400&q=80)` // ✅ 中式美学背景（古董店/茶室风格）
-      : `url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示使用浅色亮色背景（明亮画廊）
+      ? `url(https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
+      : `url(https://images.unsplash.com/photo-1599639668312-5363e62bb2b2?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：明亮画廊风格（浅色背景）
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
@@ -110,15 +110,15 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   imageWrap: {
     background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
     overflow: "hidden",
-    height: remValue(420), // ✅ 进一步减小高度（从 480 改为 420），更加精致紧凑
+    height: remValue(420),
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: remValue(16),
+    padding: remValue(8), // ✅ 减小内边距（从 16 改为 8），减少灰色留白
 
     [theme.fn.smallerThan("md")]: {
-      height: remValue(320), // ✅ 响应式调整（从 360 改为 320）
-      padding: remValue(12),
+      height: remValue(320),
+      padding: remValue(6), // ✅ 响应式调整（从 12 改为 6）
     },
   },
 
