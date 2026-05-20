@@ -32,6 +32,15 @@ export default function CollectionDetailPage() {
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const collectionId = typeof router.query.id === "string" ? router.query.id : "";
 
+  // ✅ 检测来源页面，决定返回路径
+  const backPath = useMemo(() => {
+    const referer = document.referrer;
+    if (referer.includes("/shop")) {
+      return "/shop"; // 从古董商店进入，返回商店
+    }
+    return "/collections"; // 默认返回藏品展示
+  }, []);
+
   useEffect(() => {
     void fetchKnowledgeBase().then((data) => {
       setItems(data);
@@ -131,12 +140,15 @@ export default function CollectionDetailPage() {
               {/* 返回按钮 */}
               <Button
                 component={Link}
-                href="/collections"
+                href={backPath}
                 variant="subtle"
                 leftIcon={<IconChevronLeft size={16} />}
                 sx={{ alignSelf: "flex-start" }}
               >
-                {t("collections.detailBack")}
+                {backPath === "/shop" 
+                  ? (locale === "zh" ? "返回古董商店" : "Back to Shop")
+                  : t("collections.detailBack")
+                }
               </Button>
 
               {/* 标题和基本信息 */}

@@ -584,7 +584,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         <Stack spacing="xl">
           <Group position="apart">
             <Title order={3}>
-              {t("collections.uploadedCollectionsTitle")}
+              {shopMode 
+                ? (locale === "zh" ? "商品管理" : "Product Management")
+                : t("collections.uploadedCollectionsTitle")
+              }
             </Title>
             {!isLoading && (
               <Badge color="blue" size="lg">
@@ -936,7 +939,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               onClick={onCancel || (() => router.back())}
               leftIcon={<IconX size={16} />}
             >
-              {t("cases.back")}
+              {shopMode 
+                ? (locale === "zh" ? "返回古董商店" : "Back to Shop")
+                : t("cases.back")
+              }
             </Button>
           </Group>
         </Stack>
@@ -952,10 +958,17 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           <Stack spacing="lg">
             <Group position="apart">
               <div>
-                <Title order={2}>{t("collections.managementTitle")}</Title>
+                <Title order={2}>
+                  {shopMode 
+                    ? (locale === "zh" ? "商品上传" : "Product Upload")
+                    : t("collections.managementTitle")
+                  }
+                </Title>
                 <Text color="dark.1">
                   {isAdmin 
-                    ? t("collections.adminModeText")
+                    ? (shopMode 
+                        ? (locale === "zh" ? "上传新商品到古董商店" : "Upload new products to the antique shop")
+                        : t("collections.adminModeText"))
                     : t("collections.noPermissionText")}
                 </Text>
               </div>
