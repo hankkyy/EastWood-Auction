@@ -232,7 +232,7 @@ export default function TopNav() {
           </Menu.Label>
           <Menu.Item onClick={openProfileModal}>{t("auth.profileTitle")}</Menu.Item>
           {isAdmin && (
-            <Menu.Item component={Link} href="/image-search">
+            <Menu.Item component={Link} href="/admin">
               {t("auth.adminBackend")}
             </Menu.Item>
           )}
