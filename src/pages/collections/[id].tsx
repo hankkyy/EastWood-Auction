@@ -144,7 +144,7 @@ export default function CollectionDetailPage() {
                 <Title order={2}>{title}</Title>
 
                 {item.collectionId && (
-                  <Badge color="cyan" variant="filled" size="lg">
+                  <Badge color="dark" variant="filled" size="lg">
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
                 )}
@@ -154,7 +154,14 @@ export default function CollectionDetailPage() {
                     <Badge color="green" variant="filled" size="lg">
                       {t("collections.forSaleLabel")}
                     </Badge>
-                    <Text size="xl" weight={700} color="yellow">
+                    <Text 
+                      size="xl" 
+                      weight={700} 
+                      sx={{ 
+                        color: "#d4af37", // ✅ 与古董商店保持一致的优雅金色
+                        lineHeight: 1.2
+                      }}
+                    >
                       {item.currency === "CNY" ? "¥" : "$"}
                       {item.price.toLocaleString()}
                     </Text>
