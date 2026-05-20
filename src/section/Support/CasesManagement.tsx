@@ -127,6 +127,13 @@ const CasesManagementSection = memo(function CasesManagementSection({
     }
   }, [userId]);
 
+  // ✅ 初始化时自动生成案例编号（仅在上传模式下）
+  useEffect(() => {
+    if (mode === "upload" && !adminCaseId) {
+      setAdminCaseId(generateCaseId());
+    }
+  }, [mode]);
+
   // 如果未登录，显示提示
   if (!userId) {
     return (
@@ -217,12 +224,31 @@ const CasesManagementSection = memo(function CasesManagementSection({
     }
   };
 
+  // 生成唯一的案例编号（统一格式：CASE-MMDDYYYY-XX00）
+  const generateCaseId = () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${month}${day}${year}`;
+    
+    // 生成两个随机字母
+    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
+                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    
+    // 生成两个随机数字
+    const digits = String(Math.floor(Math.random() * 10)) + 
+                   String(Math.floor(Math.random() * 10));
+    
+    return `CASE-${dateStr}-${letters}${digits}`;
+  };
+
   const resetForm = () => {
     setAdminImages([]);
     setAdminCoverIndex(0);
     setAdminCaseName("");
     setAdminItemDetails("");
-    setAdminCaseId("");
+    setAdminCaseId(generateCaseId()); // ✅ 自动生成编号
     setAdminSalePrice("");
     setAdminSaleTime("");
     setAdminSalePlatform("");
@@ -259,9 +285,9 @@ const CasesManagementSection = memo(function CasesManagementSection({
         return;
       }
 
-      // ✅ 自动生成案例编号(如果用户未填写)
-      const generatedCaseId = adminCaseId || `CASE-${Date.now()}`;
-      
+      // ✅ 使用自动生成的案例编号（用户不能手动输入）
+      const generatedCaseId = adminCaseId;
+
       const caseRecord: ArtworkCaseRecord = {
         caseId: generatedCaseId,
         salePrice: adminSalePrice || "",
@@ -505,10 +531,21 @@ const CasesManagementSection = memo(function CasesManagementSection({
                     {locale === "zh" ? "编辑案例" : "Edit Case"}
                   </Title>
                   <Button
-                    variant="subtle"
-                    size="sm"
+                    variant="filled"
+                    color="blue"
+                    size="md"
                     onClick={resetEditForm}
-                    leftIcon={<IconX size={16} />}
+                    leftIcon={<IconX size={18} />}
+                    sx={{
+                      fontWeight: 600,
+                      padding: '12px 24px',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
                   >
                     {locale === "zh" ? "返回列表" : "Back to List"}
                   </Button>
@@ -705,7 +742,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
                   <TextInput
                     label={t("cases.caseIdLabel")}
                     value={editCaseId}
-                    onChange={(event) => setEditCaseId(event.currentTarget.value)}
+                    disabled
+                    description={t("cases.autoGenerateCaseId")}
                   />
                   <TextInput
                     label={t("cases.salePriceLabel")}
@@ -755,22 +793,23 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 {/* 操作按钮 */}
                 <Group position="right">
                   <Button
-                    variant="default"
+                    variant="filled"
+                    color="blue"
+                    size="md"
                     onClick={resetEditForm}
-                    leftIcon={<IconX size={16} />}
+                    leftIcon={<IconX size={18} />}
+                    sx={{
+                      fontWeight: 600,
+                      padding: '12px 24px',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                      },
+                      transition: 'all 0.2s ease',
+                    }}
                   >
                     {locale === "zh" ? "取消" : "Cancel"}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const artwork = cases.find(item => item.id === editingArtworkId);
-                      if (artwork) {
-                        handleSaveEdit(artwork);
-                      }
-                    }}
-                    leftIcon={<IconCheck size={16} />}
-                  >
-                    {locale === "zh" ? "保存" : "Save"}
                   </Button>
                 </Group>
               </Stack>
@@ -825,44 +864,51 @@ const CasesManagementSection = memo(function CasesManagementSection({
                           />
                         </Box>
 
-                        <Text weight={600}>{artwork.title}</Text>
-                        <Text size="sm" color="dark.1" lineClamp={2}>
-                          {artwork.description}
-                        </Text>
-                        {artwork.caseRecord && (
-                          <Stack spacing="xs">
-                            {artwork.caseRecord.salePrice && (
-                              <Text size="sm">
-                                <strong>{t("cases.salePrice")}</strong> {artwork.caseRecord.salePrice}
-                              </Text>
-                            )}
-                            {artwork.caseRecord.saleTime && (
-                              <Text size="sm">
-                                <strong>{t("cases.saleTime")}</strong> {artwork.caseRecord.saleTime}
-                              </Text>
-                            )}
-                            {artwork.caseRecord.salePlatform && (
-                              <Text size="sm">
-                                <strong>{t("cases.platform")}</strong> {artwork.caseRecord.salePlatform}
-                              </Text>
-                            )}
-                          </Stack>
-                        )}
-                        <Group position="right">
+                        {/* ✅ 非编辑模式：显示基本信息（名称、编号）和操作按钮 */}
+                        <Stack spacing="xs">
+                          <Text weight={600} size="lg">{artwork.title}</Text>
+                          
+                          {artwork.caseRecord?.caseId && (
+                            <Badge variant="outline" size="sm">
+                              {locale === "zh" ? "案例编号" : "Case ID"}: {artwork.caseRecord.caseId}
+                            </Badge>
+                          )}
+                        </Stack>
+                        
+                        <Group position="right" spacing="xs">
                           <Button
-                            variant="subtle"
-                            size="xs"
+                            variant="filled"
+                            color="blue"
+                            size="sm"
                             onClick={() => handleStartEdit(artwork)}
-                            leftIcon={<IconEdit size={14} />}
+                            leftIcon={<IconEdit size={16} />}
+                            sx={{
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
                           >
                             {t("cases.edit")}
                           </Button>
                           <Button
-                            variant="subtle"
+                            variant="filled"
                             color="red"
-                            size="xs"
+                            size="sm"
                             onClick={() => handleDeleteImportedArtwork(artwork.id)}
-                            leftIcon={<IconTrash size={14} />}
+                            leftIcon={<IconTrash size={16} />}
+                            sx={{
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
                           >
                             {t("cases.delete")}
                           </Button>
@@ -947,16 +993,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
               </Alert>
             )}
 
-            {/* ✅ 案例名称输入框(必填) */}
-            <TextInput
-              label={t("cases.caseNameRequired")}
-              value={adminCaseName}
-              onChange={(event) => setAdminCaseName(event.currentTarget.value)}
-              placeholder={t("cases.enterCaseNameRequired")}
-              required
-            />
-
-            {/* 多图片上传区域 */}
+            {/* 多图片上传区域 - 移至顶部 */}
             {adminImages.length > 0 ? (
               <Stack spacing="md">
                 {/* 封面照片大图预览 */}
@@ -1096,6 +1133,28 @@ const CasesManagementSection = memo(function CasesManagementSection({
               </Box>
             )}
 
+            {/* ✅ 案例编号（自动生成，禁用） - 移至图片后 */}
+            <TextInput
+              label={t("cases.caseIdLabel")}
+              value={adminCaseId}
+              disabled
+              description={t("cases.autoGenerateCaseId")}
+            />
+
+            {/* ✅ 案例名称输入框(必填) - 移至编号后 */}
+            <Box>
+              <Text size="sm" weight={500} mb={4}>
+                {t("cases.caseNameRequired")}
+                <Text component="span" color="red" ml={4}>*</Text>
+              </Text>
+              <TextInput
+                value={adminCaseName}
+                onChange={(event) => setAdminCaseName(event.currentTarget.value)}
+                placeholder={t("cases.enterCaseNameRequired")}
+                required
+              />
+            </Box>
+
             <Textarea
               label={t("cases.caseDetails")}
               value={adminItemDetails}
@@ -1105,12 +1164,6 @@ const CasesManagementSection = memo(function CasesManagementSection({
             />
 
             <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-              <TextInput
-                label={t("cases.caseIdLabel")}
-                value={adminCaseId}
-                onChange={(event) => setAdminCaseId(event.currentTarget.value)}
-                placeholder={t("cases.optional")}
-              />
               <TextInput
                 label={t("cases.salePriceLabel")}
                 value={adminSalePrice}
@@ -1165,9 +1218,40 @@ const CasesManagementSection = memo(function CasesManagementSection({
 
             <Group position="right">
               <Button
-                variant="default"
+                variant="filled"
+                color="blue"
+                size="md"
+                onClick={resetEditForm}
+                leftIcon={<IconX size={18} />}
+                sx={{
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {locale === "zh" ? "返回列表" : "Back to List"}
+              </Button>
+              <Button
+                variant="filled"
+                color="blue"
+                size="md"
                 onClick={onCancel || (() => router.back())}
-                leftIcon={<IconX size={16} />}
+                leftIcon={<IconX size={18} />}
+                sx={{
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
               >
                 {t("cases.back")}
               </Button>

@@ -23,14 +23,14 @@ import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 
-export default function CollectionDetailPage() {
+export default function ShopDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [items, setItems] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
-  const collectionId = typeof router.query.id === "string" ? router.query.id : "";
+  const itemId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
     void fetchKnowledgeBase().then((data) => {
@@ -40,8 +40,8 @@ export default function CollectionDetailPage() {
   }, []);
 
   const item = useMemo(
-    () => items.find((entry) => entry.id === collectionId && !entry.caseRecord),
-    [collectionId, items]
+    () => items.find((entry) => entry.id === itemId && !entry.caseRecord),
+    [itemId, items]
   );
 
   // 构建画廊图片数组（直接使用 galleryImages，如果没有则使用 image）
@@ -108,7 +108,7 @@ export default function CollectionDetailPage() {
       <Wrapper>
         <AnimatedBox>
           <Container py={80}>
-            <Alert color="red">{locale === "zh" ? "未找到该藏品。" : "Collection item not found."}</Alert>
+            <Alert color="red">{locale === "zh" ? "未找到该商品。" : "Item not found."}</Alert>
           </Container>
         </AnimatedBox>
       </Wrapper>
@@ -131,7 +131,7 @@ export default function CollectionDetailPage() {
               {/* 返回按钮 */}
               <Button
                 component={Link}
-                href="/collections"
+                href="/shop"
                 variant="filled"
                 color="blue"
                 size="md"
@@ -148,7 +148,7 @@ export default function CollectionDetailPage() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                {t("collections.detailBack")}
+                {t("collections.shopDetailBack")}
               </Button>
 
               {/* 标题和基本信息 */}
@@ -178,7 +178,7 @@ export default function CollectionDetailPage() {
                       size="lg" 
                       weight={700} 
                       sx={{ 
-                        color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
+                        color: "rgba(246, 239, 227, 0.85)",
                         lineHeight: 1.2
                       }}
                     >
@@ -320,12 +320,11 @@ export default function CollectionDetailPage() {
               maxHeight: "85vh", 
               objectFit: "contain",
               cursor: "zoom-in",
-              touchAction: "manipulation", // 优化触摸体验
-              WebkitUserSelect: "none", // 防止长按选中
+              touchAction: "manipulation",
+              WebkitUserSelect: "none",
               userSelect: "none",
             }}
             onDoubleClick={(e) => {
-              // 双击切换缩放状态
               const img = e.currentTarget;
               if (img.style.transform === "scale(2)") {
                 img.style.transform = "scale(1)";
@@ -335,24 +334,19 @@ export default function CollectionDetailPage() {
               }
             }}
             onTouchStart={(e) => {
-              // 记录触摸起始位置（用于滑动切换）
               const touch = e.touches[0];
               (e.currentTarget as any).touchStartX = touch.clientX;
             }}
             onTouchEnd={(e) => {
-              // 检测左右滑动
               const touch = e.changedTouches[0];
               const startX = (e.currentTarget as any).touchStartX;
               const diff = startX - touch.clientX;
               
-              // 滑动距离超过 50px 才触发切换
               if (Math.abs(diff) > 50 && gallery.length > 1) {
                 if (diff > 0) {
-                  // 向左滑动 - 下一张
                   const newIndex = (selectedIndex + 1) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 } else {
-                  // 向右滑动 - 上一张
                   const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 }
@@ -371,7 +365,7 @@ export default function CollectionDetailPage() {
                 }}
                 styles={{
                   root: {
-                    width: 56, // 增大触摸区域
+                    width: 56,
                     height: 56,
                   },
                 }}
@@ -392,7 +386,7 @@ export default function CollectionDetailPage() {
                 }}
                 styles={{
                   root: {
-                    width: 56, // 增大触摸区域
+                    width: 56,
                     height: 56,
                   },
                 }}

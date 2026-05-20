@@ -34,13 +34,14 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   bg: {
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
+      : `url(https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：典雅的博物馆背景
     backgroundColor: shopMode ? "#2c1810" : "#f5f5f0", // ✅ 添加备用背景色：古董商店深棕色，藏品展示浅米色
     minHeight: rem(650),
     backgroundAttachment: "scroll", // ✅ 改为 scroll 而不是 fixed，避免移动端兼容性问题
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
+    position: "relative", // ✅ 确保背景层正确定位
 
     [theme.fn.smallerThan("sm")]: {
       minHeight: rem(500),
@@ -240,7 +241,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
       image: item.image,
       title: locale === "zh" && item.titleZh ? item.titleZh : item.title,
       category: mapArtworkCategory(item),
-      href: `/collections/${item.id}`,
+      href: shopMode ? `/shop/${item.id}` : `/collections/${item.id}`,
     }));
   }, [knowledgeBaseItems, locale, shopMode]);
 
@@ -274,7 +275,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
                 >
-                  {locale === "zh" ? "导入新藏品" : "Import New Collection"}
+                  {shopMode 
+                    ? (locale === "zh" ? "导入新商品" : "Import New Product")
+                    : (locale === "zh" ? "导入新藏品" : "Import New Collection")}
                 </Button>
                 
                 {/* 管理按钮 - 仅管理员可见 */}
@@ -283,7 +286,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   variant="default"
                   leftIcon={<IconEdit size={18} />}
                 >
-                  {locale === "zh" ? "管理藏品" : "Manage Collections"}
+                  {shopMode 
+                    ? (locale === "zh" ? "管理商品" : "Manage Products")
+                    : (locale === "zh" ? "管理藏品" : "Manage Collections")}
                 </Button>
               </Group>
             )}
@@ -431,7 +436,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       fontWeight: 600,
                                       backdropFilter: "blur(4px)",
                                       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                                      zIndex: 10
                                     }}
                                   >
                                     📷 {photoCount} {t("collections.photosCount")}

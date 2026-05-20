@@ -237,7 +237,16 @@ export default function TopNav() {
             </Menu.Item>
           )}
           <Menu.Divider />
-          <Menu.Item color="red" onClick={() => logout()}>
+          <Menu.Item 
+            color="blue" 
+            onClick={() => logout()}
+            sx={{
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              },
+            }}
+          >
             {t("auth.logout")}
           </Menu.Item>
         </Menu.Dropdown>

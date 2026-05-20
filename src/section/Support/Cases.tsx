@@ -113,6 +113,25 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   
   // ✅ 移除主展示页面的编辑功能,编辑只在管理模式中进行
 
+  // 生成唯一的案例编号（统一格式：CASE-MMDDYYYY-XX00）
+  const generateCaseId = () => {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${month}${day}${year}`;
+    
+    // 生成两个随机字母
+    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
+                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    
+    // 生成两个随机数字
+    const digits = String(Math.floor(Math.random() * 10)) + 
+                   String(Math.floor(Math.random() * 10));
+    
+    return `CASE-${dateStr}-${letters}${digits}`;
+  };
+
   // ✅ 优化：仅在初始数据为空时才从 API 加载，避免不必要的网络请求
   useEffect(() => {
     // 如果已有初始数据（来自 getStaticProps），不需要重新加载
@@ -127,6 +146,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       setIsLoading(false);
     });
   }, [initialData]);
+
+  // ✅ 初始化时自动生成案例编号
+  useEffect(() => {
+    if (!adminCaseId) {
+      setAdminCaseId(generateCaseId());
+    }
+  }, []);
 
   // 根据用户角色过滤回流案例列表
   const cases = useMemo(() => {
@@ -209,7 +235,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     setAdminCoverIndex(0);
     setAdminCaseName(""); // ✅ 重置案例名称
     setAdminItemDetails("");
-    setAdminCaseId("");
+    setAdminCaseId(generateCaseId()); // ✅ 重置时重新生成编号
     setAdminSalePrice("");
     setAdminSaleTime("");
     setAdminSalePlatform("");
@@ -379,12 +405,24 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             )}
             {(showUploadForm || showManageMode) && (
               <Button
-                variant="subtle"
+                variant="filled"
+                color="blue"
+                size="md"
                 onClick={() => {
                   setShowUploadForm(false);
                   setShowManageMode(false);
                 }}
-                leftIcon={<IconX size={16} />}
+                leftIcon={<IconX size={18} />}
+                sx={{
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
               >
                 {t("cases.exitOperation")}
               </Button>
@@ -396,17 +434,36 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
         {showUploadForm && (
           <Paper p="xl">
             <Stack spacing="lg">
+              {/* 标题、管理员提示和上传按钮 */}
               <Group position="apart">
-                <Title order={3}>{t("cases.uploadReturnCaseTitle")}</Title>
-                <Button
-                  variant="subtle"
-                  onClick={() => {
-                    setShowUploadForm(false);
-                    resetForm();
+                <div>
+                  <Title order={2}>{t("support.caseTitle")}</Title>
+                  {isAdmin && (
+                    <Text size="sm" color="dimmed" mt={4}>
+                      {t("cases.adminModeText")}
+                    </Text>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    console.log('[Cases] Input onChange triggered');
+                    const files = Array.from(e.target.files || []);
+                    console.log('[Cases] Files selected:', files.length, files);
+                    handleAdminUpload(files);
+                    // 清空 input 值，允许重复选择相同文件
+                    e.target.value = '';
                   }}
-                  leftIcon={<IconX size={16} />}
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  leftIcon={<IconDatabaseImport size={18} />}
                 >
-                  {t("cases.cancelButton")}
+                  {locale === "zh" ? "上传图片" : "Upload Image"}
                 </Button>
               </Group>
 
@@ -416,61 +473,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 </Alert>
               )}
 
-              <TextInput
-                label={t("cases.caseNameRequired")}
-                value={adminCaseName}
-                onChange={(event) => setAdminCaseName(event.currentTarget.value)}
-                placeholder={t("cases.enterCaseNameRequired")}
-                required
-              />
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => {
-                  console.log('[Cases] Input onChange triggered');
-                  const files = Array.from(e.target.files || []);
-                  console.log('[Cases] Files selected:', files.length, files);
-                  handleAdminUpload(files);
-                  // 清空 input 值，允许重复选择相同文件
-                  e.target.value = '';
-                }}
-                style={{ display: 'none' }}
-              />
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('[Cases] Native button clicked');
-                  console.log('[Cases] File input ref:', fileInputRef.current);
-                  if (fileInputRef.current) {
-                    console.log('[Cases] Triggering click via ref');
-                    fileInputRef.current.click();
-                  } else {
-                    console.error('[Cases] File input ref is null!');
-                  }
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  backgroundColor: '#d8b76d',
-                  color: '#000',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: '14px'
-                }}
-              >
-                <IconDatabaseImport size={18} />
-                {locale === "zh" ? "可上传多张图片" : t("cases.uploadImagesMultiple")}
-              </button>
-
-              {adminImages.length > 0 && (
+              {/* 多图片上传区域 */}
+              {adminImages.length > 0 ? (
                 <Stack spacing="md">
                   {/* 封面照片大图预览 */}
                   <Box 
@@ -590,7 +594,37 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     </SimpleGrid>
                   </div>
                 </Stack>
+              ) : (
+                <Box sx={{ height: 300, border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(34, 39, 47, 0.5)" }}>
+                  <Stack spacing="sm" align="center">
+                    <IconPhoto size={44} color="#d8b76d" />
+                    <Text weight={600}>{t("cases.noPreviewImages")}</Text>
+                    <Text size="sm" color="dark.1">{t("cases.uploadCaseImages")}</Text>
+                  </Stack>
+                </Box>
               )}
+
+              {/* ✅ 案例编号（自动生成，禁用） */}
+              <TextInput
+                label={t("cases.caseIdLabel")}
+                value={adminCaseId}
+                disabled
+                description={t("cases.autoGenerateCaseId")}
+              />
+
+              {/* ✅ 案例名称输入框(必填) */}
+              <Box>
+                <Text size="sm" weight={500} mb={4}>
+                  {t("cases.caseNameRequired")}
+                  <Text component="span" color="red" ml={4}>*</Text>
+                </Text>
+                <TextInput
+                  value={adminCaseName}
+                  onChange={(event) => setAdminCaseName(event.currentTarget.value)}
+                  placeholder={t("cases.enterCaseNameRequired")}
+                  required
+                />
+              </Box>
 
               <Textarea
                 label={t("cases.caseDetails")}
@@ -598,13 +632,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
                 placeholder={t("cases.enterCaseDetails")}
                 minRows={3}
-              />
-
-              <TextInput
-                label={t("cases.caseIdLabel")}
-                value={adminCaseId}
-                onChange={(event) => setAdminCaseId(event.currentTarget.value)}
-                placeholder={t("cases.autoGenerateCaseId")}
               />
 
               <TextInput
@@ -666,9 +693,21 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
 
               <Group position="right">
                 <Button
-                  variant="default"
+                  variant="filled"
+                  color="blue"
+                  size="md"
                   onClick={resetForm}
-                  leftIcon={<IconX size={16} />}
+                  leftIcon={<IconX size={18} />}
+                  sx={{
+                    fontWeight: 600,
+                    padding: '12px 24px',
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                 >
                   {t("cases.cancel")}
                 </Button>
@@ -783,7 +822,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                             fontWeight: 600,
                             backdropFilter: "blur(4px)",
                             boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                            zIndex: 10
                           }}
                         >
                           📷 {item.galleryImages.length}{t("cases.photosCountBadge")}

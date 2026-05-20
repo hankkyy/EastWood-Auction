@@ -163,6 +163,13 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     }
   }, [userId]);
 
+  // ✅ 初始化时自动生成藏品/商品编号（仅在上传模式下）
+  useEffect(() => {
+    if (mode === "upload" && !adminCollectionId) {
+      setAdminCollectionId(generateCollectionId());
+    }
+  }, [mode]);
+
   // 如果未登录，显示提示
   if (!userId) {
     return (
@@ -173,12 +180,16 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             <Title order={2} color="red">{t("auth.loginRequired")}</Title>
             <Text color="dark.1" align="center">
               {locale === "zh" 
-                ? `请先登录后才能${mode === "upload" ? "上传藏品" : "管理藏品"}。`
-                : `Please log in first to ${mode === "upload" ? "upload collections" : "manage collections"}.`}
+                ? `请先登录后才能${mode === "upload" ? (shopMode ? "上传商品" : "上传藏品") : (shopMode ? "管理商品" : "管理藏品")}。`
+                : `Please log in first to ${mode === "upload" ? (shopMode ? "upload products" : "upload collections") : (shopMode ? "manage products" : "manage collections")}.`}
               <br />
               {mode === "upload" 
-                ? (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections.")
-                : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections.")}
+                ? (shopMode 
+                    ? (locale === "zh" ? "仅管理员可以上传新商品。" : "Only administrators can upload new products.")
+                    : (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections."))
+                : (shopMode
+                    ? (locale === "zh" ? "您可以管理自己上传的商品。" : "You can manage your uploaded products.")
+                    : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections."))}
             </Text>
             <Button 
               onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
@@ -192,13 +203,13 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     );
   }
 
-  // 根据用户角色过滤藏品列表
+  // 根据用户角色和模式过滤藏品列表
   const collections = items.filter((item) => {
     if (!item.caseRecord) {
-      // ✅ 商店模式：只显示可售商品
+      // ✅ 商店模式：仅显示标记为可售的商品
       if (shopMode && !item.isForSale) return false;
       
-      // 管理员可以看到所有内容
+      // 管理员可以看到所有非案例记录的内容
       if (isAdmin) return true;
       // 普通用户只能看到自己上传的内容
       if (userId && item.uploadedBy === userId) return true;
@@ -259,17 +270,29 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     }
   };
 
-  // 生成唯一的藏品编号
+  // 生成唯一的藏品/商品编号（统一格式：COL-日期-随机码）
   const generateCollectionId = () => {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `COL-${timestamp}-${random}`;
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${month}${day}${year}`;
+    
+    // 生成两个随机字母
+    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
+                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
+    
+    // 生成两个随机数字
+    const digits = String(Math.floor(Math.random() * 10)) + 
+                   String(Math.floor(Math.random() * 10));
+    
+    return `COL-${dateStr}-${letters}${digits}`;
   };
 
   const resetForm = () => {
     setAdminImages([]);
     setAdminCoverIndex(0);
-    setAdminCollectionId("");
+    setAdminCollectionId(generateCollectionId()); // ✅ 自动生成编号
     setAdminItemName("");
     setAdminItemDetails("");
     setAdminCategory("misc");
@@ -292,7 +315,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   };
 
   const handleViewDetail = (artworkId: string) => {
-    router.push(`/collections/${artworkId}`);
+    router.push(shopMode ? `/shop/${artworkId}` : `/collections/${artworkId}`);
   };
 
   const handleSaveToKnowledgeBase = async () => {
@@ -325,8 +348,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       console.log('[Collections] First image preview:', adminImages[0]?.substring(0, 100) + '...');
       console.log('[Collections] Is first image a Data URL?', adminImages[0]?.startsWith('data:'));
 
-      // 生成或使用手动输入的藏品编号
-      const collectionId = adminCollectionId.trim() || generateCollectionId();
+      // 使用自动生成的藏品编号（用户不能手动输入）
+      const collectionId = adminCollectionId.trim();
       
       // 检查藏品编号是否已存在
       const existingArtwork = items.find(item => item.collectionId === collectionId);
@@ -441,6 +464,30 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       return;
     }
 
+    // ✅ 如果勾选了"可售出"，则价格和货币单位为必填项
+    if (editIsForSale) {
+      if (!editPrice.trim()) {
+        setAdminError(shopMode 
+          ? (locale === "zh" ? "商品价格为必填项" : "Product price is required")
+          : (locale === "zh" ? "藏品价格为必填项" : "Artwork price is required"));
+        return;
+      }
+      
+      if (!editCurrency) {
+        setAdminError(shopMode 
+          ? (locale === "zh" ? "请选择货币单位" : "Please select currency")
+          : (locale === "zh" ? "请选择货币单位" : "Please select currency"));
+        return;
+      }
+      
+      // 验证价格格式
+      const parsed = parseFloat(editPrice);
+      if (isNaN(parsed) || parsed < 0) {
+        setAdminError(t("collections.invalidPriceError"));
+        return;
+      }
+    }
+
     try {
       let finalImages = [...editImages];
       
@@ -466,15 +513,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         finalImages.unshift(coverImage); // 添加到第一位
       }
 
-      // 验证价格格式
+      // 计算价格值（此时已经过验证）
       let priceValue: number | undefined = undefined;
-      if (editIsForSale && editPrice.trim()) {
-        const parsed = parseFloat(editPrice);
-        if (isNaN(parsed) || parsed < 0) {
-          setAdminError(t("collections.invalidPriceError"));
-          return;
-        }
-        priceValue = parsed;
+      if (editIsForSale) {
+        priceValue = parseFloat(editPrice);
       }
 
       const updatedArtwork: Artwork = {
@@ -584,13 +626,36 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         <Stack spacing="xl">
           <Group position="apart">
             <Title order={3}>
-              {t("collections.uploadedCollectionsTitle")}
+              {shopMode 
+                ? (locale === "zh" ? "已上传商品" : "Uploaded Products")
+                : t("collections.uploadedCollectionsTitle")}
             </Title>
-            {!isLoading && (
-              <Badge color="blue" size="lg">
-                {collections.length} {t("collections.itemsCount")}
-              </Badge>
-            )}
+            <Group>
+              {!isLoading && (
+                <Badge color="blue" size="lg">
+                  {collections.length} {t("collections.itemsCount")}
+                </Badge>
+              )}
+              <Button
+                variant="filled"
+                color="blue"
+                size="md"
+                onClick={onCancel || (() => router.back())}
+                leftIcon={<IconX size={18} />}
+                sx={{
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {t("cases.exitOperation")}
+              </Button>
+            </Group>
           </Group>
 
           {isLoading ? (
@@ -649,7 +714,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       <Stack spacing="sm" onClick={(e) => e.stopPropagation()}>
                         {/* 图片管理区域 */}
                         <Box>
-                          <Text size="sm" weight={500} mb="xs">{t("collections.collectionImages")}</Text>
+                          <Text size="sm" weight={500} mb="xs">
+                            {shopMode 
+                              ? (locale === "zh" ? "商品图片" : "Product Images")
+                              : t("collections.collectionImages")}
+                          </Text>
                           
                           {/* 大图预览 - 显示当前选中的封面 */}
                           <Box
@@ -780,7 +849,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                                 >
                                   <IconPlus size={24} color="#d8b76d" />
                                   <Text size="xs" color="dark.1" mt="xs">
-                                    添加
+                                    {shopMode ? (locale === "zh" ? "添加商品图片" : "Add Product") : (locale === "zh" ? "添加" : "Add")}
                                   </Text>
                                 </Box>
                               )}
@@ -792,7 +861,9 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         </Box>
 
                         <TextInput
-                          label={t("collections.editCollectionName")}
+                          label={shopMode 
+                            ? (locale === "zh" ? "商品名称" : "Product Name")
+                            : t("collections.editCollectionName")}
                           value={editItemName}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -801,7 +872,9 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           onClick={(e) => e.stopPropagation()}
                         />
                         <Textarea
-                          label={t("collections.editCollectionDetails")}
+                          label={shopMode 
+                            ? (locale === "zh" ? "商品介绍" : "Product Description")
+                            : t("collections.editCollectionDetails")}
                           value={editItemDetails}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -834,38 +907,60 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
                         {editIsForSale && (
                           <SimpleGrid cols={2} spacing="xs">
-                            <TextInput
-                              label={t("collections.editPrice")}
-                              value={editPrice}
-                              onChange={(event) => {
-                                event.stopPropagation();
-                                setEditPrice(event.currentTarget.value);
-                              }}
-                              placeholder={t("collections.pricePlaceholderExample")}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <Select
-                              label={t("collections.currencyLabel")}
-                              value={editCurrency}
-                              onChange={(value) => setEditCurrency((value as "USD" | "CNY") || "USD")}
-                              data={[
-                                { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
-                                { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
-                              ]}
-                              onClick={(e) => e.stopPropagation()}
-                            />
+                            <Box>
+                              <Text size="sm" weight={500} mb={4}>
+                                {t("collections.editPrice")}
+                                <Text component="span" color="red" ml={4}>*</Text>
+                              </Text>
+                              <TextInput
+                                value={editPrice}
+                                onChange={(event) => {
+                                  event.stopPropagation();
+                                  setEditPrice(event.currentTarget.value);
+                                }}
+                                placeholder={t("collections.pricePlaceholderExample")}
+                                onClick={(e) => e.stopPropagation()}
+                                required
+                              />
+                            </Box>
+                            <Box>
+                              <Text size="sm" weight={500} mb={4}>
+                                {t("collections.currencyLabel")}
+                                <Text component="span" color="red" ml={4}>*</Text>
+                              </Text>
+                              <Select
+                                value={editCurrency}
+                                onChange={(value) => setEditCurrency((value as "USD" | "CNY") || "USD")}
+                                data={[
+                                  { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
+                                  { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
+                                ]}
+                                onClick={(e) => e.stopPropagation()}
+                                required
+                              />
+                            </Box>
                           </SimpleGrid>
                         )}
                         
                         <Group position="right">
                           <Button
-                            variant="default"
-                            size="xs"
+                            variant="filled"
+                            color="blue"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               resetEditForm();
                             }}
-                            leftIcon={<IconX size={14} />}
+                            leftIcon={<IconX size={16} />}
+                            sx={{
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
                           >
                             {t("collections.cancelEdit")}
                           </Button>
@@ -883,43 +978,66 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       </Stack>
                     ) : (
                       <>
-                        <Text weight={600}>{artwork.title}</Text>
-                        <Text size="sm" color="dark.1" lineClamp={2}>
-                          {artwork.description}
-                        </Text>
-                        {artwork.collectionId && (
-                          <Badge variant="outline" size="sm">
-                            {t("collections.collectionIdLabel")}: {artwork.collectionId}
-                          </Badge>
-                        )}
-                        {artwork.isForSale && artwork.price && (
-                          <Badge color="green" size="sm">
-                            {t("collections.forSaleLabel")}: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
-                          </Badge>
-                        )}
-                        <Group position="right">
+                        {/* ✅ 非编辑模式：显示基本信息（名称、编号、价格）和操作按钮 */}
+                        <Stack spacing="xs">
+                          <Text weight={600} size="lg">{artwork.title}</Text>
+                          
+                          {artwork.collectionId && (
+                            <Badge variant="outline" size="sm">
+                              {shopMode 
+                                ? (locale === "zh" ? "商品编号" : "Product ID")
+                                : t("collections.collectionIdLabel")}: {artwork.collectionId}
+                            </Badge>
+                          )}
+                          
+                          {artwork.isForSale && artwork.price && (
+                            <Badge color="green" size="md" sx={{ fontWeight: 600, fontSize: 14 }}>
+                              {t("collections.forSaleLabel")}: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
+                            </Badge>
+                          )}
+                        </Stack>
+                        
+                        <Group position="right" spacing="xs">
                           <Button
-                            variant="light"
+                            variant="filled"
                             color="blue"
-                            size="xs"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleStartEdit(artwork);
                             }}
-                            leftIcon={<IconEdit size={14} />}
+                            leftIcon={<IconEdit size={16} />}
+                            sx={{
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                              },
+                              transition: 'all 0.2s ease',
+                            }}
                           >
                             {t("collections.edit")}
                           </Button>
                           {(isAdmin || artwork.uploadedBy === userId) && (
                             <Button
-                              variant="light"
+                              variant="filled"
                               color="red"
-                              size="xs"
+                              size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteImportedArtwork(artwork.id);
                               }}
-                              leftIcon={<IconTrash size={14} />}
+                              leftIcon={<IconTrash size={16} />}
+                              sx={{
+                                fontWeight: 600,
+                                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                                '&:hover': {
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                                },
+                                transition: 'all 0.2s ease',
+                              }}
                             >
                               {t("collections.delete")}
                             </Button>
@@ -932,16 +1050,6 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               ))}
             </SimpleGrid>
           )}
-
-          <Group position="right">
-            <Button
-              variant="default"
-              onClick={onCancel || (() => router.back())}
-              leftIcon={<IconX size={16} />}
-            >
-              {t("cases.back")}
-            </Button>
-          </Group>
         </Stack>
       </OuterWrapper>
     );
@@ -955,10 +1063,16 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           <Stack spacing="lg">
             <Group position="apart">
               <div>
-                <Title order={2}>{t("collections.managementTitle")}</Title>
+                <Title order={2}>
+                  {shopMode 
+                    ? (locale === "zh" ? "商品管理" : "Product Management")
+                    : t("collections.managementTitle")}
+                </Title>
                 <Text color="dark.1">
                   {isAdmin 
-                    ? t("collections.adminModeText")
+                    ? (shopMode 
+                        ? (locale === "zh" ? "管理员模式：您可以上传和管理商店商品。" : "Admin mode: You can upload and manage shop products.")
+                        : t("collections.adminModeText"))
                     : t("collections.noPermissionText")}
                 </Text>
               </div>
@@ -1085,7 +1199,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                               fontWeight: 600
                             }}
                           >
-                            封面
+                            {shopMode ? (locale === "zh" ? "主图" : "Main") : (locale === "zh" ? "封面" : "Cover")}
                           </Badge>
                         )}
 
@@ -1142,7 +1256,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                     >
                       <IconPlus size={32} color="#d8b76d" />
                       <Text size="sm" color="dark.1" mt="xs">
-                        添加图片
+                        {shopMode ? (locale === "zh" ? "添加商品图片" : "Add Product Image") : (locale === "zh" ? "添加图片" : "Add Image")}
                       </Text>
                     </Box>
                   </SimpleGrid>
@@ -1155,32 +1269,51 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 <Stack spacing="sm" align="center">
                   <IconPhoto size={44} color="#d8b76d" />
                   <Text weight={600}>{t("collections.noPreviewImages")}</Text>
-                  <Text size="sm" color="dark.1">{t("collections.uploadImagesMultiplePrompt")}</Text>
+                  <Text size="sm" color="dark.1">
+                    {shopMode 
+                      ? (locale === "zh" ? "请上传商品图片（支持多选）" : "Please upload product images (multiple selection supported)")
+                      : t("collections.uploadImagesMultiplePrompt")}
+                  </Text>
                 </Stack>
               </Box>
             )}
 
             <TextInput
-              label={t("collections.collectionIdLabel")}
+              label={shopMode 
+                ? (locale === "zh" ? "商品编号" : "Product ID")
+                : t("collections.collectionIdLabel")}
               value={adminCollectionId}
-              onChange={handleCollectionIdChange}
-              placeholder={t("collections.collectionIdPlaceholder")}
+              disabled
+              placeholder=""
               description={t("collections.collectionIdDescription")}
             />
 
-            <TextInput
-              label={t("collections.collectionNameRequired")}
-              value={adminItemName}
-              onChange={handleItemNameChange}
-              placeholder={t("collections.collectionNamePlaceholder")}
-              required
-            />
+            <Box>
+              <Text size="sm" weight={500} mb={4}>
+                {shopMode 
+                  ? (locale === "zh" ? "商品名称" : "Product Name")
+                  : t("collections.collectionNameRequired")}
+                <Text component="span" color="red" ml={4}>*</Text>
+              </Text>
+              <TextInput
+                value={adminItemName}
+                onChange={handleItemNameChange}
+                placeholder={shopMode 
+                  ? (locale === "zh" ? "输入商品名称" : "Enter product name")
+                  : t("collections.collectionNamePlaceholder")}
+                required
+              />
+            </Box>
 
             <Textarea
-              label={t("collections.collectionDescription")}
+              label={shopMode 
+                ? (locale === "zh" ? "商品介绍" : "Product Description")
+                : t("collections.collectionDescription")}
               value={adminItemDetails}
               onChange={handleItemDetailsChange}
-              placeholder={t("collections.collectionDescriptionPlaceholder")}
+              placeholder={shopMode 
+                ? (locale === "zh" ? "描述商品的详细信息、材质、年代等" : "Describe the product details, materials, period, etc.")
+                : t("collections.collectionDescriptionPlaceholder")}
               minRows={3}
             />
 
@@ -1207,32 +1340,54 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             {/* ✅ 商店模式始终显示价格和货币输入框，藏品展示模式仅在 isForSale 时显示 */}
             {(shopMode || adminIsForSale) && (
               <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                <TextInput
-                  label={`${t("collections.priceLabel")}${shopMode ? ' *' : ''}`} // ✅ 商店模式标记为必填
-                  value={adminPrice}
-                  onChange={(event) => setAdminPrice(event.currentTarget.value)}
-                  placeholder={t("collections.pricePlaceholderExample")}
-                  required={shopMode} // ✅ 商店模式设为必填
-                />
+                <Box>
+                  <Text size="sm" weight={500} mb={4}>
+                    {t("collections.priceLabel")}
+                    <Text component="span" color="red" ml={4}>*</Text>
+                  </Text>
+                  <TextInput
+                    value={adminPrice}
+                    onChange={(event) => setAdminPrice(event.currentTarget.value)}
+                    placeholder={t("collections.pricePlaceholderExample")}
+                    required
+                  />
+                </Box>
 
-                <Select
-                  label={`${t("collections.currencyLabel")}${shopMode ? ' *' : ''}`} // ✅ 商店模式标记为必填
-                  value={adminCurrency}
-                  onChange={(value) => setAdminCurrency((value as "USD" | "CNY") || "USD")}
-                  data={[
-                    { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
-                    { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
-                  ]}
-                  required={shopMode} // ✅ 商店模式设为必填
-                />
+                <Box>
+                  <Text size="sm" weight={500} mb={4}>
+                    {t("collections.currencyLabel")}
+                    <Text component="span" color="red" ml={4}>*</Text>
+                  </Text>
+                  <Select
+                    value={adminCurrency}
+                    onChange={(value) => setAdminCurrency((value as "USD" | "CNY") || "USD")}
+                    data={[
+                      { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
+                      { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
+                    ]}
+                    required
+                  />
+                </Box>
               </SimpleGrid>
             )}
 
             <Group position="right">
               <Button
-                variant="default"
+                variant="filled"
+                color="blue"
+                size="md"
                 onClick={handleCancel}
-                leftIcon={<IconX size={16} />}
+                leftIcon={<IconX size={18} />}
+                sx={{
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
               >
                 {t("collections.cancelButton")}
               </Button>

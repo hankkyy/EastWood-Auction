@@ -199,20 +199,24 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
 
         {/* 退出登录按钮 */}
         <Button
-          color="red"
-          variant="outline"
+          color="blue"
+          variant="filled"
           onClick={() => {
             logout();
             onClose();
           }}
           fullWidth
           size="lg"
-          styles={{
-            root: {
-              minHeight: 52,
-              fontSize: 17,
-              fontWeight: 600,
+          sx={{
+            minHeight: 52,
+            fontSize: 17,
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
             },
+            transition: 'all 0.2s ease',
           }}
         >
           {t("auth.logout")}
