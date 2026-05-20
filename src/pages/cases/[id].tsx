@@ -286,6 +286,7 @@ export default function CaseDetailPage() {
               {/* ✅ 案例详情描述 - 放在图片展示下方 */}
               {description && (
                 <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+                  <Title order={4} mb="md">{t("support.caseDetails")}</Title>
                   <Text size="lg" color="dark.1">{description}</Text>
                 </Box>
               )}
