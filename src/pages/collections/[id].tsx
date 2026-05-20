@@ -149,7 +149,7 @@ export default function CollectionDetailPage() {
                   </Badge>
                 )}
 
-                {item.isForSale && item.price && (
+                {item.isForSale && item.price ? (
                   <Group spacing="sm">
                     <Badge color="green" variant="filled" size="lg">
                       {t("collections.forSaleLabel")}
@@ -159,6 +159,10 @@ export default function CollectionDetailPage() {
                       {item.price.toLocaleString()}
                     </Text>
                   </Group>
+                ) : (
+                  <Badge color="gray" variant="filled" size="lg">
+                    {t("collections.notForSaleLabel")}
+                  </Badge>
                 )}
               </Stack>
 

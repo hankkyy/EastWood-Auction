@@ -300,6 +300,11 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                       console.error('[Collections] Failed to refresh data:', error);
                     }
                   }}
+                  onSuccess={() => {
+                    // ✅ 保存成功后自动关闭上传表单
+                    setShowUploadForm(false);
+                    console.log('[Collections] Upload form closed after success');
+                  }}
                   onCancel={async () => {
                     setShowUploadForm(false);
                     setShowManageMode(false);
@@ -392,6 +397,27 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               <Box className={classes.imageWrap} sx={{ position: "relative" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                                 
+                                {/* ✅ 商店模式：显示价格标签 */}
+                                {shopMode && artwork?.isForSale && artwork?.price && (
+                                  <Box
+                                    sx={{
+                                      position: "absolute",
+                                      top: 12,
+                                      right: 12,
+                                      backgroundColor: "#51cf66",
+                                      color: "#fff",
+                                      padding: "8px 12px",
+                                      borderRadius: 8,
+                                      fontSize: 14,
+                                      fontWeight: 700,
+                                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+                                      zIndex: 10
+                                    }}
+                                  >
+                                    {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+                                  </Box>
+                                )}
+                                
                                 {/* 照片数量提示 */}
                                 {photoCount > 1 && (
                                   <Box
@@ -415,6 +441,13 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                 )}
                               </Box>
                               <Text className={classes.itemTitle}>{item.title}</Text>
+                              
+                              {/* ✅ 商店模式：在标题下方也显示价格 */}
+                              {shopMode && artwork?.isForSale && artwork?.price && (
+                                <Text size="lg" weight={700} color="yellow" mt="xs">
+                                  {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+                                </Text>
+                              )}
                             </Box>
                           );
                         })}

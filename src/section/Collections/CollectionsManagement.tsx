@@ -60,6 +60,7 @@ type CollectionsManagementProps = {
   mode?: "upload" | "manage"; // 模式：上传或管理
   onCancel?: () => void; // 取消时的回调函数
   onDataUpdate?: () => void; // 数据更新时的回调函数（用于通知父组件刷新）
+  onSuccess?: () => void; // ✅ 保存成功后的回调函数（用于自动关闭表单）
 };
 
 // 辅助组件：根据 embedded 属性渲染外层容器（必须在组件外部定义，避免每次渲染重新创建）
@@ -76,7 +77,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   embedded = false, 
   mode = "upload",
   onCancel,
-  onDataUpdate 
+  onDataUpdate,
+  onSuccess // ✅ 保存成功后的回调
 }: CollectionsManagementProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -354,6 +356,13 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       // ✅ 通知父组件刷新数据
       if (onDataUpdate) {
         onDataUpdate();
+      }
+      
+      // ✅ 保存成功后自动关闭表单（如果提供了 onSuccess 回调）
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500); // 延迟 1.5 秒，让用户看到成功提示
       }
       
       const updated = await fetchKnowledgeBase();
