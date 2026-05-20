@@ -427,7 +427,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                   size="xl" 
                                   weight={700} 
                                   sx={{ 
-                                    color: "#f6efe3", // ✅ 优雅的灰白色，与藏品详情页保持一致
+                                    color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
                                     marginTop: 8,
                                     lineHeight: 1.2,
                                     textAlign: "center" // ✅ 与标题保持居中对齐

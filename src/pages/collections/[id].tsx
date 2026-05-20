@@ -148,9 +148,9 @@ export default function CollectionDetailPage() {
                     variant="light" 
                     size="lg"
                     sx={{
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      backgroundColor: "rgba(0, 0, 0, 0.3)",
                       color: "#f6efe3",
-                      border: "1px solid rgba(246, 239, 227, 0.3)"
+                      border: "1px solid rgba(246, 239, 227, 0.2)"
                     }}
                   >
                     {t("collections.collectionIdLabel")}: {item.collectionId}
@@ -166,7 +166,7 @@ export default function CollectionDetailPage() {
                       size="xl" 
                       weight={700} 
                       sx={{ 
-                        color: "#f6efe3", // ✅ 优雅的灰白色，与整体深色主题协调
+                        color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
                         lineHeight: 1.2
                       }}
                     >
