@@ -35,11 +35,17 @@ export default function CollectionDetailPage() {
   // ✅ 通过 URL 参数检测来源页面（更可靠）
   const backPath = useMemo(() => {
     const from = router.query.from as string;
+    console.log('[CollectionDetail] Current URL:', router.asPath);
+    console.log('[CollectionDetail] Query params:', router.query);
+    console.log('[CollectionDetail] from parameter:', from);
+    
     if (from === "shop") {
+      console.log('[CollectionDetail] Returning to shop');
       return "/shop"; // 从古董商店进入，返回商店
     }
+    console.log('[CollectionDetail] Returning to collections');
     return "/collections"; // 默认返回藏品展示
-  }, [router.query.from]);
+  }, [router.query.from, router.asPath]);
 
   useEffect(() => {
     void fetchKnowledgeBase().then((data) => {

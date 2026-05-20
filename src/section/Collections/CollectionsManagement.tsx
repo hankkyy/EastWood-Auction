@@ -173,12 +173,16 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             <Title order={2} color="red">{t("auth.loginRequired")}</Title>
             <Text color="dark.1" align="center">
               {locale === "zh" 
-                ? `请先登录后才能${mode === "upload" ? "上传藏品" : "管理藏品"}。`
-                : `Please log in first to ${mode === "upload" ? "upload collections" : "manage collections"}.`}
+                ? `请先登录后才能${mode === "upload" ? (shopMode ? "上传商品" : "导入藏品") : (shopMode ? "管理商品" : "管理藏品")}。`
+                : `Please log in first to ${mode === "upload" ? (shopMode ? "upload products" : "import collections") : (shopMode ? "manage products" : "manage collections")}.`}
               <br />
               {mode === "upload" 
-                ? (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections.")
-                : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections.")}
+                ? (shopMode 
+                  ? (locale === "zh" ? "仅管理员可以上传新商品。" : "Only administrators can upload new products.")
+                  : (locale === "zh" ? "仅管理员可以导入新藏品。" : "Only administrators can import new collections."))
+                : (shopMode
+                  ? (locale === "zh" ? "您可以管理自己上传的商品。" : "You can manage your uploaded products.")
+                  : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections."))}
             </Text>
             <Button 
               onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
@@ -870,7 +874,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconX size={14} />}
                           >
-                            {t("collections.cancelEdit")}
+                            {shopMode 
+                              ? (locale === "zh" ? "取消编辑" : "Cancel Edit")
+                              : t("collections.cancelEdit")
+                            }
                           </Button>
                           <Button
                             size="xs"
@@ -880,7 +887,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconCheck size={14} />}
                           >
-                            {t("collections.saveButton")}
+                            {shopMode 
+                              ? (locale === "zh" ? "保存商品" : "Save Product")
+                              : (locale === "zh" ? "保存藏品" : "Save Collection")
+                            }
                           </Button>
                         </Group>
                       </Stack>
@@ -908,7 +918,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconEdit size={14} />}
                           >
-                            {t("collections.edit")}
+                            {shopMode 
+                              ? (locale === "zh" ? "编辑商品" : "Edit Product")
+                              : t("collections.edit")
+                            }
                           </Button>
                           {(isAdmin || artwork.uploadedBy === userId) && (
                             <Button
@@ -921,7 +934,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                               }}
                               leftIcon={<IconTrash size={14} />}
                             >
-                              {t("collections.delete")}
+                              {shopMode 
+                                ? (locale === "zh" ? "删除商品" : "Delete Product")
+                                : t("collections.delete")
+                              }
                             </Button>
                           )}
                         </Group>
@@ -1244,7 +1260,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 onClick={handleCancel}
                 leftIcon={<IconX size={16} />}
               >
-                {t("collections.cancelButton")}
+                {shopMode 
+                  ? (locale === "zh" ? "取消上传" : "Cancel Upload")
+                  : t("collections.cancelButton")
+                }
               </Button>
               <Button
                 onClick={handleSaveToKnowledgeBase}
@@ -1255,7 +1274,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                   (shopMode ? !adminPrice.trim() || parseFloat(adminPrice) <= 0 : (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0)))
                 } // ✅ 商店模式强制要求价格，藏品展示模式仅在 isForSale 时要求
               >
-                {t("collections.saveButton")}
+                {shopMode 
+                  ? (locale === "zh" ? "保存商品" : "Save Product")
+                  : (locale === "zh" ? "保存藏品" : "Save Collection")
+                }
               </Button>
             </Group>
           </Stack>

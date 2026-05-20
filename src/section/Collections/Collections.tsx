@@ -410,8 +410,10 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                           return (
                             <Box
                               key={item.key}
-                              component={Link}
-                              href={`${item.href}${shopMode ? '?from=shop' : ''}`}
+                              onClick={() => {
+                                const targetPath = shopMode ? `${item.href}?from=shop` : item.href;
+                                router.push(targetPath);
+                              }}
                               sx={{ 
                                 textDecoration: "none", 
                                 display: "block",
