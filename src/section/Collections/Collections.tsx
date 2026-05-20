@@ -392,7 +392,7 @@ export default function Collections() {
                                       zIndex: 10
                                     }}
                                   >
-                                    📷 {photoCount} 张照片
+                                    📷 {photoCount} {t("collections.photosCount")}
                                   </Box>
                                 )}
                               </Box>
