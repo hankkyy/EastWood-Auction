@@ -311,27 +311,69 @@ export default function CaseDetailPage() {
       <Modal
         opened={lightboxOpened}
         onClose={() => setLightboxOpened(false)}
-        centered
-        size="90vw"
+        fullScreen // 改为全屏显示，更适合移动端
         withCloseButton
         overlayProps={{ opacity: 0.72, blur: 4 }}
-        styles={{ body: { paddingTop: 8 } }}
+        styles={{ 
+          body: { paddingTop: 8 },
+          content: {
+            backgroundColor: "rgba(0, 0, 0, 0.95)",
+          },
+        }}
       >
-        <Stack spacing="md">
-          <Box sx={{ position: "relative" }}>
+        <Stack spacing="md" sx={{ height: "100%", justifyContent: "center" }}>
+          <Box sx={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Box
               sx={{
                 ...frameStyles,
                 minHeight: 620,
                 padding: 20,
                 border: "1px solid rgba(216, 183, 109, 0.18)",
+                maxWidth: "95vw",
+                maxHeight: "85vh",
               }}
             >
               <Box
                 component="img"
                 src={activeImage}
                 alt={title}
-                sx={{ maxWidth: "100%", maxHeight: "72vh", width: "auto", height: "auto", objectFit: "contain" }}
+                sx={{ 
+                  maxWidth: "100%", 
+                  maxHeight: "72vh", 
+                  width: "auto", 
+                  height: "auto", 
+                  objectFit: "contain",
+                  cursor: "zoom-in",
+                  touchAction: "manipulation",
+                  WebkitUserSelect: "none",
+                  userSelect: "none",
+                }}
+                onDoubleClick={(e) => {
+                  const img = e.currentTarget;
+                  if (img.style.transform === "scale(2)") {
+                    img.style.transform = "scale(1)";
+                  } else {
+                    img.style.transform = "scale(2)";
+                    img.style.transition = "transform 0.3s ease";
+                  }
+                }}
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  (e.currentTarget as any).touchStartX = touch.clientX;
+                }}
+                onTouchEnd={(e) => {
+                  const touch = e.changedTouches[0];
+                  const startX = (e.currentTarget as any).touchStartX;
+                  const diff = startX - touch.clientX;
+                  
+                  if (Math.abs(diff) > 50 && gallery.length > 1) {
+                    if (diff > 0) {
+                      goToNext();
+                    } else {
+                      goToPrevious();
+                    }
+                  }
+                }}
               />
             </Box>
 
@@ -340,7 +382,7 @@ export default function CaseDetailPage() {
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={56} // 增大触摸区域
                   onClick={goToPrevious}
                   sx={{
                     position: "absolute",
@@ -351,12 +393,12 @@ export default function CaseDetailPage() {
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronLeft size={24} />
+                  <IconChevronLeft size={28} />
                 </ActionIcon>
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={56} // 增大触摸区域
                   onClick={goToNext}
                   sx={{
                     position: "absolute",
@@ -367,15 +409,21 @@ export default function CaseDetailPage() {
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronRight size={24} />
+                  <IconChevronRight size={28} />
                 </ActionIcon>
               </>
             ) : null}
           </Box>
 
+          {gallery.length > 1 && (
+            <Text color="dark.1" size="sm" align="center" sx={{ opacity: 0.7, marginBottom: 8 }}>
+              {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
+            </Text>
+          )}
+
           {gallery.length > 1 ? (
             <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
-              <Group spacing="md" noWrap>
+              <Group spacing="md" noWrap position="center">
                 {gallery.map((imageUrl, index) => {
                   const isActive = imageUrl === activeImage;
 

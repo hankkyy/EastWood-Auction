@@ -288,24 +288,75 @@ export default function TopNav() {
         title={t("common.brand")}
         className={classes.hiddenDesktop}
         zIndex={1000000}
+        position="right"
+        withCloseButton
+        transitionProps={{ transition: "slide-left", duration: 300 }}
+        overlayProps={{ opacity: 0.6, blur: 4 }}
       >
-        <ScrollArea h={`calc(100vh - ${rem(60)})`} mx="-md">
-          <Divider
-            my="sm"
-            color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
-          />
-          <Stack spacing="sm" px="sm" mb="sm">
-            {links}
-          </Stack>
-          <Divider
-            my="sm"
-            color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
-          />{" "}
-          <Stack align="center" spacing="sm" px="sm" mb="sm">
-            <Button variant="subtle">{t("top.joinGive")}</Button>
-            <Button variant="subtle">{t("top.shop")}</Button>
-            <LanguagePicker mobile />
-            {renderUserMenu()}
+        <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md" type="auto">
+          <Stack spacing="lg" px="md" py="md">
+            {/* 主要导航链接 - 增大触摸区域 */}
+            {links.map((link, index) => (
+              <Box key={index}>
+                {React.cloneElement(link as React.ReactElement<any>, {
+                  size: "lg",
+                  fullWidth: true,
+                  styles: {
+                    root: {
+                      minHeight: 56, // 最小触摸高度
+                      fontSize: 18,
+                      justifyContent: "flex-start",
+                      paddingLeft: 16,
+                    },
+                  },
+                })}
+              </Box>
+            ))}
+            
+            <Divider
+              my="sm"
+              color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
+            />
+            
+            {/* 辅助操作按钮 */}
+            <Stack spacing="md">
+              <Button 
+                variant="subtle" 
+                size="lg" 
+                fullWidth
+                styles={{
+                  root: {
+                    minHeight: 52,
+                    fontSize: 16,
+                  },
+                }}
+              >
+                {t("top.joinGive")}
+              </Button>
+              <Button 
+                variant="subtle" 
+                size="lg" 
+                fullWidth
+                styles={{
+                  root: {
+                    minHeight: 52,
+                    fontSize: 16,
+                  },
+                }}
+              >
+                {t("top.shop")}
+              </Button>
+              
+              {/* 语言选择器 */}
+              <Box sx={{ marginTop: 8 }}>
+                <LanguagePicker mobile />
+              </Box>
+              
+              {/* 用户菜单 */}
+              <Box sx={{ marginTop: 8 }}>
+                {renderUserMenu()}
+              </Box>
+            </Stack>
           </Stack>
         </ScrollArea>
       </Drawer>

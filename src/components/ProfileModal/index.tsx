@@ -75,16 +75,26 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
       title={t("auth.profileTitle")}
       centered
       size="md"
+      fullScreen
+      transitionProps={{ transition: "fade", duration: 200 }}
+      styles={{
+        content: {
+          borderRadius: 16,
+          padding: 24,
+          maxHeight: "90vh",
+          overflowY: "auto",
+        },
+      }}
     >
       <Stack spacing="lg">
         {/* 用户信息卡片 */}
-        <Group position="apart" align="flex-start">
-          <Group>
+        <Group position="apart" align="flex-start" noWrap>
+          <Group spacing="md" noWrap>
             <Avatar color={avatarColor} radius="xl" size="xl">
               {initials}
             </Avatar>
-            <div>
-              <Text weight={600}>{user.email}</Text>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <Text weight={600} sx={{ wordBreak: "break-word" }}>{user.email}</Text>
               <Text size="sm" color="dimmed">
                 {t("auth.roleLabel")}: {user.profile?.role === "admin" ? t("auth.adminRole") : t("auth.userRole")}
               </Text>
@@ -111,6 +121,13 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
               value={firstName}
               onChange={(e) => setFirstName(e.currentTarget.value)}
               required
+              autoComplete="given-name"
+              styles={{
+                input: {
+                  minHeight: 48,
+                  fontSize: 16,
+                },
+              }}
             />
             <TextInput
               label={t("auth.lastNameLabel")}
@@ -118,6 +135,13 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
               value={lastName}
               onChange={(e) => setLastName(e.currentTarget.value)}
               required
+              autoComplete="family-name"
+              styles={{
+                input: {
+                  minHeight: 48,
+                  fontSize: 16,
+                },
+              }}
             />
             <TextInput
               label={t("auth.userIdLabel")}
@@ -126,9 +150,16 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
               onChange={(e) => setUserId(e.currentTarget.value)}
               description={t("auth.userIdDescription")}
               disabled={userIdChangeCount >= 3}
+              autoComplete="username"
+              styles={{
+                input: {
+                  minHeight: 48,
+                  fontSize: 16,
+                },
+              }}
             />
             {userIdChangeCount < 3 && (
-              <Text size="xs" color="dimmed">
+              <Text size="xs" color="dimmed" sx={{ marginTop: -8 }}>
                 {locale === "zh" 
                   ? `剩余 ${3 - userIdChangeCount} 次修改机会`
                   : `${3 - userIdChangeCount} changes remaining`}
@@ -139,8 +170,26 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
               value={user.email || ""}
               disabled
               description={t("auth.emailNotEditable")}
+              styles={{
+                input: {
+                  minHeight: 48,
+                  fontSize: 16,
+                },
+              }}
             />
-            <Button type="submit" loading={loading} fullWidth>
+            <Button 
+              type="submit" 
+              loading={loading} 
+              fullWidth
+              size="lg"
+              styles={{
+                root: {
+                  minHeight: 52,
+                  fontSize: 17,
+                  fontWeight: 600,
+                },
+              }}
+            >
               {t("auth.saveChanges")}
             </Button>
           </Stack>
@@ -157,6 +206,14 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
             onClose();
           }}
           fullWidth
+          size="lg"
+          styles={{
+            root: {
+              minHeight: 52,
+              fontSize: 17,
+              fontWeight: 600,
+            },
+          }}
         >
           {t("auth.logout")}
         </Button>

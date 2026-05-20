@@ -124,11 +124,48 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       centered
       size="md"
       closeOnClickOutside={false} // 禁止点击外部关闭
+      fullScreen // 移动端全屏显示
+      transitionProps={{ transition: "fade", duration: 200 }}
+      styles={{
+        content: {
+          borderRadius: 16,
+          padding: 24,
+          maxHeight: "90vh",
+          overflowY: "auto",
+        },
+        header: {
+          marginBottom: 16,
+        },
+      }}
     >
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
-        <Tabs.List grow>
-          <Tabs.Tab value="login">{t("auth.login")}</Tabs.Tab>
-          <Tabs.Tab value="register">{t("auth.register")}</Tabs.Tab>
+        <Tabs.List grow mb="lg">
+          <Tabs.Tab 
+            value="login"
+            styles={{
+              tab: {
+                fontSize: 16,
+                fontWeight: 600,
+                padding: "12px 16px",
+                minHeight: 48, // 增大触摸区域
+              },
+            }}
+          >
+            {t("auth.login")}
+          </Tabs.Tab>
+          <Tabs.Tab 
+            value="register"
+            styles={{
+              tab: {
+                fontSize: 16,
+                fontWeight: 600,
+                padding: "12px 16px",
+                minHeight: 48, // 增大触摸区域
+              },
+            }}
+          >
+            {t("auth.register")}
+          </Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="login" pt="md">
@@ -141,6 +178,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setEmail(e.currentTarget.value)}
                 required
                 type="email"
+                autoComplete="email"
+                styles={{
+                  input: {
+                    minHeight: 48, // 增大输入框高度
+                    fontSize: 16, // 防止 iOS 自动缩放
+                  },
+                }}
               />
               <PasswordInput
                 label={t("auth.passwordLabel")}
@@ -148,8 +192,27 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 value={password}
                 onChange={(e) => setPassword(e.currentTarget.value)}
                 required
+                autoComplete="current-password"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
-              <Button type="submit" loading={loading} fullWidth>
+              <Button 
+                type="submit" 
+                loading={loading} 
+                fullWidth
+                size="lg"
+                styles={{
+                  root: {
+                    minHeight: 52, // 增大按钮高度
+                    fontSize: 17,
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 {t("auth.login")}
               </Button>
             </Stack>
@@ -165,6 +228,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 value={firstName}
                 onChange={(e) => setFirstName(e.currentTarget.value)}
                 required
+                autoComplete="given-name"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
               <TextInput
                 label={t("auth.lastNameLabel")}
@@ -172,6 +242,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 value={lastName}
                 onChange={(e) => setLastName(e.currentTarget.value)}
                 required
+                autoComplete="family-name"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
               <TextInput
                 label={t("auth.userIdLabel")}
@@ -179,6 +256,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 value={userId}
                 onChange={(e) => setUserId(e.currentTarget.value)}
                 description={t("auth.userIdDescription")}
+                autoComplete="username"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
               <TextInput
                 label={t("auth.emailLabel")}
@@ -187,6 +271,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setEmail(e.currentTarget.value)}
                 required
                 type="email"
+                autoComplete="email"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
               <PasswordInput
                 label={t("auth.passwordLabel")}
@@ -194,11 +285,30 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 value={password}
                 onChange={(e) => setPassword(e.currentTarget.value)}
                 required
+                autoComplete="new-password"
+                styles={{
+                  input: {
+                    minHeight: 48,
+                    fontSize: 16,
+                  },
+                }}
               />
-              <Text size="xs" color="dimmed">
+              <Text size="xs" color="dimmed" sx={{ marginTop: -8 }}>
                 {t("auth.passwordRequirement")}
               </Text>
-              <Button type="submit" loading={loading} fullWidth>
+              <Button 
+                type="submit" 
+                loading={loading} 
+                fullWidth
+                size="lg"
+                styles={{
+                  root: {
+                    minHeight: 52,
+                    fontSize: 17,
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 {t("auth.register")}
               </Button>
             </Stack>

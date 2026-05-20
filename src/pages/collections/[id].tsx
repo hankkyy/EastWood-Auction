@@ -273,17 +273,64 @@ export default function CollectionDetailPage() {
         fullScreen
         padding="xl"
         withCloseButton
+        styles={{
+          content: {
+            backgroundColor: "rgba(0, 0, 0, 0.95)",
+          },
+        }}
       >
         <Stack align="center" justify="center" sx={{ height: "100%" }}>
           <Box
             component="img"
             src={selectedImage}
             alt={title}
-            sx={{ maxWidth: "90vw", maxHeight: "85vh", objectFit: "contain" }}
+            sx={{ 
+              maxWidth: "95vw", 
+              maxHeight: "85vh", 
+              objectFit: "contain",
+              cursor: "zoom-in",
+              touchAction: "manipulation", // 优化触摸体验
+              WebkitUserSelect: "none", // 防止长按选中
+              userSelect: "none",
+            }}
+            onDoubleClick={(e) => {
+              // 双击切换缩放状态
+              const img = e.currentTarget;
+              if (img.style.transform === "scale(2)") {
+                img.style.transform = "scale(1)";
+              } else {
+                img.style.transform = "scale(2)";
+                img.style.transition = "transform 0.3s ease";
+              }
+            }}
+            onTouchStart={(e) => {
+              // 记录触摸起始位置（用于滑动切换）
+              const touch = e.touches[0];
+              (e.currentTarget as any).touchStartX = touch.clientX;
+            }}
+            onTouchEnd={(e) => {
+              // 检测左右滑动
+              const touch = e.changedTouches[0];
+              const startX = (e.currentTarget as any).touchStartX;
+              const diff = startX - touch.clientX;
+              
+              // 滑动距离超过 50px 才触发切换
+              if (Math.abs(diff) > 50 && gallery.length > 1) {
+                if (diff > 0) {
+                  // 向左滑动 - 下一张
+                  const newIndex = (selectedIndex + 1) % gallery.length;
+                  setSelectedImage(gallery[newIndex]);
+                } else {
+                  // 向右滑动 - 上一张
+                  const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
+                  setSelectedImage(gallery[newIndex]);
+                }
+              }
+            }}
           />
 
           {gallery.length > 1 && (
-            <Group position="center" spacing="xl">
+            <Group position="center" spacing="xl" mt="md">
               <ActionIcon
                 size="xl"
                 variant="filled"
@@ -291,11 +338,17 @@ export default function CollectionDetailPage() {
                   const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 }}
+                styles={{
+                  root: {
+                    width: 56, // 增大触摸区域
+                    height: 56,
+                  },
+                }}
               >
-                <IconChevronLeft size={24} />
+                <IconChevronLeft size={28} />
               </ActionIcon>
 
-              <Text color="dark.1">
+              <Text color="dark.1" size="lg">
                 {selectedIndex + 1} / {gallery.length}
               </Text>
 
@@ -306,11 +359,21 @@ export default function CollectionDetailPage() {
                   const newIndex = (selectedIndex + 1) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 }}
+                styles={{
+                  root: {
+                    width: 56, // 增大触摸区域
+                    height: 56,
+                  },
+                }}
               >
-                <IconChevronRight size={24} />
+                <IconChevronRight size={28} />
               </ActionIcon>
             </Group>
           )}
+          
+          <Text color="dark.1" size="sm" mt="xs" sx={{ opacity: 0.7 }}>
+            {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
+          </Text>
         </Stack>
       </Modal>
     </>
