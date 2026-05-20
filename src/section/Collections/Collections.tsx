@@ -162,19 +162,31 @@ const mapArtworkCategory = (artwork: Artwork): string => {
   return "misc";
 };
 
-export default function Collections() {
+interface CollectionsSectionProps {
+  initialData?: Artwork[];
+}
+
+export default function Collections({ initialData = [] }: CollectionsSectionProps) {
   const { classes } = useStyles();
   const { t, locale } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { user, isAdmin } = useAuth();
   const router = useRouter();
-  const [knowledgeBaseItems, setKnowledgeBaseItems] = useState<Artwork[]>([]);
+  // ✅ 使用初始数据，避免首次加载时的闪烁
+  const [knowledgeBaseItems, setKnowledgeBaseItems] = useState<Artwork[]>(initialData);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
 
+  // ✅ 优化：仅在初始数据为空时才从本地存储加载
   useEffect(() => {
+    // 如果已有初始数据（来自 getStaticProps），不需要重新加载
+    if (initialData && initialData.length > 0) {
+      return;
+    }
+    
+    // 只有在没有初始数据时才从本地存储加载
     setKnowledgeBaseItems(getKnowledgeBase());
-  }, []);
+  }, [initialData]);
 
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {

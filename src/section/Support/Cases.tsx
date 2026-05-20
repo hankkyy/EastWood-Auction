@@ -41,12 +41,17 @@ import {
 import { useEffect, useMemo, useState, useRef } from "react";
 import CasesManagementSection from "./CasesManagement"; // 导入管理组件
 
-export default function CasesSection() {
+interface CasesSectionProps {
+  initialData?: Artwork[];
+}
+
+export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const { locale, t } = useI18n();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter(); // ✅ 获取 router 实例
-  const [items, setItems] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // ✅ 使用初始数据，避免首次加载时的闪烁
+  const [items, setItems] = useState<Artwork[]>(initialData);
+  const [isLoading, setIsLoading] = useState(false); // ✅ 初始为 false，因为已有数据
   
   // 文件输入引用
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -108,12 +113,20 @@ export default function CasesSection() {
   
   // ✅ 移除主展示页面的编辑功能,编辑只在管理模式中进行
 
+  // ✅ 优化：仅在初始数据为空时才从 API 加载，避免不必要的网络请求
   useEffect(() => {
+    // 如果已有初始数据（来自 getStaticProps），不需要重新加载
+    if (initialData && initialData.length > 0) {
+      setIsLoading(false);
+      return;
+    }
+    
+    // 只有在没有初始数据时才从 API 加载
     void fetchKnowledgeBase().then((data) => {
       setItems(data);
       setIsLoading(false);
     });
-  }, []);
+  }, [initialData]);
 
   // 根据用户角色过滤回流案例列表
   const cases = useMemo(() => {
