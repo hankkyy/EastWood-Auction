@@ -109,7 +109,6 @@ export default async function handler(
         galleryImages: uploadedImages.galleryImages,
       });
 
-      // @ts-expect-error - Supabase type inference issue with dynamic table names
       const { data, error } = await (supabase as any)
         .from(TABLE_NAME)
         .update(row)

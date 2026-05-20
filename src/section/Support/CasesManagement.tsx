@@ -119,6 +119,43 @@ const CasesManagementSection = memo(function CasesManagementSection({
       });
   }, []);
 
+  // 如果未登录，自动触发登录模态框
+  useEffect(() => {
+    if (!userId) {
+      // 触发打开登录模态框
+      window.dispatchEvent(new CustomEvent('open-auth-modal'));
+    }
+  }, [userId]);
+
+  // 如果未登录，显示提示
+  if (!userId) {
+    return (
+      <OuterWrapper embedded={embedded}>
+        <Paper p="xl">
+          <Stack spacing="sm" align="center">
+            <IconLock size={48} color="red" />
+            <Title order={2} color="red">{t("cases.loginRequired")}</Title>
+            <Text color="dark.1" align="center">
+              {locale === "zh" 
+                ? `请先登录后才能${mode === "upload" ? "上传案例" : "管理案例"}。`
+                : `Please login first to ${mode === "upload" ? "upload" : "manage"} cases.`}
+              <br />
+              {mode === "upload" 
+                ? t("cases.uploadYourOwnCases")
+                : t("cases.manageYourOwnCases")}
+            </Text>
+            <Button 
+              onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
+              color="violet"
+            >
+              {t("cases.loginNow")}
+            </Button>
+          </Stack>
+        </Paper>
+      </OuterWrapper>
+    );
+  }
+
   // 根据用户角色过滤回流案例列表
   const cases = items.filter((item) => {
     if (item.caseRecord) {
@@ -453,40 +490,6 @@ const CasesManagementSection = memo(function CasesManagementSection({
       setAdminError(t("cases.imageUploadFailed"));
     }
   };
-
-  // 如果未登录，显示提示并自动触发登录模态框
-  if (!userId) {
-    useEffect(() => {
-      // 触发打开登录模态框
-      window.dispatchEvent(new CustomEvent('open-auth-modal'));
-    }, []);
-    
-    return (
-      <OuterWrapper embedded={embedded}>
-        <Paper p="xl">
-          <Stack spacing="sm" align="center">
-            <IconLock size={48} color="red" />
-            <Title order={2} color="red">{t("cases.loginRequired")}</Title>
-            <Text color="dark.1" align="center">
-              {locale === "zh" 
-                ? `请先登录后才能${mode === "upload" ? "上传案例" : "管理案例"}。`
-                : `Please login first to ${mode === "upload" ? "upload" : "manage"} cases.`}
-              <br />
-              {mode === "upload" 
-                ? t("cases.uploadYourOwnCases")
-                : t("cases.manageYourOwnCases")}
-            </Text>
-            <Button 
-              onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
-              color="violet"
-            >
-              {t("cases.loginNow")}
-            </Button>
-          </Stack>
-        </Paper>
-      </OuterWrapper>
-    );
-  }
 
   // 如果是管理模式，显示可编辑的列表
   if (mode === "manage") {

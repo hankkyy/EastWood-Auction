@@ -151,6 +151,43 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       });
   }, []);
 
+  // 如果未登录，自动触发登录模态框
+  useEffect(() => {
+    if (!userId) {
+      // 触发打开登录模态框
+      window.dispatchEvent(new CustomEvent('open-auth-modal'));
+    }
+  }, [userId]);
+
+  // 如果未登录，显示提示
+  if (!userId) {
+    return (
+      <OuterWrapper embedded={embedded}>
+        <Paper p="xl">
+          <Stack spacing="sm" align="center">
+            <IconLock size={48} color="red" />
+            <Title order={2} color="red">{t("auth.loginRequired")}</Title>
+            <Text color="dark.1" align="center">
+              {locale === "zh" 
+                ? `请先登录后才能${mode === "upload" ? "上传藏品" : "管理藏品"}。`
+                : `Please log in first to ${mode === "upload" ? "upload collections" : "manage collections"}.`}
+              <br />
+              {mode === "upload" 
+                ? (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections.")
+                : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections.")}
+            </Text>
+            <Button 
+              onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
+              color="violet"
+            >
+              立即登录
+            </Button>
+          </Stack>
+        </Paper>
+      </OuterWrapper>
+    );
+  }
+
   // 根据用户角色过滤藏品列表
   const collections = items.filter((item) => {
     if (!item.caseRecord) {
@@ -502,40 +539,6 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       setAdminError(error.message || t("cases.deleteFailed"));
     }
   };
-
-  // 如果未登录，显示提示并自动触发登录模态框
-  if (!userId) {
-    useEffect(() => {
-      // 触发打开登录模态框
-      window.dispatchEvent(new CustomEvent('open-auth-modal'));
-    }, []);
-    
-    return (
-      <OuterWrapper embedded={embedded}>
-        <Paper p="xl">
-          <Stack spacing="sm" align="center">
-            <IconLock size={48} color="red" />
-            <Title order={2} color="red">{t("auth.loginRequired")}</Title>
-            <Text color="dark.1" align="center">
-              {locale === "zh" 
-                ? `请先登录后才能${mode === "upload" ? "上传藏品" : "管理藏品"}。`
-                : `Please log in first to ${mode === "upload" ? "upload collections" : "manage collections"}.`}
-              <br />
-              {mode === "upload" 
-                ? (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections.")
-                : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections.")}
-            </Text>
-            <Button 
-              onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
-              color="violet"
-            >
-              立即登录
-            </Button>
-          </Stack>
-        </Paper>
-      </OuterWrapper>
-    );
-  }
 
   // 如果是管理模式，显示可编辑的列表
   if (mode === "manage") {
