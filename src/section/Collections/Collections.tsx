@@ -424,7 +424,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
                                 <Text 
-                                  size="xl" 
+                                  size="lg" 
                                   weight={700} 
                                   sx={{ 
                                     color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分

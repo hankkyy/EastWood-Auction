@@ -148,7 +148,7 @@ export default function CollectionDetailPage() {
                     variant="light" 
                     size="lg"
                     sx={{
-                      backgroundColor: "rgba(0, 0, 0, 0.3)",
+                      backgroundColor: "rgba(100, 116, 139, 0.25)",
                       color: "#f6efe3",
                       border: "1px solid rgba(246, 239, 227, 0.2)"
                     }}
@@ -163,7 +163,7 @@ export default function CollectionDetailPage() {
                       {t("collections.forSaleLabel")}
                     </Badge>
                     <Text 
-                      size="xl" 
+                      size="lg" 
                       weight={700} 
                       sx={{ 
                         color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
