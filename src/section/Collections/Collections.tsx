@@ -411,7 +411,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                             <Box
                               key={item.key}
                               component={Link}
-                              href={item.href}
+                              href={`${item.href}${shopMode ? '?from=shop' : ''}`}
                               sx={{ 
                                 textDecoration: "none", 
                                 display: "block",

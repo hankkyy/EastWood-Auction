@@ -31,15 +31,15 @@ export default function CollectionDetailPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const collectionId = typeof router.query.id === "string" ? router.query.id : "";
-
-  // ✅ 检测来源页面，决定返回路径
+  
+  // ✅ 通过 URL 参数检测来源页面（更可靠）
   const backPath = useMemo(() => {
-    const referer = document.referrer;
-    if (referer.includes("/shop")) {
+    const from = router.query.from as string;
+    if (from === "shop") {
       return "/shop"; // 从古董商店进入，返回商店
     }
     return "/collections"; // 默认返回藏品展示
-  }, []);
+  }, [router.query.from]);
 
   useEffect(() => {
     void fetchKnowledgeBase().then((data) => {
