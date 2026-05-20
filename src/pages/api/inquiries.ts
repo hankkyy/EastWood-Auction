@@ -13,6 +13,23 @@ type InquiryRow = {
   contact_email: string;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    user_id: string | null;
+    email: string | null;
+  } | null;
+};
+
+type InquiryMessageRow = {
+  id: string;
+  inquiry_id: string;
+  sender_user_id: string;
+  sender_role: "admin" | "user";
+  body: string;
+  is_read: boolean;
+  created_at: string;
 };
 
 const TABLE_NAME = "inquiries";
@@ -96,26 +113,121 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: error?.message || "Unable to submit inquiry." });
     }
 
+    const { error: messageError } = await supabase.from("inquiry_messages").insert({
+      inquiry_id: data.id,
+      sender_user_id: auth.userId,
+      sender_role: "user",
+      body: normalized.details,
+      is_read: false,
+    } as any);
+
+    if (messageError) {
+      return res.status(500).json({ error: messageError.message || "Unable to create inquiry thread." });
+    }
+
     return res.status(201).json({ inquiry: toSerializable(data as InquiryRow) });
   }
 
   if (req.method === "GET") {
+    const countOnly = req.query.countOnly === "1";
+    const selectFields = countOnly
+      ? "id, user_id, is_processed"
+      : auth.isAdmin
+        ? "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
+        : "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at";
+
+    let query = supabase.from(TABLE_NAME).select(selectFields);
+
     if (!auth.isAdmin) {
-      return res.status(403).json({ error: "Admin access required" });
+      query = query.eq("user_id", auth.userId);
     }
 
-    const { data, error } = await supabase
-      .from(TABLE_NAME)
-      .select(
-        "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
-      )
-      .order("created_at", { ascending: false });
+    if (!countOnly) {
+      query = query.order("created_at", { ascending: false });
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(200).json({ inquiries: toSerializable(data ?? []) });
+    const inquiries = toSerializable((data ?? []) as unknown as InquiryRow[]);
+    const inquiryIds = inquiries.map((item) => item.id);
+    const pendingCount = inquiries.filter((item: any) => !item.is_processed).length;
+    const totalCount = inquiries.length;
+    let unreadCount = 0;
+
+    if (inquiryIds.length) {
+      const unreadSenderRole: InquiryMessageRow["sender_role"] = auth.isAdmin ? "user" : "admin";
+      const { data: unreadMessages, error: unreadError } = await supabase
+        .from("inquiry_messages")
+        .select("id, inquiry_id, sender_user_id, sender_role, body, is_read, created_at")
+        .in("inquiry_id", inquiryIds)
+        .eq("sender_role", unreadSenderRole)
+        .eq("is_read", false);
+
+      if (unreadError) {
+        return res.status(500).json({ error: unreadError.message });
+      }
+
+      unreadCount = (unreadMessages ?? []).length;
+    }
+
+    if (countOnly) {
+      return res.status(200).json({ pendingCount, totalCount, unreadCount });
+    }
+
+    let messagesByInquiryId: Record<string, InquiryMessageRow[]> = {};
+
+    if (inquiryIds.length) {
+      const { data: messages, error: messagesError } = await supabase
+        .from("inquiry_messages")
+        .select("id, inquiry_id, sender_user_id, sender_role, body, is_read, created_at")
+        .in("inquiry_id", inquiryIds)
+        .order("created_at", { ascending: true });
+
+      if (messagesError) {
+        return res.status(500).json({ error: messagesError.message });
+      }
+
+      messagesByInquiryId = (messages ?? []).reduce<Record<string, InquiryMessageRow[]>>((acc, item) => {
+        const message = item as InquiryMessageRow;
+        if (!acc[message.inquiry_id]) {
+          acc[message.inquiry_id] = [];
+        }
+        acc[message.inquiry_id].push(message);
+        return acc;
+      }, {});
+    }
+
+    const enrichedInquiries = inquiries.map((inquiry) => {
+      const messages = messagesByInquiryId[inquiry.id] ?? [];
+      const hasOpeningMessage = messages.some(
+        (message) => message.sender_role === "user" && message.body === inquiry.details
+      );
+      const threadMessages = hasOpeningMessage
+        ? messages
+        : [
+            {
+              id: `initial-${inquiry.id}`,
+              inquiry_id: inquiry.id,
+              sender_user_id: inquiry.user_id,
+              sender_role: "user" as const,
+              body: inquiry.details,
+              is_read: auth.isAdmin,
+              created_at: inquiry.created_at,
+            },
+            ...messages,
+          ];
+
+      return {
+        ...inquiry,
+        messages: threadMessages,
+      };
+    });
+
+    return res.status(200).json({ inquiries: enrichedInquiries, pendingCount, totalCount, unreadCount });
   }
 
   if (req.method === "PATCH") {

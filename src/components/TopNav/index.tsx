@@ -22,14 +22,11 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
-import dynamic from "next/dynamic";
 import { useAuth } from "@/hooks/useAuth";
 import { notifications } from "@mantine/notifications";
 import { IconInbox } from "@tabler/icons-react";
-
-// 动态导入认证相关组件，禁用 SSR
-const AuthModal = dynamic(() => import("@/components/AuthModal"), { ssr: false });
-const ProfileModal = dynamic(() => import("@/components/ProfileModal"), { ssr: false });
+import AuthModal from "@/components/AuthModal";
+import ProfileModal from "@/components/ProfileModal";
 
 const useStyles = createStyles((theme) => ({
   header: {
@@ -171,6 +168,22 @@ export default function TopNav() {
     }
 
     void router.push("/inquiries");
+  };
+
+  const handleInboxClick = () => {
+    closeDrawer();
+
+    if (!loading && !user) {
+      notifications.show({
+        title: t("inbox.loginRequiredTitle"),
+        message: t("inbox.loginRequiredMessage"),
+        color: "yellow",
+      });
+      void router.push("/inbox");
+      return;
+    }
+
+    void router.push("/inbox");
   };
 
   const urlResolver = (url: string): boolean => {
@@ -357,9 +370,18 @@ export default function TopNav() {
                 fullWidth
                 size="md"
                 onClick={handleInquiryClick}
-                leftIcon={<IconInbox size={18} />}
               >
                 {t("inquiry.entryButton")}
+              </Button>
+              <Button
+                variant="subtle"
+                color="gray"
+                fullWidth
+                size="md"
+                onClick={handleInboxClick}
+                leftIcon={<IconInbox size={18} />}
+              >
+                {t("inbox.pageTitle")}
               </Button>
               {/* 语言选择器 */}
               <Box sx={{ marginTop: 8 }}>

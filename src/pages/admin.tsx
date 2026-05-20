@@ -26,26 +26,6 @@ type AdminProfile = Pick<
   "id" | "email" | "first_name" | "last_name" | "user_id" | "role" | "created_at" | "updated_at"
 >;
 
-type InquiryRecord = {
-  id: string;
-  user_id: string;
-  inquiry_code: string | null;
-  no_inquiry_code: boolean;
-  is_processed: boolean;
-  details: string;
-  contact_phone: string;
-  contact_email: string;
-  created_at: string;
-  updated_at: string;
-  profiles?: {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    user_id: string | null;
-    email: string | null;
-  } | null;
-};
-
 const formatDisplayName = (profile: AdminProfile, locale: string) => {
   const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ");
   if (fullName) return fullName;
@@ -57,7 +37,6 @@ export default function AdminPage() {
   const { user, isAdmin, loading: authLoading, refreshProfile, logout } = useAuth();
   const { locale } = useI18n();
   const [profiles, setProfiles] = useState<AdminProfile[]>([]);
-  const [inquiries, setInquiries] = useState<InquiryRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -65,10 +44,6 @@ export default function AdminPage() {
   const [roleConfirmState, setRoleConfirmState] = useState<{
     id: string;
     nextRole: "admin" | "user";
-  } | null>(null);
-  const [inquiryConfirmState, setInquiryConfirmState] = useState<{
-    id: string;
-    nextProcessed: boolean;
   } | null>(null);
 
   const loadAdminData = useCallback(async () => {
@@ -85,25 +60,14 @@ export default function AdminPage() {
         return;
       }
 
-      const [profilesResponse, inquiriesResponse] = await Promise.all([
-        fetch("/api/admin/profiles", {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }),
-        fetch("/api/inquiries", {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }),
-      ]);
+      const profilesResponse = await fetch("/api/admin/profiles", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
       const profilesPayload = (await profilesResponse.json()) as {
         profiles?: AdminProfile[];
-        error?: string;
-      };
-      const inquiriesPayload = (await inquiriesResponse.json()) as {
-        inquiries?: InquiryRecord[];
         error?: string;
       };
 
@@ -111,12 +75,7 @@ export default function AdminPage() {
         throw new Error(profilesPayload.error || "Unable to load profiles.");
       }
 
-      if (!inquiriesResponse.ok) {
-        throw new Error(inquiriesPayload.error || "Unable to load inquiries.");
-      }
-
       setProfiles(profilesPayload.profiles ?? []);
-      setInquiries(inquiriesPayload.inquiries ?? []);
     } catch (err: any) {
       setError(err.message || (locale === "zh" ? "加载失败" : "Load failed"));
     } finally {
@@ -141,205 +100,6 @@ export default function AdminPage() {
     () => profiles.filter((profile) => profile.role === "user"),
     [profiles]
   );
-  const pendingInquiries = useMemo(
-    () => inquiries.filter((inquiry) => !inquiry.is_processed),
-    [inquiries]
-  );
-  const processedInquiries = useMemo(
-    () => inquiries.filter((inquiry) => inquiry.is_processed),
-    [inquiries]
-  );
-
-  const formatInquiryOwner = (inquiry: InquiryRecord) => {
-    const profile = inquiry.profiles;
-    if (!profile) {
-      return locale === "zh" ? "未知用户" : "Unknown user";
-    }
-
-    const fullName = [profile.first_name, profile.last_name].filter(Boolean).join(" ");
-    return fullName || profile.user_id || profile.email || (locale === "zh" ? "未知用户" : "Unknown user");
-  };
-
-  const formatInquiryTime = (value: string) =>
-    new Date(value).toLocaleString(locale === "zh" ? "zh-CN" : "en-US");
-
-  const updateInquiryStatus = async (inquiryId: string, isProcessed: boolean) => {
-    if (
-      inquiryConfirmState?.id !== inquiryId ||
-      inquiryConfirmState.nextProcessed !== isProcessed
-    ) {
-      setRoleConfirmState(null);
-      setDeleteArmedId(null);
-      setInquiryConfirmState({ id: inquiryId, nextProcessed: isProcessed });
-      return;
-    }
-
-    try {
-      setUpdatingId(inquiryId);
-      setError(null);
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        throw new Error(locale === "zh" ? "请先登录。" : "Please log in first.");
-      }
-
-      const response = await fetch("/api/inquiries", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          id: inquiryId,
-          isProcessed,
-        }),
-      });
-
-      const payload = (await response.json()) as {
-        inquiry?: InquiryRecord;
-        error?: string;
-      };
-
-      if (!response.ok || !payload.inquiry) {
-        throw new Error(payload.error || "Unable to update inquiry.");
-      }
-
-      setInquiries((prev) =>
-        prev.map((item) => (item.id === payload.inquiry?.id ? payload.inquiry : item))
-      );
-      setInquiryConfirmState(null);
-    } catch (err: any) {
-      setError(err.message || (locale === "zh" ? "更新失败" : "Update failed"));
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const renderInquiryCard = (inquiry: InquiryRecord) => {
-    const isUpdating = updatingId === inquiry.id;
-    const pendingProcessedState =
-      inquiryConfirmState?.id === inquiry.id ? inquiryConfirmState.nextProcessed : null;
-
-    return (
-      <Paper key={inquiry.id} p="md" withBorder radius="md">
-        <Stack spacing="sm">
-          <Box sx={{ minWidth: 0 }}>
-            <Group spacing="xs" align="center" mb={6}>
-              <Text weight={700}>{formatInquiryOwner(inquiry)}</Text>
-              <Badge color={inquiry.is_processed ? "teal" : "yellow"} variant="light">
-                {inquiry.is_processed
-                  ? locale === "zh"
-                    ? "已处理"
-                    : "Processed"
-                  : locale === "zh"
-                    ? "未处理"
-                    : "Pending"}
-              </Badge>
-              <Badge color="gray" variant="light">
-                {inquiry.no_inquiry_code
-                  ? locale === "zh"
-                    ? "无编号"
-                    : "No code"
-                  : inquiry.inquiry_code}
-              </Badge>
-            </Group>
-            <Text size="sm" color="dimmed">
-              {locale === "zh" ? "提交时间：" : "Submitted: "}
-              {formatInquiryTime(inquiry.created_at)}
-            </Text>
-          </Box>
-          <Stack spacing={4}>
-            <Text size="sm" sx={{ wordBreak: "break-word" }}>
-              {locale === "zh" ? "联系电话：" : "Phone: "}
-              {inquiry.contact_phone}
-            </Text>
-            <Text size="sm" sx={{ wordBreak: "break-word" }}>
-              {locale === "zh" ? "联系邮箱：" : "Email: "}
-              {inquiry.contact_email}
-            </Text>
-          </Stack>
-          <Box>
-            <Text size="sm" weight={600} mb={4}>
-              {locale === "zh" ? "咨询内容" : "Inquiry details"}
-            </Text>
-            <Text
-              size="sm"
-              sx={{
-                whiteSpace: "pre-wrap",
-                wordBreak: "break-word",
-                lineHeight: 1.7,
-              }}
-            >
-              {inquiry.details}
-            </Text>
-          </Box>
-          <Group position="right">
-            {pendingProcessedState !== null ? (
-              <>
-                <Button
-                  size="xs"
-                  color={pendingProcessedState ? "teal" : "gray"}
-                  variant="filled"
-                  loading={isUpdating}
-                  disabled={isUpdating}
-                  onClick={() => void updateInquiryStatus(inquiry.id, pendingProcessedState)}
-                >
-                  {pendingProcessedState
-                    ? locale === "zh"
-                      ? "确认标记为已处理"
-                      : "Confirm processed"
-                    : locale === "zh"
-                      ? "确认标记为未处理"
-                      : "Confirm pending"}
-                </Button>
-                <Button
-                  size="xs"
-                  color="gray"
-                  variant="light"
-                  disabled={isUpdating}
-                  onClick={() => setInquiryConfirmState(null)}
-                >
-                  {locale === "zh" ? "取消" : "Cancel"}
-                </Button>
-              </>
-            ) : (
-              <Button
-                size="xs"
-                color={inquiry.is_processed ? "gray" : "teal"}
-                variant={inquiry.is_processed ? "light" : "filled"}
-                loading={isUpdating}
-                disabled={isUpdating}
-                onClick={() => void updateInquiryStatus(inquiry.id, !inquiry.is_processed)}
-                sx={
-                  inquiry.is_processed
-                    ? {
-                        backgroundColor: "rgba(129, 140, 248, 0.18)",
-                        color: "#c7d2fe",
-                        border: "1px solid rgba(129, 140, 248, 0.35)",
-                        "&:hover": {
-                          backgroundColor: "rgba(129, 140, 248, 0.28)",
-                        },
-                      }
-                    : undefined
-                }
-              >
-                {inquiry.is_processed
-                  ? locale === "zh"
-                    ? "标记为未处理"
-                    : "Mark as pending"
-                  : locale === "zh"
-                    ? "标记为已处理"
-                    : "Mark as processed"}
-              </Button>
-            )}
-          </Group>
-        </Stack>
-      </Paper>
-    );
-  };
 
   const updateRole = async (profile: AdminProfile, nextRole: "admin" | "user") => {
     if (roleConfirmState?.id !== profile.id || roleConfirmState.nextRole !== nextRole) {
@@ -597,13 +357,18 @@ export default function AdminPage() {
                 <Title order={1}>{title}</Title>
                 <Text color="dimmed">
                   {locale === "zh"
-                    ? "查看所有管理员和用户，并直接调整账号权限。"
-                    : "Review all administrators and users, then update account roles directly."}
+                    ? "这里只负责管理员与用户权限管理。委托与咨询的回复和处理状态请前往收件箱。"
+                    : "This page is only for administrator and user permission management. Handle consignments and inquiries in the inbox."}
                 </Text>
               </div>
-              <Button component={Link} href="/" variant="light">
-                {locale === "zh" ? "返回首页" : "Back Home"}
-              </Button>
+              <Group spacing="xs">
+                <Button component={Link} href="/inbox" variant="light">
+                  {locale === "zh" ? "前往收件箱" : "Open Inbox"}
+                </Button>
+                <Button component={Link} href="/" variant="light">
+                  {locale === "zh" ? "返回首页" : "Back Home"}
+                </Button>
+              </Group>
             </Group>
 
             {!authLoading && (!user || !isAdmin) ? (
@@ -655,89 +420,6 @@ export default function AdminPage() {
                   </Group>
                   <Stack spacing="sm">
                     {userProfiles.map(renderProfileCard)}
-                  </Stack>
-                </Paper>
-
-                <Divider />
-
-                <Paper p="lg" withBorder radius="md">
-                  <Group position="apart" mb="md">
-                    <Title order={3}>{locale === "zh" ? "委托与咨询" : "Consignments & Inquiries"}</Title>
-                    <Badge color="grape" variant="light">
-                      {inquiries.length}
-                    </Badge>
-                  </Group>
-                  <Stack spacing="lg">
-                    <Paper
-                      p="md"
-                      withBorder
-                      radius="md"
-                      sx={{
-                        borderColor: "rgba(216, 183, 109, 0.45)",
-                        backgroundColor: "rgba(216, 183, 109, 0.06)",
-                      }}
-                    >
-                      <Group position="apart" mb={4}>
-                        <Text weight={800} color="yellow">
-                          {locale === "zh" ? "未处理咨询" : "Pending Inquiries"}
-                        </Text>
-                        <Badge color="yellow" variant="light">
-                          {pendingInquiries.length}
-                        </Badge>
-                      </Group>
-                      <Text size="sm" color="dimmed" mb="md">
-                        {locale === "zh"
-                          ? "优先处理这一组，表示管理员还没有完成跟进。"
-                          : "Prioritize this group first. These inquiries still need follow-up."}
-                      </Text>
-                      <Stack spacing="sm">
-                        {pendingInquiries.length ? (
-                          pendingInquiries.map(renderInquiryCard)
-                        ) : (
-                          <Text color="dimmed">
-                            {locale === "zh" ? "当前没有未处理咨询。" : "No pending inquiries."}
-                          </Text>
-                        )}
-                      </Stack>
-                    </Paper>
-
-                    <Divider
-                      label={locale === "zh" ? "处理归档" : "Processed Archive"}
-                      labelPosition="center"
-                    />
-
-                    <Paper
-                      p="md"
-                      withBorder
-                      radius="md"
-                      sx={{
-                        borderColor: "rgba(32, 201, 151, 0.4)",
-                        backgroundColor: "rgba(32, 201, 151, 0.05)",
-                      }}
-                    >
-                      <Group position="apart" mb={4}>
-                        <Text weight={800} color="teal">
-                          {locale === "zh" ? "已处理咨询" : "Processed Inquiries"}
-                        </Text>
-                        <Badge color="teal" variant="light">
-                          {processedInquiries.length}
-                        </Badge>
-                      </Group>
-                      <Text size="sm" color="dimmed" mb="md">
-                        {locale === "zh"
-                          ? "这一组是已经处理完成的咨询记录。"
-                          : "This group contains inquiries that have already been handled."}
-                      </Text>
-                      <Stack spacing="sm">
-                        {processedInquiries.length ? (
-                          processedInquiries.map(renderInquiryCard)
-                        ) : (
-                          <Text color="dimmed">
-                            {locale === "zh" ? "当前没有已处理咨询。" : "No processed inquiries."}
-                          </Text>
-                        )}
-                      </Stack>
-                    </Paper>
                   </Stack>
                 </Paper>
               </Stack>

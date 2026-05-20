@@ -1,8 +1,8 @@
 import Head from "next/head";
-import dynamic from "next/dynamic";
 import { Wrapper } from "@/layout";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
+import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/lib/supabase/client";
 import {
   Alert,
@@ -21,8 +21,6 @@ import { notifications } from "@mantine/notifications";
 import { IconAlertCircle, IconCircleCheck } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
-const AuthModal = dynamic(() => import("@/components/AuthModal"), { ssr: false });
 
 export default function InquiriesPage() {
   const router = useRouter();
@@ -126,6 +124,8 @@ export default function InquiriesPage() {
         color: "green",
         icon: <IconCircleCheck size={16} />,
       });
+
+      window.dispatchEvent(new Event("inquiries:changed"));
 
       setInquiryCode("");
       setNoInquiryCode(false);
