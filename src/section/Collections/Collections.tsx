@@ -34,7 +34,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   bg: {
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1548625149-fc4a29cf7092?auto=format&fit=crop&w=1400&q=80)` // ✅ 中式美学背景（古董店/茶室风格）
-      : `url(https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1400&q=80)`, // 藏品展示背景
+      : `url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示使用浅色亮色背景（明亮画廊）
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
@@ -110,14 +110,14 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   imageWrap: {
     background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
     overflow: "hidden",
-    height: remValue(480), // ✅ 减小高度（从 560 改为 480），更加精致
+    height: remValue(420), // ✅ 进一步减小高度（从 480 改为 420），更加精致紧凑
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: remValue(16),
 
     [theme.fn.smallerThan("md")]: {
-      height: remValue(360), // ✅ 响应式调整（从 420 改为 360）
+      height: remValue(320), // ✅ 响应式调整（从 360 改为 320）
       padding: remValue(12),
     },
   },
@@ -139,10 +139,10 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
 
   itemTitle: {
-    marginTop: remValue(18), // ✅ 减小上边距（从 22 改为 18）
+    marginTop: remValue(16), // ✅ 减小上边距（从 18 改为 16）
     textAlign: "center",
     color: theme.colors.dark[0],
-    fontSize: remValue(22), // ✅ 减小字体（从 25 改为 22），更加精致
+    fontSize: remValue(20), // ✅ 进一步减小字体（从 22 改为 20），更加精致
     fontWeight: 800,
   },
 }));
@@ -385,7 +385,11 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                           { maxWidth: "md", cols: 2, spacing: "lg" },
                           { maxWidth: "sm", cols: 1, spacing: "md" },
                         ]}
-                        sx={{ marginTop: 48 }} // ✅ 增加上下间距
+                        sx={{ 
+                          marginTop: 64, // ✅ 增加上下间距（从 48 改为 64）
+                          paddingLeft: 48, // ✅ 增加左边距
+                          paddingRight: 48 // ✅ 增加右边距
+                        }}
                       >
                         {visibleItems.map((item) => {
                           // 获取原始 artwork 数据以检查 galleryImages
