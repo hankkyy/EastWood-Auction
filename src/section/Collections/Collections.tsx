@@ -410,10 +410,11 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                 cursor: "pointer", // ✅ 明确设置鼠标指针样式
                                 "&:hover": {
                                   opacity: 0.95 // ✅ 添加悬停效果，提供视觉反馈
-                                }
+                                },
+                                pointerEvents: "auto" // ✅ 确保点击事件不被阻止
                               }}
                             >
-                              <Box className={classes.imageWrap} sx={{ position: "relative" }}>
+                              <Box className={classes.imageWrap} sx={{ position: "relative", pointerEvents: "none" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                                 
                                 {/* 照片数量提示 */}
@@ -431,14 +432,15 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       fontWeight: 600,
                                       backdropFilter: "blur(4px)",
                                       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                                      zIndex: 10
+                                      zIndex: 10,
+                                      pointerEvents: "none" // ✅ 防止遮挡点击
                                     }}
                                   >
                                     📷 {photoCount} {t("collections.photosCount")}
                                   </Box>
                                 )}
                               </Box>
-                              <Text className={classes.itemTitle}>{item.title}</Text>
+                              <Text className={classes.itemTitle} sx={{ pointerEvents: "none" }}>{item.title}</Text>
                               
                               {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
@@ -449,7 +451,8 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                     color: "rgba(246, 239, 227, 0.65)", // ✅ 价格使用更灰的颜色（65%透明度），更加低调
                                     marginTop: 8,
                                     lineHeight: 1.2,
-                                    textAlign: "center" // ✅ 与标题保持居中对齐
+                                    textAlign: "center", // ✅ 与标题保持居中对齐
+                                    pointerEvents: "none" // ✅ 防止遮挡点击
                                   }}
                                 >
                                   {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}

@@ -884,9 +884,6 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                     ) : (
                       <>
                         <Text weight={600}>{artwork.title}</Text>
-                        <Text size="sm" color="dark.1" lineClamp={2}>
-                          {artwork.description}
-                        </Text>
                         {artwork.collectionId && (
                           <Badge variant="outline" size="sm">
                             {t("collections.collectionIdLabel")}: {artwork.collectionId}
