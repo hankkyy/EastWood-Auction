@@ -125,10 +125,6 @@ export default function TopBar() {
     <Header height="100%" sx={{ borderBottom: 0 }}>
       <Container className={classes.inner} fluid>
         <Flex gap="sm" align="center" className={classes.leftSection}>
-          <Text size={smallerThan ? "xs" : "sm"} weight={600}>
-            {t("top.openToday")}
-          </Text>
-          <Divider orientation="vertical" className={classes.hiddenTablet} />
           <Carousel
             slideSize="100%"
             align="start"
