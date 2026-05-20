@@ -421,13 +421,13 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               </Box>
                               <Text className={classes.itemTitle}>{item.title}</Text>
                               
-                              {/* ✅ 商店模式：在标题下方显示价格（参考高端艺术品电商设计） */}
+                              {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
                                 <Text 
                                   size="xl" 
                                   weight={700} 
                                   sx={{ 
-                                    color: "#d4af37", // 优雅金色，类似高端艺术品/奢侈品电商
+                                    color: "#f6efe3", // ✅ 优雅的灰白色，与藏品详情页保持一致
                                     marginTop: 8,
                                     lineHeight: 1.2,
                                     textAlign: "center" // ✅ 与标题保持居中对齐

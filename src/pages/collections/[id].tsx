@@ -144,7 +144,15 @@ export default function CollectionDetailPage() {
                 <Title order={2}>{title}</Title>
 
                 {item.collectionId && (
-                  <Badge color="dark" variant="filled" size="lg">
+                  <Badge 
+                    variant="light" 
+                    size="lg"
+                    sx={{
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      color: "#f6efe3",
+                      border: "1px solid rgba(246, 239, 227, 0.3)"
+                    }}
+                  >
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
                 )}
@@ -158,7 +166,7 @@ export default function CollectionDetailPage() {
                       size="xl" 
                       weight={700} 
                       sx={{ 
-                        color: "#d4af37", // ✅ 与古董商店保持一致的优雅金色
+                        color: "#f6efe3", // ✅ 优雅的灰白色，与整体深色主题协调
                         lineHeight: 1.2
                       }}
                     >
