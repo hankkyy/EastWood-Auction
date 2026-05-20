@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -79,6 +80,7 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 export default function HeroSection() {
+  const router = useRouter();
   const videoRef = useRef<any>(null);
   const [pause, setPause] = useState(false);
   const { classes } = useStyles();
@@ -93,6 +95,10 @@ export default function HeroSection() {
       videoRef.current.pause();
       setPause(true);
     }
+  };
+
+  const handleLearnMore = () => {
+    router.push("/shop");
   };
 
   useEffect(() => {
@@ -140,6 +146,7 @@ export default function HeroSection() {
                 size="lg"
                 fullWidth={smallerThan}
                 className={classes.heroAction}
+                onClick={handleLearnMore}
               >
                 {t("home.learnMore")}
               </Button>

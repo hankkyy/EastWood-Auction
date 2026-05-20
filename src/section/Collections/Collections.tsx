@@ -34,7 +34,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   bg: {
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：真实博物馆展厅背景（典雅、明亮）
+      : `url(https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
     backgroundColor: shopMode ? "#2c1810" : "#f5f5f0", // ✅ 添加备用背景色：古董商店深棕色，藏品展示浅米色
     minHeight: rem(650),
     backgroundAttachment: "scroll", // ✅ 改为 scroll 而不是 fixed，避免移动端兼容性问题
@@ -194,10 +194,8 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {
-    console.log('[Collections] Route changed:', router.asPath, 'pathname:', router.pathname);
     // 当路由为 /collections（不包含子路径如 /collections/[id]）时，重置到浏览模式
     if (router.pathname === '/collections') {
-      console.log('[Collections] Resetting to browse mode');
       setShowUploadForm(false);
       setShowManageMode(false);
     }
@@ -276,10 +274,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
                 >
-                  {shopMode 
-                    ? (locale === "zh" ? "上传新商品" : "Upload New Product")
-                    : (locale === "zh" ? "导入新藏品" : "Import New Collection")
-                  }
+                  {locale === "zh" ? "导入新藏品" : "Import New Collection"}
                 </Button>
                 
                 {/* 管理按钮 - 仅管理员可见 */}
@@ -288,10 +283,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   variant="default"
                   leftIcon={<IconEdit size={18} />}
                 >
-                  {shopMode 
-                    ? (locale === "zh" ? "管理商品" : "Manage Products")
-                    : (locale === "zh" ? "管理藏品" : "Manage Collections")
-                  }
+                  {locale === "zh" ? "管理藏品" : "Manage Collections"}
                 </Button>
               </Group>
             )}
@@ -410,21 +402,18 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                           return (
                             <Box
                               key={item.key}
-                              onClick={() => {
-                                const targetPath = shopMode ? `${item.href}?from=shop` : item.href;
-                                router.push(targetPath);
-                              }}
+                              component={Link}
+                              href={item.href}
                               sx={{ 
                                 textDecoration: "none", 
                                 display: "block",
                                 cursor: "pointer", // ✅ 明确设置鼠标指针样式
                                 "&:hover": {
                                   opacity: 0.95 // ✅ 添加悬停效果，提供视觉反馈
-                                },
-                                pointerEvents: "auto" // ✅ 确保点击事件不被阻止
+                                }
                               }}
                             >
-                              <Box className={classes.imageWrap} sx={{ position: "relative", pointerEvents: "none" }}>
+                              <Box className={classes.imageWrap} sx={{ position: "relative" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
                                 
                                 {/* 照片数量提示 */}
@@ -442,15 +431,14 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       fontWeight: 600,
                                       backdropFilter: "blur(4px)",
                                       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                                      zIndex: 10,
-                                      pointerEvents: "none" // ✅ 防止遮挡点击
+                                      zIndex: 10
                                     }}
                                   >
                                     📷 {photoCount} {t("collections.photosCount")}
                                   </Box>
                                 )}
                               </Box>
-                              <Text className={classes.itemTitle} sx={{ pointerEvents: "none" }}>{item.title}</Text>
+                              <Text className={classes.itemTitle}>{item.title}</Text>
                               
                               {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
                               {shopMode && artwork?.isForSale && artwork?.price && (
@@ -461,8 +449,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                     color: "rgba(246, 239, 227, 0.65)", // ✅ 价格使用更灰的颜色（65%透明度），更加低调
                                     marginTop: 8,
                                     lineHeight: 1.2,
-                                    textAlign: "center", // ✅ 与标题保持居中对齐
-                                    pointerEvents: "none" // ✅ 防止遮挡点击
+                                    textAlign: "center" // ✅ 与标题保持居中对齐
                                   }}
                                 >
                                   {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}

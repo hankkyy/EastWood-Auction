@@ -322,7 +322,7 @@ export default function TopNav() {
               color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
             />
             
-            {/* 辅助操作区域 */}
+            {/* 辅助操作按钮 */}
             <Stack spacing="md">
               {/* 语言选择器 */}
               <Box sx={{ marginTop: 8 }}>

@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -35,9 +36,14 @@ const data = [
 ] as const;
 
 export default function VisitSection() {
+  const router = useRouter();
   const theme = useMantineTheme();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { t } = useI18n();
+
+  const handleLearnMore = () => {
+    router.push("/shop");
+  };
 
   return (
     <Container fluid pt={80} pb={120}>
@@ -78,7 +84,11 @@ export default function VisitSection() {
                 {t(item.titleKey)}
               </Text>
               <Text my="sm" sx={{ flex: 1 }}>{t(item.textKey)}</Text>
-              <Button variant="outline" fullWidth={smallerThan}>
+              <Button 
+                variant="outline" 
+                fullWidth={smallerThan}
+                onClick={handleLearnMore}
+              >
                 {t("visit.learnMore")}
               </Button>
             </Box>

@@ -31,21 +31,6 @@ export default function CollectionDetailPage() {
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const collectionId = typeof router.query.id === "string" ? router.query.id : "";
-  
-  // ✅ 通过 URL 参数检测来源页面（更可靠）
-  const backPath = useMemo(() => {
-    const from = router.query.from as string;
-    console.log('[CollectionDetail] Current URL:', router.asPath);
-    console.log('[CollectionDetail] Query params:', router.query);
-    console.log('[CollectionDetail] from parameter:', from);
-    
-    if (from === "shop") {
-      console.log('[CollectionDetail] Returning to shop');
-      return "/shop"; // 从古董商店进入，返回商店
-    }
-    console.log('[CollectionDetail] Returning to collections');
-    return "/collections"; // 默认返回藏品展示
-  }, [router.query.from, router.asPath]);
 
   useEffect(() => {
     void fetchKnowledgeBase().then((data) => {
@@ -146,24 +131,12 @@ export default function CollectionDetailPage() {
               {/* 返回按钮 */}
               <Button
                 component={Link}
-                href={backPath}
-                variant="light"
-                color="yellow"
-                leftIcon={<IconChevronLeft size={18} />}
-                sx={{ 
-                  alignSelf: "flex-start",
-                  fontWeight: 600,
-                  fontSize: 15,
-                  "&:hover": {
-                    transform: "translateX(-4px)",
-                    transition: "all 0.2s ease"
-                  }
-                }}
+                href="/collections"
+                variant="subtle"
+                leftIcon={<IconChevronLeft size={16} />}
+                sx={{ alignSelf: "flex-start" }}
               >
-                {backPath === "/shop" 
-                  ? (locale === "zh" ? "返回古董商店" : "Back to Shop")
-                  : t("collections.detailBack")
-                }
+                {t("collections.detailBack")}
               </Button>
 
               {/* 标题和基本信息 */}

@@ -755,22 +755,13 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 {/* 操作按钮 */}
                 <Group position="right">
                   <Button
-                    variant="light"
-                    color="yellow"
+                    variant="default"
                     onClick={resetEditForm}
                     leftIcon={<IconX size={16} />}
-                    sx={{
-                      fontWeight: 600,
-                      "&:hover": {
-                        transform: "translateY(-2px)",
-                        transition: "all 0.2s ease"
-                      }
-                    }}
                   >
                     {locale === "zh" ? "取消" : "Cancel"}
                   </Button>
                   <Button
-                    color="yellow"
                     onClick={() => {
                       const artwork = cases.find(item => item.id === editingArtworkId);
                       if (artwork) {
@@ -778,13 +769,6 @@ const CasesManagementSection = memo(function CasesManagementSection({
                       }
                     }}
                     leftIcon={<IconCheck size={16} />}
-                    sx={{
-                      fontWeight: 600,
-                      "&:hover": {
-                        transform: "translateY(-2px)",
-                        transition: "all 0.2s ease"
-                      }
-                    }}
                   >
                     {locale === "zh" ? "保存" : "Save"}
                   </Button>
@@ -866,34 +850,19 @@ const CasesManagementSection = memo(function CasesManagementSection({
                         )}
                         <Group position="right">
                           <Button
-                            variant="light"
-                            color="blue"
+                            variant="subtle"
                             size="xs"
                             onClick={() => handleStartEdit(artwork)}
                             leftIcon={<IconEdit size={14} />}
-                            sx={{
-                              fontWeight: 600,
-                              "&:hover": {
-                                transform: "translateY(-2px)",
-                                transition: "all 0.2s ease"
-                              }
-                            }}
                           >
                             {t("cases.edit")}
                           </Button>
                           <Button
-                            variant="light"
+                            variant="subtle"
                             color="red"
                             size="xs"
                             onClick={() => handleDeleteImportedArtwork(artwork.id)}
                             leftIcon={<IconTrash size={14} />}
-                            sx={{
-                              fontWeight: 600,
-                              "&:hover": {
-                                transform: "translateY(-2px)",
-                                transition: "all 0.2s ease"
-                              }
-                            }}
                           >
                             {t("cases.delete")}
                           </Button>
@@ -1196,18 +1165,9 @@ const CasesManagementSection = memo(function CasesManagementSection({
 
             <Group position="right">
               <Button
-                variant="light"
-                color="yellow"
+                variant="default"
                 onClick={onCancel || (() => router.back())}
                 leftIcon={<IconX size={16} />}
-                sx={{
-                  fontWeight: 600,
-                  fontSize: 15,
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    transition: "all 0.2s ease"
-                  }
-                }}
               >
                 {t("cases.back")}
               </Button>
