@@ -34,7 +34,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   bg: {
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1599639668312-5363e62bb2b2?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：明亮画廊风格（浅色背景）
+      : `url(https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学画廊背景（明亮、典雅）
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",

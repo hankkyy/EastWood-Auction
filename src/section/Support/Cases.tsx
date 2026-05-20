@@ -734,7 +734,15 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             }
           </Alert>
         ) : !showManageMode && !showUploadForm && (
-          <SimpleGrid cols={3} spacing="xl" breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}>
+          <SimpleGrid 
+            cols={3} 
+            spacing="xl" 
+            breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}
+            sx={{ 
+              paddingLeft: 48, // ✅ 增加左边距
+              paddingRight: 48 // ✅ 增加右边距
+            }}
+          >
             {cases.map((item) => {
               const caseRecord = item.caseRecord;
               if (!caseRecord) return null;
