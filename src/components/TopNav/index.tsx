@@ -127,10 +127,22 @@ const mockdata = [
 export default function TopNav() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
-  const [authModalOpened, { open: openAuthModal, close: closeAuthModal }] =
+  const [authModalOpened, { open: openAuthModalRaw, close: closeAuthModal }] =
     useDisclosure(false);
-  const [profileModalOpened, { open: openProfileModal, close: closeProfileModal }] =
+  const [profileModalOpened, { open: openProfileModalRaw, close: closeProfileModal }] =
     useDisclosure(false);
+  
+  // 自定义的 openAuthModal 函数：打开模态框时自动关闭 Drawer
+  const openAuthModal = () => {
+    closeDrawer(); // 先关闭移动端菜单
+    openAuthModalRaw(); // 再打开登录模态框
+  };
+  
+  // 自定义的 openProfileModal 函数：打开模态框时自动关闭 Drawer
+  const openProfileModal = () => {
+    closeDrawer(); // 先关闭移动端菜单
+    openProfileModalRaw(); // 再打开个人资料模态框
+  };
   
   const { classes, cx, theme } = useStyles();
   const router = useRouter();
