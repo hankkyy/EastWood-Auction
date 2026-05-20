@@ -144,7 +144,7 @@ export default function CollectionDetailPage() {
                 <Title order={2}>{title}</Title>
 
                 {item.collectionId && (
-                  <Badge color="yellow" variant="filled" size="lg">
+                  <Badge color="cyan" variant="filled" size="lg">
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
                 )}

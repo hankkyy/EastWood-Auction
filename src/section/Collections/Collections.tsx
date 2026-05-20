@@ -429,7 +429,8 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                   sx={{ 
                                     color: "#ff4d4f", // 电商红，类似淘宝/京东
                                     marginTop: 8,
-                                    lineHeight: 1.2
+                                    lineHeight: 1.2,
+                                    textAlign: "center" // ✅ 与标题保持居中对齐
                                   }}
                                 >
                                   {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
