@@ -145,14 +145,14 @@ export default function CollectionDetailPage() {
 
                 {item.collectionId && (
                   <Badge color="yellow" variant="filled" size="lg">
-                    {locale === "zh" ? "藏品编号" : "ID"}: {item.collectionId}
+                    {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
                 )}
 
                 {item.isForSale && item.price && (
                   <Group spacing="sm">
                     <Badge color="green" variant="filled" size="lg">
-                      {locale === "zh" ? "可售" : "For Sale"}
+                      {t("collections.forSaleLabel")}
                     </Badge>
                     <Text size="xl" weight={700} color="yellow">
                       {item.currency === "CNY" ? "¥" : "$"}
@@ -255,7 +255,7 @@ export default function CollectionDetailPage() {
               {/* 藏品介绍 */}
               {description && (
                 <Stack spacing="sm">
-                  <Title order={4}>藏品介绍</Title>
+                  <Title order={4}>{t("collections.detailDescription")}</Title>
                   <Text size="md" color="dark.1" style={{ whiteSpace: "pre-wrap" }}>
                     {description}
                   </Text>
