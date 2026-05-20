@@ -179,7 +179,7 @@ export default function TopNav() {
     if (!user) {
       return (
         <Button onClick={openAuthModal} variant="filled" color="violet">
-          登录 / 注册
+          {t("auth.loginRegister")}
         </Button>
       );
     }
@@ -210,19 +210,19 @@ export default function TopNav() {
             {user.email}
             {isAdmin && (
               <Text size="xs" color="red" weight={600}>
-                角色: admin
+                {t("auth.roleLabel")}: {t("auth.adminRole")}
               </Text>
             )}
           </Menu.Label>
-          <Menu.Item onClick={openProfileModal}>个人资料</Menu.Item>
+          <Menu.Item onClick={openProfileModal}>{t("auth.profileTitle")}</Menu.Item>
           {isAdmin && (
             <Menu.Item component={Link} href="/image-search">
-              管理后台
+              {t("auth.adminBackend")}
             </Menu.Item>
           )}
           <Menu.Divider />
           <Menu.Item color="red" onClick={() => logout()}>
-            退出登录
+            {t("auth.logout")}
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>

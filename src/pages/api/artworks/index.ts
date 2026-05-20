@@ -10,6 +10,7 @@ import {
 } from "@/features/image-search/artworkCloud";
 import { getSupabaseAdmin, getSupabaseBucket } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+
 export const config = {
   api: {
     bodyParser: {
@@ -91,15 +92,20 @@ const verifyUser = async (req: NextApiRequest) => {
     if (profileError || !profile) {
       console.log(`[API] Profile not found for user ${user.id}, creating default profile...`);
       
-      const uniqueUsername = `user_${user.id.substring(0, 8)}`;
+      const lastName = user.email?.split('@')[0] || 'User';
+      const baseUserId = lastName.toLowerCase().replace(/[^a-z]/g, '');
+      const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const tempUserId = (baseUserId || 'user') + randomNum;
       
       const { data: newProfile, error: createError } = await supabaseAdmin
         .from("profiles")
         .insert({
           id: user.id,
-          username: uniqueUsername,
+          email: user.email,
           role: 'user',
-          display_name: user.email?.split('@')[0] || 'User',
+          first_name: '',
+          last_name: lastName,
+          user_id: tempUserId,
         } as any)
         .select("role")
         .single();

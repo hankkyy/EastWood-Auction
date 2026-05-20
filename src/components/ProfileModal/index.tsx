@@ -13,6 +13,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase/client";
+import { useI18n } from "@/i18n";
 
 interface ProfileModalProps {
   opened: boolean;
@@ -21,12 +22,19 @@ interface ProfileModalProps {
 
 export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
   const { user, updateProfile, logout } = useAuth();
-  const [displayName, setDisplayName] = useState("");
+  const { t, locale } = useI18n();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userIdChangeCount, setUserIdChangeCount] = useState(0);
 
+  // 当 user.profile 变化时，初始化表单数据
   useEffect(() => {
     if (user?.profile) {
-      setDisplayName(user.profile.display_name || "");
+      setFirstName(user.profile.first_name || "");
+      setLastName(user.profile.last_name || "");
+      setUserId(user.profile.user_id || "");
     }
   }, [user]);
 
@@ -38,7 +46,9 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
     try {
       setLoading(true);
       const result = await updateProfile({
-        display_name: displayName,
+        first_name: firstName,
+        last_name: lastName,
+        user_id: userId,
       });
 
       if (result.success) {
@@ -62,7 +72,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
     <Modal
       opened={opened}
       onClose={onClose}
-      title="个人资料"
+      title={t("auth.profileTitle")}
       centered
       size="md"
     >
@@ -76,7 +86,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
             <div>
               <Text weight={600}>{user.email}</Text>
               <Text size="sm" color="dimmed">
-                角色: {user.profile?.role === "admin" ? "管理员" : "个人用户"}
+                {t("auth.roleLabel")}: {user.profile?.role === "admin" ? t("auth.adminRole") : t("auth.userRole")}
               </Text>
               <Badge
                 color={avatarColor}
@@ -84,7 +94,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
                 size="sm"
                 mt="xs"
               >
-                {user.profile?.role === "admin" ? "管理员" : "普通用户"}
+                {user.profile?.role === "admin" ? t("auth.adminRole") : t("auth.normalUserRole")}
               </Badge>
             </div>
           </Group>
@@ -96,19 +106,42 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
         <form onSubmit={handleUpdateProfile}>
           <Stack spacing="md">
             <TextInput
-              label="显示名称"
-              placeholder="您的昵称"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.currentTarget.value)}
+              label={t("auth.firstNameLabel")}
+              placeholder={t("auth.firstNamePlaceholder")}
+              value={firstName}
+              onChange={(e) => setFirstName(e.currentTarget.value)}
+              required
             />
             <TextInput
-              label="邮箱"
+              label={t("auth.lastNameLabel")}
+              placeholder={t("auth.lastNamePlaceholder")}
+              value={lastName}
+              onChange={(e) => setLastName(e.currentTarget.value)}
+              required
+            />
+            <TextInput
+              label={t("auth.userIdLabel")}
+              placeholder={t("auth.userIdPlaceholder")}
+              value={userId}
+              onChange={(e) => setUserId(e.currentTarget.value)}
+              description={t("auth.userIdDescription")}
+              disabled={userIdChangeCount >= 3}
+            />
+            {userIdChangeCount < 3 && (
+              <Text size="xs" color="dimmed">
+                {locale === "zh" 
+                  ? `剩余 ${3 - userIdChangeCount} 次修改机会`
+                  : `${3 - userIdChangeCount} changes remaining`}
+              </Text>
+            )}
+            <TextInput
+              label={t("auth.emailLabel")}
               value={user.email || ""}
               disabled
-              description="邮箱不可修改"
+              description={t("auth.emailNotEditable")}
             />
             <Button type="submit" loading={loading} fullWidth>
-              保存更改
+              {t("auth.saveChanges")}
             </Button>
           </Stack>
         </form>
@@ -125,7 +158,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
           }}
           fullWidth
         >
-          退出登录
+          {t("auth.logout")}
         </Button>
       </Stack>
     </Modal>

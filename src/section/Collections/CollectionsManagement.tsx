@@ -49,8 +49,8 @@ const collectionCategoryOptions = [
 ] as const;
 
 const currencyOptions = [
-  { value: "USD", labelKey: "collections.currencyUSD" },
-  { value: "CNY", labelKey: "collections.currencyCNY" },
+  { value: "USD", labelKey: "USD" },
+  { value: "CNY", labelKey: "CNY" },
 ] as const;
 
 type CollectionsManagementProps = {
@@ -253,12 +253,12 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
   const handleSaveToKnowledgeBase = async () => {
     if (adminImages.length === 0) {
-      setAdminError("请至少上传一张图片");
+      setAdminError(t("collections.uploadImagesPrompt"));
       return;
     }
 
     if (!adminItemName.trim()) {
-      setAdminError("请输入藏品名称");
+      setAdminError(t("collections.collectionNamePlaceholder"));
       return;
     }
 
@@ -274,7 +274,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       // 检查藏品编号是否已存在
       const existingArtwork = items.find(item => item.collectionId === collectionId);
       if (existingArtwork) {
-        setAdminError(`藏品编号 "${collectionId}" 已存在,请使用其他编号`);
+        setAdminError(`${t("collections.collectionIdLabel")} "${collectionId}" ${locale === "zh" ? "已存在，请使用其他编号" : "already exists, please use another ID"}`);
         return;
       }
 
@@ -283,7 +283,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       if (adminIsForSale && adminPrice.trim()) {
         const parsed = parseFloat(adminPrice);
         if (isNaN(parsed) || parsed < 0) {
-          setAdminError("请输入有效的价格");
+           setAdminError(t("collections.invalidPriceError"));
           return;
         }
         priceValue = parsed;
@@ -311,7 +311,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       await saveImportedArtwork(newArtwork);
       console.log('[Collections] Save completed successfully');
 
-      setManageMessage("导入成功");
+      setManageMessage(t("collections.operationSuccess"));
       resetForm();
       
       // ✅ 通知父组件刷新数据
@@ -323,7 +323,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       setItems(updated);
     } catch (error: any) {
       console.error('[Collections] Save failed:', error);
-      setAdminError(error.message || "导入失败");
+      setAdminError(error.message || t("collections.importFailed"));
     }
   };
 
@@ -363,7 +363,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
   const handleSaveEdit = async (artwork: Artwork) => {
     if (!editItemName.trim()) {
-      setAdminError("请输入藏品名称");
+      setAdminError(t("collections.collectionNamePlaceholder"));
       return;
     }
 
@@ -397,7 +397,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       if (editIsForSale && editPrice.trim()) {
         const parsed = parseFloat(editPrice);
         if (isNaN(parsed) || parsed < 0) {
-          setAdminError("请输入有效的价格");
+          setAdminError(t("collections.invalidPriceError"));
           return;
         }
         priceValue = parsed;
@@ -418,7 +418,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
       await updateImportedArtwork(updatedArtwork);
 
-      setManageMessage("更新成功");
+      setManageMessage(t("collections.operationSuccess"));
       resetEditForm();
       
       // ✅ 方案1: 直接在本地状态中更新该藏品(立即生效)
@@ -445,7 +445,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       }, 500);
     } catch (error: any) {
       console.error('[Collections] Update failed:', error);
-      setAdminError(error.message || "更新失败");
+      setAdminError(error.message || t("collections.updateFailed"));
     }
   };
 
@@ -492,14 +492,14 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   };
 
   const handleDeleteImportedArtwork = async (id: string) => {
-    if (!confirm("确定要删除这个藏品吗？")) return;
+    if (!confirm(t("collections.deleteConfirm"))) return;
     try {
       await deleteImportedArtwork(id);
-      setManageMessage("删除成功");
+      setManageMessage(t("cases.deleteSuccess"));
       const updated = await fetchKnowledgeBase();
       setItems(updated);
     } catch (error: any) {
-      setAdminError(error.message || "删除失败");
+      setAdminError(error.message || t("cases.deleteFailed"));
     }
   };
 
@@ -515,10 +515,15 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         <Paper p="xl">
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
-            <Title order={2} color="red">需要登录</Title>
+            <Title order={2} color="red">{t("auth.loginRequired")}</Title>
             <Text color="dark.1" align="center">
-              请先登录后才能{mode === "upload" ? "上传藏品" : "管理藏品"}。<br />
-              {mode === "upload" ? "仅管理员可以上传新藏品。" : "您可以管理自己上传的藏品。"}
+              {locale === "zh" 
+                ? `请先登录后才能${mode === "upload" ? "上传藏品" : "管理藏品"}。`
+                : `Please log in first to ${mode === "upload" ? "upload collections" : "manage collections"}.`}
+              <br />
+              {mode === "upload" 
+                ? (locale === "zh" ? "仅管理员可以上传新藏品。" : "Only administrators can upload new collections.")
+                : (locale === "zh" ? "您可以管理自己上传的藏品。" : "You can manage your uploaded collections.")}
             </Text>
             <Button 
               onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal'))}
@@ -539,11 +544,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         <Stack spacing="xl">
           <Group position="apart">
             <Title order={3}>
-              {locale === "zh" ? "管理藏品" : "Manage Collections"}
+              {t("collections.uploadedCollectionsTitle")}
             </Title>
             {!isLoading && (
               <Badge color="blue" size="lg">
-                {collections.length} 件
+                {collections.length} {t("collections.itemsCount")}
               </Badge>
             )}
           </Group>
@@ -552,14 +557,14 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             <Box py="xl" sx={{ textAlign: "center" }}>
               <Loader size="lg" />
               <Text mt="md" color="dark.1">
-                {locale === "zh" ? "加载中..." : "Loading..."}
+                {t("cases.loading")}
               </Text>
             </Box>
           ) : collections.length === 0 ? (
             <Text color="dark.1" align="center" py="xl">
               {isAdmin 
-                ? (locale === "zh" ? "暂无藏品。" : "No collections yet.")
-                : (locale === "zh" ? "您还没有上传任何藏品。" : "You haven't uploaded any collections yet.")}
+                ? t("collections.noCollectionsYet")
+                : t("cases.noCasesYetUser")}
             </Text>
           ) : (
             <SimpleGrid cols={3} spacing="lg">
@@ -604,7 +609,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       <Stack spacing="sm" onClick={(e) => e.stopPropagation()}>
                         {/* 图片管理区域 */}
                         <Box>
-                          <Text size="sm" weight={500} mb="xs">藏品图片</Text>
+                          <Text size="sm" weight={500} mb="xs">{t("collections.collectionImages")}</Text>
                           
                           {/* 大图预览 - 显示当前选中的封面 */}
                           <Box
@@ -661,7 +666,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                                 />
                                 
                                 {/* 封面标记 */}
-                                {editCoverIndex === index && (
+                                {index === editCoverIndex && (
                                   <Box
                                     sx={{
                                       position: "absolute",
@@ -675,7 +680,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                                       color: "#000",
                                     }}
                                   >
-                                    封面
+                                    {t("collections.coverBadge")}
                                   </Box>
                                 )}
                                 
@@ -742,12 +747,12 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             </FileButton>
                           </SimpleGrid>
                           <Text size="xs" color="dimmed" mt="xs">
-                            点击缩略图设置为封面，至少保留一张图片
+                            {t("collections.clickThumbnailHint")}
                           </Text>
                         </Box>
 
                         <TextInput
-                          label="藏品名称"
+                          label={t("collections.editCollectionName")}
                           value={editItemName}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -756,7 +761,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           onClick={(e) => e.stopPropagation()}
                         />
                         <Textarea
-                          label="藏品详情"
+                          label={t("collections.editCollectionDetails")}
                           value={editItemDetails}
                           onChange={(e) => {
                             e.stopPropagation();
@@ -766,7 +771,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           onClick={(e) => e.stopPropagation()}
                         />
                         <Select
-                          label="藏品分类"
+                          label={t("collections.editCategory")}
                           value={editCategory}
                           onChange={(value) => setEditCategory(value || "misc")}
                           data={collectionCategoryOptions.map((option) => ({
@@ -778,7 +783,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         
                         {/* 编辑时的可售字段 */}
                         <Checkbox
-                          label="是否可售"
+                          label={t("collections.editForSale")}
                           checked={editIsForSale}
                           onChange={(event) => {
                             event.stopPropagation();
@@ -790,21 +795,23 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         {editIsForSale && (
                           <SimpleGrid cols={2} spacing="xs">
                             <TextInput
-                              label="售价"
+                              label={t("collections.editPrice")}
                               value={editPrice}
                               onChange={(event) => {
                                 event.stopPropagation();
                                 setEditPrice(event.currentTarget.value);
                               }}
-                              placeholder="请输入售价(如: 199.99)"
+                              placeholder={t("collections.pricePlaceholderExample")}
                               onClick={(e) => e.stopPropagation()}
                             />
-
                             <Select
-                              label="货币单位"
+                              label={t("collections.currencyLabel")}
                               value={editCurrency}
                               onChange={(value) => setEditCurrency((value as "USD" | "CNY") || "USD")}
-                              data={currencyOptions}
+                              data={[
+                                { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
+                                { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
+                              ]}
                               onClick={(e) => e.stopPropagation()}
                             />
                           </SimpleGrid>
@@ -820,7 +827,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconX size={14} />}
                           >
-                            取消
+                            {t("collections.cancelEdit")}
                           </Button>
                           <Button
                             size="xs"
@@ -830,7 +837,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconCheck size={14} />}
                           >
-                            保存
+                            {t("collections.saveButton")}
                           </Button>
                         </Group>
                       </Stack>
@@ -842,17 +849,18 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         </Text>
                         {artwork.collectionId && (
                           <Badge variant="outline" size="sm">
-                            编号: {artwork.collectionId}
+                            {t("collections.collectionIdLabel")}: {artwork.collectionId}
                           </Badge>
                         )}
                         {artwork.isForSale && artwork.price && (
                           <Badge color="green" size="sm">
-                            可售: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
+                            {t("collections.forSaleLabel")}: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
                           </Badge>
                         )}
                         <Group position="right">
                           <Button
                             variant="light"
+                            color="blue"
                             size="xs"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -860,7 +868,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             }}
                             leftIcon={<IconEdit size={14} />}
                           >
-                            编辑
+                            {t("collections.edit")}
                           </Button>
                           {(isAdmin || artwork.uploadedBy === userId) && (
                             <Button
@@ -873,7 +881,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                               }}
                               leftIcon={<IconTrash size={14} />}
                             >
-                              删除
+                              {t("collections.delete")}
                             </Button>
                           )}
                         </Group>
@@ -891,7 +899,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               onClick={onCancel || (() => router.back())}
               leftIcon={<IconX size={16} />}
             >
-              {locale === "zh" ? "返回" : "Back"}
+              {t("cases.back")}
             </Button>
           </Group>
         </Stack>
@@ -907,11 +915,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           <Stack spacing="lg">
             <Group position="apart">
               <div>
-                <Title order={2}>藏品管理</Title>
+                <Title order={2}>{t("collections.managementTitle")}</Title>
                 <Text color="dark.1">
                   {isAdmin 
-                    ? "管理员模式：可以管理所有藏品" 
-                    : "个人用户模式：只能浏览藏品，无上传权限"}
+                    ? t("collections.adminModeText")
+                    : t("collections.noPermissionText")}
                 </Text>
               </div>
               <input
@@ -931,12 +939,12 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 onClick={() => document.getElementById('collection-upload-input')?.click()}
                 leftIcon={<IconDatabaseImport size={18} />}
               >
-                上传多张图片
+                {t("collections.uploadImageButton")}
               </Button>
             </Group>
 
             {adminError && (
-              <Alert color="red" title="导入失败">
+              <Alert color="red" title={t("collections.importFailed")}>
                 {adminError}
               </Alert>
             )}
@@ -983,14 +991,14 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                     }}
                   >
                     <IconStar size={14} style={{ marginRight: 4 }} />
-                    封面照片
+                    {t("collections.coverBadge")}
                   </Badge>
                 </Box>
 
                 {/* 所有图片缩略图网格 */}
                 <div>
                   <Text weight={600} mb="sm">
-                    所有照片（共 {adminImages.length} 张）
+                    {t("collections.allPhotos")}（{adminImages.length} {t("cases.photosCount")}）
                   </Text>
                   <SimpleGrid cols={4} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 2 }]}>
                     {adminImages.map((imgUrl, index) => (
@@ -1106,37 +1114,38 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
               <Box sx={{ height: 300, border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(34, 39, 47, 0.5)" }}>
                 <Stack spacing="sm" align="center">
                   <IconPhoto size={44} color="#d8b76d" />
-                  <Text weight={600}>暂无预览图片</Text>
-                  <Text size="sm" color="dark.1">请上传藏品图片（支持多选）</Text>
+                  <Text weight={600}>{t("collections.noPreviewImages")}</Text>
+                  <Text size="sm" color="dark.1">{t("collections.uploadImagesMultiplePrompt")}</Text>
                 </Stack>
               </Box>
             )}
 
             <TextInput
-              label="藏品编号"
+              label={t("collections.collectionIdLabel")}
               value={adminCollectionId}
               onChange={handleCollectionIdChange}
-              placeholder="留空则自动生成（格式：COL-XXXXX-XXXX）"
+              placeholder={t("collections.collectionIdPlaceholder")}
+              description={t("collections.collectionIdDescription")}
             />
 
             <TextInput
-              label="藏品名称 *"
+              label={t("collections.collectionNameRequired")}
               value={adminItemName}
               onChange={handleItemNameChange}
-              placeholder="请输入藏品名称（必填）"
+              placeholder={t("collections.collectionNamePlaceholder")}
               required
             />
 
             <Textarea
-              label="藏品介绍"
+              label={t("collections.collectionDescription")}
               value={adminItemDetails}
               onChange={handleItemDetailsChange}
-              placeholder="请输入藏品的详细介绍、历史背景、工艺特点等"
+              placeholder={t("collections.collectionDescriptionPlaceholder")}
               minRows={3}
             />
 
             <Select
-              label="藏品分类"
+              label={t("collections.categoryLabel")}
               value={adminCategory}
               onChange={(value) => setAdminCategory(value || "misc")}
               data={collectionCategoryOptions.map((option) => ({
@@ -1147,27 +1156,30 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
             {/* 可售相关字段 - 使用 Checkbox */}
             <Checkbox
-              label="是否可售"
+              label={t("collections.forSaleLabel")}
               checked={adminIsForSale}
               onChange={(event) => setAdminIsForSale(event.currentTarget.checked)}
-              description="勾选后需填写价格和货币单位"
+              description={t("collections.forSaleDescription")}
             />
 
             {adminIsForSale && (
               <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                 <TextInput
-                  label="售价 *"
+                  label={t("collections.priceLabel")}
                   value={adminPrice}
                   onChange={(event) => setAdminPrice(event.currentTarget.value)}
-                  placeholder="请输入售价(如: 199.99)"
+                  placeholder={t("collections.pricePlaceholderExample")}
                   required
                 />
 
                 <Select
-                  label="货币单位 *"
+                  label={t("collections.currencyLabel")}
                   value={adminCurrency}
                   onChange={(value) => setAdminCurrency((value as "USD" | "CNY") || "USD")}
-                  data={currencyOptions}
+                  data={[
+                    { value: "USD", label: locale === "zh" ? "美元 (USD)" : "USD" },
+                    { value: "CNY", label: locale === "zh" ? "人民币 (CNY)" : "CNY" },
+                  ]}
                   required
                 />
               </SimpleGrid>
@@ -1179,21 +1191,21 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 onClick={handleCancel}
                 leftIcon={<IconX size={16} />}
               >
-                取消
+                {t("collections.cancelButton")}
               </Button>
               <Button
                 onClick={handleSaveToKnowledgeBase}
                 leftIcon={<IconCheck size={16} />}
                 disabled={adminImages.length === 0 || !adminItemName.trim() || (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0))}
               >
-                保存藏品
+                {t("collections.saveButton")}
               </Button>
             </Group>
           </Stack>
         </Paper>
 
         {manageMessage && (
-          <Alert color="green" title="操作成功">
+          <Alert color="green" title={t("cases.success")}>
             {manageMessage}
           </Alert>
         )}

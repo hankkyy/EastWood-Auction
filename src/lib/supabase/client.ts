@@ -14,8 +14,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Profile 类型定义（对应数据库 profiles 表）
 export type Profile = {
   id: string; // UUID，关联 auth.users
-  username: string; // 用户名（通常是邮箱）
-  display_name: string | null; // 显示名称
+  first_name: string; // 名字
+  last_name: string; // 姓氏
+  user_id: string; // 用户自定义ID，全局唯一
+  email: string | null; // 邮箱
   role: 'admin' | 'user'; // 角色
   avatar_url: string | null; // 头像 URL
   created_at: string; // 创建时间

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase, type Profile } from "@/lib/supabase/client";
 import { notifications } from "@mantine/notifications";
+import { messages } from "@/i18n";
 
 export type AuthUser = {
   id: string;
@@ -12,6 +13,25 @@ export type AuthUser = {
 let profileCache: Map<string, { data: Profile; timestamp: number }> = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
+// 获取当前语言
+const getCurrentLocale = (): "zh" | "en" => {
+  if (typeof window === "undefined") return "en";
+  const stored = localStorage.getItem("museum-art-language");
+  return stored === "zh" || stored === "zh-CN" ? "zh" : "en";
+};
+
+// 国际化通知辅助函数
+const showNotification = (titleKey: keyof typeof messages.en, messageKey: keyof typeof messages.en, color: string) => {
+  const locale = getCurrentLocale();
+  const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
+  
+  notifications.show({
+    title: t(titleKey),
+    message: t(messageKey),
+    color: color as any,
+  });
+};
+
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -19,12 +39,9 @@ export const useAuth = () => {
   // 获取用户资料（带缓存）
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
-      console.log('[useAuth] Fetching profile for user:', userId);
-      
       // 检查缓存
       const cached = profileCache.get(userId);
       if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        console.log('[useAuth] Using cached profile, role:', cached.data.role);
         return cached.data;
       }
 
@@ -38,13 +55,6 @@ export const useAuth = () => {
         console.error('[useAuth] Failed to fetch profile:', error);
         throw error;
       }
-      
-      console.log('[useAuth] Fetched profile from database:', {
-        id: data?.id,
-        email: data?.username,
-        role: data?.role,
-        display_name: data?.display_name
-      });
       
       // 更新缓存
       if (data) {
@@ -135,11 +145,7 @@ export const useAuth = () => {
         });
 
         // 显示成功通知
-        notifications.show({
-          title: "登录成功",
-          message: `欢迎回来！`,
-          color: "green",
-        });
+        showNotification("auth.loginSuccess", "auth.welcomeBack", "green");
 
         // 异步加载用户资料（不阻塞 UI）
         fetchProfile(data.user.id).then((profile) => {
@@ -149,9 +155,11 @@ export const useAuth = () => {
 
       return { success: true };
     } catch (error: any) {
+      const locale = getCurrentLocale();
+      const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
       notifications.show({
-        title: "登录失败",
-        message: error.message || "请检查邮箱和密码",
+        title: t("auth.loginFailed"),
+        message: error.message || t("auth.checkCredentials"),
         color: "red",
       });
       return { success: false, error: error.message };
@@ -161,7 +169,7 @@ export const useAuth = () => {
   };
 
   // 注册
-  const register = async (email: string, password: string, displayName?: string) => {
+  const register = async (email: string, password: string, firstName: string, lastName: string, userId?: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -169,24 +177,24 @@ export const useAuth = () => {
         password,
         options: {
           data: {
-            display_name: displayName,
+            first_name: firstName,
+            last_name: lastName,
+            user_id: userId || undefined, // 如果提供了user_id则使用，否则由数据库自动生成
           },
         },
       });
 
       if (error) throw error;
 
-      notifications.show({
-        title: "注册成功",
-        message: "请检查邮箱确认账户",
-        color: "green",
-      });
+      showNotification("auth.registerSuccess", "auth.checkEmailConfirm", "green");
 
       return { success: true };
     } catch (error: any) {
+      const locale = getCurrentLocale();
+      const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
       notifications.show({
-        title: "注册失败",
-        message: error.message || "注册时出错",
+        title: t("auth.registerFailed"),
+        message: error.message || t("auth.registerError"),
         color: "red",
       });
       return { success: false, error: error.message };
@@ -203,14 +211,12 @@ export const useAuth = () => {
       if (error) throw error;
 
       setUser(null);
-      notifications.show({
-        title: "已登出",
-        message: "期待再次见到您",
-        color: "blue",
-      });
+      showNotification("auth.loggedOut", "auth.seeYouSoon", "blue");
     } catch (error: any) {
+      const locale = getCurrentLocale();
+      const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
       notifications.show({
-        title: "登出失败",
+        title: t("auth.logoutFailed"),
         message: error.message,
         color: "red",
       });
@@ -238,16 +244,14 @@ export const useAuth = () => {
         profile: updatedProfile,
       });
 
-      notifications.show({
-        title: "更新成功",
-        message: "个人资料已更新",
-        color: "green",
-      });
+      showNotification("auth.updateSuccess", "auth.profileUpdated", "green");
 
       return { success: true };
     } catch (error: any) {
+      const locale = getCurrentLocale();
+      const t = (key: keyof typeof messages.en) => messages[locale][key] ?? messages.en[key];
       notifications.show({
-        title: "更新失败",
+        title: t("auth.updateFailed"),
         message: error.message,
         color: "red",
       });
@@ -257,19 +261,6 @@ export const useAuth = () => {
 
   // 检查是否为管理员
   const isAdmin = user?.profile?.role === "admin";
-  
-  // 调试日志
-  useEffect(() => {
-    if (user) {
-      console.log('[useAuth] Current user state:', {
-        id: user.id,
-        email: user.email,
-        role: user.profile?.role,
-        isAdmin: isAdmin,
-        hasProfile: !!user.profile
-      });
-    }
-  }, [user, isAdmin]);
 
   return {
     user,
@@ -280,13 +271,11 @@ export const useAuth = () => {
     updateProfile,
     refreshProfile: async () => {
       if (user) {
-        console.log('[useAuth] Refreshing profile for user:', user.id);
         // 清除缓存
         profileCache.delete(user.id);
         // 重新获取
         const profile = await fetchProfile(user.id);
         setUser((prev) => prev ? { ...prev, profile } : null);
-        console.log('[useAuth] Profile refreshed, role:', profile?.role);
       }
     },
     isAdmin,

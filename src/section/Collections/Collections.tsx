@@ -251,7 +251,7 @@ export default function Collections() {
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
                 >
-                  {t("collections.importNewCollection")}
+                  {locale === "zh" ? "导入新藏品" : "Import New Collection"}
                 </Button>
                 
                 {/* 管理按钮 - 仅管理员可见 */}
@@ -260,7 +260,7 @@ export default function Collections() {
                   variant="default"
                   leftIcon={<IconEdit size={18} />}
                 >
-                  {t("collections.manageCollections")}
+                  {locale === "zh" ? "管理藏品" : "Manage Collections"}
                 </Button>
               </Group>
             )}
