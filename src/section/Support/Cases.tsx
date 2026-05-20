@@ -38,7 +38,7 @@ import {
   IconUser,
   IconX,
 } from "@tabler/icons-react";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import CasesManagementSection from "./CasesManagement"; // 导入管理组件
 
 interface CasesSectionProps {
@@ -110,6 +110,35 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [adminRiskAdvice, setAdminRiskAdvice] = useState("");
   const [adminError, setAdminError] = useState<string | null>(null);
   const [manageMessage, setManageMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const refreshKnowledgeBase = useCallback(async () => {
+    try {
+      const data = await fetchKnowledgeBase();
+      setItems(data);
+    } catch (error) {
+      console.error('[Cases] Failed to refresh cloud data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const applyArtworkChange = useCallback((change?: Artwork | { deletedId: string }) => {
+    if (!change) {
+      void refreshKnowledgeBase();
+      return;
+    }
+
+    if ("deletedId" in change) {
+      setItems((prevItems) => prevItems.filter((item) => item.id !== change.deletedId));
+      return;
+    }
+
+    setItems((prevItems) => [
+      change,
+      ...prevItems.filter((item) => item.id !== change.id),
+    ]);
+  }, [refreshKnowledgeBase]);
   
   // ✅ 移除主展示页面的编辑功能,编辑只在管理模式中进行
 
@@ -132,20 +161,25 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     return `CASE-${dateStr}-${letters}${digits}`;
   };
 
-  // ✅ 优化：仅在初始数据为空时才从 API 加载，避免不必要的网络请求
+  // ✅ 云端数据为唯一真源：先显示已有数据，再后台刷新云端
   useEffect(() => {
-    // 如果已有初始数据（来自 getStaticProps），不需要重新加载
     if (initialData && initialData.length > 0) {
-      setIsLoading(false);
-      return;
+      setItems(initialData);
     }
-    
-    // 只有在没有初始数据时才从 API 加载
-    void fetchKnowledgeBase().then((data) => {
-      setItems(data);
-      setIsLoading(false);
-    });
-  }, [initialData]);
+
+    void refreshKnowledgeBase();
+  }, [initialData, refreshKnowledgeBase]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!showUploadForm && !showManageMode) {
+        void refreshKnowledgeBase();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshKnowledgeBase, showManageMode, showUploadForm]);
 
   // ✅ 初始化时自动生成案例编号
   useEffect(() => {
@@ -249,6 +283,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   };
 
   const handleSaveToKnowledgeBase = async () => {
+    if (isSaving) return;
+
     if (adminImages.length === 0) {
       setAdminError(t("cases.atLeastOneImage"));
       return;
@@ -260,6 +296,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     }
 
     try {
+      setIsSaving(true);
       // ✅ 验证案例名称必填
       if (!adminCaseName.trim()) {
         setAdminError(t("cases.pleaseEnterCaseName"));
@@ -298,14 +335,18 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
         featureVector: [0, 0, 0, 0, 0, 0, 0, 0],
       };
 
-      await saveImportedArtwork(newArtwork);
+      const savedArtwork = await saveImportedArtwork(newArtwork);
 
       setManageMessage(t("cases.importSuccess"));
+      setItems(prevItems => [
+        savedArtwork,
+        ...prevItems.filter((item) => item.id !== savedArtwork.id),
+      ]);
       resetForm();
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
     } catch (error: any) {
       setAdminError(error.message || t("cases.importFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -366,21 +407,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   return (
     <Container fluid pt={80} pb={120} px={72}> {/* ✅ 增加左右内边距 */}
       <Stack spacing="xl">
-        {/* 标题和操作按钮 */}
-        <Group position="apart">
-          <Box>
-            <Title order={2}>{t("support.caseTitle")}</Title>
-            {user && !isAdmin && (
-              <Text size="sm" color="dimmed" mt={4}>
-                {t("cases.personalUserModeText")}
-              </Text>
-            )}
-            {isAdmin && (
-              <Text size="sm" color="dimmed" mt={4}>
-                {t("cases.adminModeText")}
-              </Text>
-            )}
-          </Box>
+        {/* 操作按钮 */}
+        <Group position="right">
           <Group spacing="sm">
             {/* ✅ 上传按钮 - 所有登录用户可见(回流案例允许普通用户上传) */}
             {user && !showUploadForm && !showManageMode && (
@@ -437,7 +465,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               {/* 标题、管理员提示和上传按钮 */}
               <Group position="apart">
                 <div>
-                  <Title order={2}>{t("support.caseTitle")}</Title>
+                  <Title order={2}>{locale === "zh" ? "案例管理" : "Case Management"}</Title>
                   {isAdmin && (
                     <Text size="sm" color="dimmed" mt={4}>
                       {t("cases.adminModeText")}
@@ -714,7 +742,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 <Button
                   onClick={handleSaveToKnowledgeBase}
                   leftIcon={<IconCheck size={16} />}
-                  disabled={adminImages.length === 0}
+                  disabled={isSaving || adminImages.length === 0}
                 >
                   {t("cases.saveCase")}
                 </Button>
@@ -738,16 +766,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               isAdmin={isAdmin} 
               embedded={true}
               mode="manage"
-              onDataUpdate={async () => {
-                // ✅ 保存成功后立即刷新父组件数据
-                try {
-                  const updated = await fetchKnowledgeBase();
-                  setItems(updated);
-                  console.log('[Cases] Data refreshed after edit');
-                } catch (error) {
-                  console.error('[Cases] Failed to refresh data:', error);
-                }
-              }}
+              initialItems={items}
+              onDataUpdate={applyArtworkChange}
               onCancel={async () => {
                 setShowManageMode(false);
                 setShowUploadForm(false);

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Box, Button, Container, createStyles, Group, Overlay, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
-import { getKnowledgeBase, fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import type { Artwork } from "@/data/artworks";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconDatabaseImport, IconEdit, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import CollectionsManagementSection from "./CollectionsManagement";
@@ -182,16 +182,53 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
 
-  // ✅ 优化：仅在初始数据为空时才从本地存储加载
-  useEffect(() => {
-    // 如果已有初始数据（来自 getStaticProps），不需要重新加载
-    if (initialData && initialData.length > 0) {
+  const refreshKnowledgeBase = useCallback(async () => {
+    try {
+      const data = await fetchKnowledgeBase();
+      setKnowledgeBaseItems(data);
+    } catch (error) {
+      console.error('[Collections] Failed to refresh cloud data:', error);
+    }
+  }, []);
+
+  const applyArtworkChange = useCallback((change?: Artwork | { deletedId: string }) => {
+    if (!change) {
+      void refreshKnowledgeBase();
       return;
     }
-    
-    // 只有在没有初始数据时才从本地存储加载
-    setKnowledgeBaseItems(getKnowledgeBase());
-  }, [initialData]);
+
+    if ("deletedId" in change) {
+      setKnowledgeBaseItems((prevItems) =>
+        prevItems.filter((item) => item.id !== change.deletedId)
+      );
+      return;
+    }
+
+    setKnowledgeBaseItems((prevItems) => [
+      change,
+      ...prevItems.filter((item) => item.id !== change.id),
+    ]);
+  }, [refreshKnowledgeBase]);
+
+  // ✅ 云端数据为唯一真源：先显示已有数据，再后台刷新云端
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      setKnowledgeBaseItems(initialData);
+    }
+
+    void refreshKnowledgeBase();
+  }, [initialData, refreshKnowledgeBase]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!showUploadForm && !showManageMode) {
+        void refreshKnowledgeBase();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshKnowledgeBase, showManageMode, showUploadForm]);
 
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {
@@ -296,39 +333,57 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
             {/* 上传表单 - 仅管理员可见 */}
             {showUploadForm && isAdmin && (
               <Box sx={{ width: "100%" }}>
-                <CollectionsManagementSection 
-                  userId={user?.id} 
-                  isAdmin={isAdmin} 
-                  embedded={true}
-                  shopMode={shopMode} // ✅ 传递 shopMode 参数
-                  onDataUpdate={async () => {
-                    // ✅ 保存成功后立即刷新父组件数据
-                    try {
-                      const updated = await fetchKnowledgeBase();
-                      setKnowledgeBaseItems(updated);
-                      console.log('[Collections] Data refreshed after upload');
-                    } catch (error) {
-                      console.error('[Collections] Failed to refresh data:', error);
-                    }
-                  }}
-                  onSuccess={() => {
-                    // ✅ 保存成功后自动关闭上传表单
-                    setShowUploadForm(false);
-                    console.log('[Collections] Upload form closed after success');
-                  }}
-                  onCancel={async () => {
-                    setShowUploadForm(false);
-                    setShowManageMode(false);
-                    
-                    // ✅ 重新从服务器加载最新数据（取消时也需要确保同步）
-                    try {
-                      const updated = await fetchKnowledgeBase();
-                      setKnowledgeBaseItems(updated);
-                    } catch (error) {
-                      console.error('[Collections] Failed to refresh data:', error);
-                    }
-                  }}
-                />
+                <Stack spacing="xs">
+                  <Group position="right">
+                    <Button
+                      variant="filled"
+                      color="blue"
+                      size="md"
+                      onClick={() => {
+                        setShowUploadForm(false);
+                        setShowManageMode(false);
+                      }}
+                      leftIcon={<IconX size={18} />}
+                      sx={{
+                        fontWeight: 600,
+                        padding: '12px 24px',
+                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                        },
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {t("cases.exitOperation")}
+                    </Button>
+                  </Group>
+                  <CollectionsManagementSection 
+                    userId={user?.id} 
+                    isAdmin={isAdmin} 
+                    embedded={true}
+                    shopMode={shopMode} // ✅ 传递 shopMode 参数
+                    initialItems={knowledgeBaseItems}
+                    onDataUpdate={applyArtworkChange}
+                    onSuccess={() => {
+                      // ✅ 保存成功后自动关闭上传表单
+                      setShowUploadForm(false);
+                      console.log('[Collections] Upload form closed after success');
+                    }}
+                    onCancel={async () => {
+                      setShowUploadForm(false);
+                      setShowManageMode(false);
+                      
+                      // ✅ 重新从服务器加载最新数据（取消时也需要确保同步）
+                      try {
+                        const updated = await fetchKnowledgeBase();
+                        setKnowledgeBaseItems(updated);
+                      } catch (error) {
+                        console.error('[Collections] Failed to refresh data:', error);
+                      }
+                    }}
+                  />
+                </Stack>
               </Box>
             )}
 
@@ -341,16 +396,8 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   embedded={true}
                   mode="manage"
                   shopMode={shopMode} // ✅ 传递 shopMode 参数
-                  onDataUpdate={async () => {
-                    // ✅ 保存成功后立即刷新父组件数据
-                    try {
-                      const updated = await fetchKnowledgeBase();
-                      setKnowledgeBaseItems(updated);
-                      console.log('[Collections] Data refreshed after edit');
-                    } catch (error) {
-                      console.error('[Collections] Failed to refresh data:', error);
-                    }
-                  }}
+                  initialItems={knowledgeBaseItems}
+                  onDataUpdate={applyArtworkChange}
                   onCancel={async () => {
                     setShowManageMode(false);
                     setShowUploadForm(false);

@@ -45,8 +45,9 @@ type CasesManagementProps = {
   isAdmin?: boolean;
   embedded?: boolean; // 是否作为嵌入式组件使用（移除外层容器）
   mode?: "upload" | "manage"; // 模式：上传或管理
+  initialItems?: Artwork[];
   onCancel?: () => void; // 取消时的回调函数
-  onDataUpdate?: () => void; // 数据更新时的回调函数（用于通知父组件刷新）
+  onDataUpdate?: (change?: Artwork | { deletedId: string }) => void | Promise<void>; // 数据更新时的回调函数（用于通知父组件刷新）
 };
 
 // 辅助组件：根据 embedded 属性渲染外层容器（必须在组件外部定义，避免每次渲染重新创建）
@@ -62,13 +63,14 @@ const CasesManagementSection = memo(function CasesManagementSection({
   isAdmin, 
   embedded = false, 
   mode = "upload",
+  initialItems = [],
   onCancel,
   onDataUpdate 
 }: CasesManagementProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const [items, setItems] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // 添加加载状态
+  const [items, setItems] = useState<Artwork[]>(initialItems);
+  const [isLoading, setIsLoading] = useState(initialItems.length === 0); // 添加加载状态
   
   // 文件输入引用
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +92,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const [adminRiskAdvice, setAdminRiskAdvice] = useState("");
   const [adminError, setAdminError] = useState<string | null>(null);
   const [manageMessage, setManageMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
   const [editCaseName, setEditCaseName] = useState(""); // ✅ 编辑时的案例名称
   const [editItemDetails, setEditItemDetails] = useState("");
@@ -108,6 +111,12 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const [editCoverIndex, setEditCoverIndex] = useState(0);
 
   useEffect(() => {
+    if (initialItems.length > 0) {
+      setItems(initialItems);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     void fetchKnowledgeBase()
       .then((data) => {
@@ -117,7 +126,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
       .catch(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [initialItems]);
 
   // 如果未登录，自动触发登录模态框
   useEffect(() => {
@@ -273,12 +282,15 @@ const CasesManagementSection = memo(function CasesManagementSection({
   };
 
   const handleSaveToKnowledgeBase = async () => {
+    if (isSaving) return;
+
     if (adminImages.length === 0) {
       setAdminError(t("cases.atLeastOneImage"));
       return;
     }
 
     try {
+      setIsSaving(true);
       // ✅ 验证案例名称必填
       if (!adminCaseName.trim()) {
         setAdminError(t("cases.pleaseEnterCaseName"));
@@ -315,20 +327,23 @@ const CasesManagementSection = memo(function CasesManagementSection({
         featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // 占位符
       };
 
-      await saveImportedArtwork(newArtwork);
+      const savedArtwork = await saveImportedArtwork(newArtwork);
 
       setManageMessage(t("cases.importSuccess"));
+      setItems(prevItems => [
+        savedArtwork,
+        ...prevItems.filter((item) => item.id !== savedArtwork.id),
+      ]);
       resetForm();
       
       // ✅ 通知父组件刷新数据
       if (onDataUpdate) {
-        onDataUpdate();
+        void onDataUpdate(savedArtwork);
       }
-      
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
     } catch (error: any) {
       setAdminError(error.message || t("cases.importFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -414,7 +429,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
         caseRecord,
       };
 
-      await updateImportedArtwork(updatedArtwork);
+      const savedArtwork = await updateImportedArtwork(updatedArtwork);
 
       setManageMessage(t("cases.updateSuccess"));
       resetEditForm();
@@ -422,25 +437,14 @@ const CasesManagementSection = memo(function CasesManagementSection({
       // ✅ 方案1: 直接在本地状态中更新该案例（立即生效）
       setItems(prevItems => 
         prevItems.map(item => 
-          item.id === artwork.id ? updatedArtwork : item
+          item.id === artwork.id ? savedArtwork : item
         )
       );
       
       // ✅ 方案2: 通知父组件刷新数据（确保父组件也同步更新）
       if (onDataUpdate) {
-        onDataUpdate();
+        void onDataUpdate(savedArtwork);
       }
-      
-      // ✅ 方案3: 同时后台刷新数据（确保与服务器同步）
-      setTimeout(async () => {
-        try {
-          const refreshed = await fetchKnowledgeBase();
-          console.log('[Cases] Background refresh completed, items:', refreshed.length);
-          setItems(refreshed);
-        } catch (error) {
-          console.error('[Cases] Background refresh failed:', error);
-        }
-      }, 500);
     } catch (error: any) {
       console.error('[Cases] Update failed:', error);
       setAdminError(error.message || t("cases.updateFailed"));
@@ -458,18 +462,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
       
       // ✅ 通知父组件刷新数据
       if (onDataUpdate) {
-        onDataUpdate();
+        void onDataUpdate({ deletedId: id });
       }
-      
-      // ✅ 后台刷新数据确保同步
-      setTimeout(async () => {
-        try {
-          const refreshed = await fetchKnowledgeBase();
-          setItems(refreshed);
-        } catch (error) {
-          console.error('[Cases] Background refresh failed:', error);
-        }
-      }, 500);
     } catch (error: any) {
       setAdminError(error.message || "删除失败");
     }

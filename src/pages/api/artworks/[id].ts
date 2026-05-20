@@ -8,6 +8,7 @@ import {
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
 import { getSupabaseAdmin, getSupabaseBucket } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const config = {
   api: {
@@ -19,6 +20,72 @@ export const config = {
 
 const TABLE_NAME = "artworks";
 const isDataUrl = (value: string) => value.startsWith("data:");
+
+const verifyUser = async (req: NextApiRequest) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return { isAuthenticated: false, error: "Authorization required" };
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return { isAuthenticated: false, error: "Supabase not configured" };
+  }
+
+  const token = authHeader.substring(7);
+  const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabaseClient.auth.getUser(token);
+
+  if (authError || !user) {
+    return { isAuthenticated: false, error: "Invalid token" };
+  }
+
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  return {
+    isAuthenticated: true,
+    userId: user.id,
+    isAdmin: (profile as any)?.role === "admin",
+  };
+};
+
+const canMutateArtwork = async (
+  artworkId: string,
+  userId?: string,
+  isAdmin?: boolean
+) => {
+  if (isAdmin) {
+    return true;
+  }
+
+  if (!userId) {
+    return false;
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select("uploaded_by")
+    .eq("id", artworkId)
+    .single();
+
+  if (error || !data) {
+    return false;
+  }
+
+  return (data as any).uploaded_by === userId;
+};
 
 const parseDataUrl = (value: string) => {
   const match = value.match(/^data:(.+?);base64,(.+)$/);
@@ -100,6 +167,16 @@ export default async function handler(
     }
 
     try {
+      const auth = await verifyUser(req);
+      if (!auth.isAuthenticated) {
+        return res.status(403).json({ error: auth.error || "Forbidden" });
+      }
+
+      const allowed = await canMutateArtwork(id, auth.userId, auth.isAdmin);
+      if (!allowed) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
       const uploadedImages = await persistGalleryImages(normalizeArtwork(artwork));
       const supabase = getSupabaseAdmin();
       const row = artworkToRow({
@@ -130,6 +207,16 @@ export default async function handler(
 
   if (req.method === "DELETE") {
     try {
+      const auth = await verifyUser(req);
+      if (!auth.isAuthenticated) {
+        return res.status(403).json({ error: auth.error || "Forbidden" });
+      }
+
+      const allowed = await canMutateArtwork(id, auth.userId, auth.isAdmin);
+      if (!allowed) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
       const supabase = getSupabaseAdmin();
       const { error } = await supabase.from(TABLE_NAME).delete().eq("id", id);
 

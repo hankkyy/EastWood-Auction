@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { Artwork } from "@/data/artworks";
-import { artworks } from "@/data/artworks";
 import {
   artworkToRow,
   isSupabaseConfigured,
@@ -20,8 +19,6 @@ export const config = {
 };
 
 const TABLE_NAME = "artworks";
-
-const fallbackArtworks = () => artworks.map(normalizeArtwork);
 
 const isDataUrl = (value: string) => value.startsWith("data:");
 
@@ -212,7 +209,9 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     if (!isSupabaseConfigured()) {
-      return res.status(200).json({ artworks: fallbackArtworks(), mode: "local" });
+      return res.status(503).json({
+        error: "Supabase is not configured. Cloud persistence is required.",
+      });
     }
 
     try {

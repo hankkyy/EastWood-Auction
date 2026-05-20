@@ -253,15 +253,17 @@ export const useAuth = () => {
     if (!user) return { success: false, error: "Not authenticated" };
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
         .update(updates)
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select("*")
+        .single();
 
       if (error) throw error;
 
-      // 刷新本地用户数据
-      const updatedProfile = await fetchProfile(user.id);
+      const updatedProfile = data as Profile;
+      profileCache.set(user.id, { data: updatedProfile, timestamp: Date.now() });
       setUser({
         ...user,
         profile: updatedProfile,

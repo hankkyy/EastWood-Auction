@@ -59,8 +59,9 @@ type CollectionsManagementProps = {
   embedded?: boolean; // 是否作为嵌入式组件使用（移除外层容器）
   mode?: "upload" | "manage"; // 模式：上传或管理
   shopMode?: boolean; // ✅ 是否为商店模式（强制要求价格，自动设置 isForSale=true）
+  initialItems?: Artwork[];
   onCancel?: () => void; // 取消时的回调函数
-  onDataUpdate?: () => void; // 数据更新时的回调函数（用于通知父组件刷新）
+  onDataUpdate?: (change?: Artwork | { deletedId: string }) => void | Promise<void>; // 数据更新时的回调函数（用于通知父组件刷新）
   onSuccess?: () => void; // ✅ 保存成功后的回调函数（用于自动关闭表单）
 };
 
@@ -78,14 +79,15 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   embedded = false, 
   mode = "upload",
   shopMode = false, // ✅ 默认为 false（藏品展示模式）
+  initialItems = [],
   onCancel,
   onDataUpdate,
   onSuccess // ✅ 保存成功后的回调
 }: CollectionsManagementProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const [items, setItems] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // 添加加载状态
+  const [items, setItems] = useState<Artwork[]>(initialItems);
+  const [isLoading, setIsLoading] = useState(initialItems.length === 0); // 添加加载状态
   
   // 多图片上传状态
   const [adminImages, setAdminImages] = useState<string[]>([]); // 所有图片URL数组
@@ -103,6 +105,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   
   const [adminError, setAdminError] = useState<string | null>(null);
   const [manageMessage, setManageMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
   const [editCollectionId, setEditCollectionId] = useState("");
   const [editItemName, setEditItemName] = useState("");
@@ -144,6 +147,12 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   }, []);
 
   useEffect(() => {
+    if (initialItems.length > 0) {
+      setItems(initialItems);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     void fetchKnowledgeBase()
       .then((data) => {
@@ -153,7 +162,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       .catch(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [initialItems]);
 
   // 如果未登录，自动触发登录模态框
   useEffect(() => {
@@ -319,6 +328,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   };
 
   const handleSaveToKnowledgeBase = async () => {
+    if (isSaving) return;
+
     if (adminImages.length === 0) {
       setAdminError(t("collections.uploadImagesPrompt"));
       return;
@@ -343,11 +354,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     }
 
     try {
-      console.log('[Collections] Starting save process...');
-      console.log('[Collections] Admin images count:', adminImages.length);
-      console.log('[Collections] First image preview:', adminImages[0]?.substring(0, 100) + '...');
-      console.log('[Collections] Is first image a Data URL?', adminImages[0]?.startsWith('data:'));
-
+      setIsSaving(true);
       // 使用自动生成的藏品编号（用户不能手动输入）
       const collectionId = adminCollectionId.trim();
       
@@ -397,30 +404,29 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         currency: priceValue ? adminCurrency : undefined, // 货币单位（有价格时才设置）
       };
 
-      console.log('[Collections] Calling saveImportedArtwork...');
-      await saveImportedArtwork(newArtwork);
-      console.log('[Collections] Save completed successfully');
+      const savedArtwork = await saveImportedArtwork(newArtwork);
 
       setManageMessage(t("collections.operationSuccess"));
+      setItems(prevItems => [
+        savedArtwork,
+        ...prevItems.filter((item) => item.id !== savedArtwork.id),
+      ]);
       resetForm();
       
       // ✅ 通知父组件刷新数据
       if (onDataUpdate) {
-        onDataUpdate();
+        void onDataUpdate(savedArtwork);
       }
       
       // ✅ 保存成功后自动关闭表单（如果提供了 onSuccess 回调）
       if (onSuccess) {
-        setTimeout(() => {
-          onSuccess();
-        }, 1500); // 延迟 1.5 秒，让用户看到成功提示
+        onSuccess();
       }
-      
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
     } catch (error: any) {
       console.error('[Collections] Save failed:', error);
       setAdminError(error.message || t("collections.importFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -532,7 +538,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
         currency: editIsForSale ? editCurrency : undefined,
       };
 
-      await updateImportedArtwork(updatedArtwork);
+      const savedArtwork = await updateImportedArtwork(updatedArtwork);
 
       setManageMessage(t("collections.operationSuccess"));
       resetEditForm();
@@ -540,25 +546,14 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       // ✅ 方案1: 直接在本地状态中更新该藏品(立即生效)
       setItems(prevItems => 
         prevItems.map(item => 
-          item.id === artwork.id ? updatedArtwork : item
+          item.id === artwork.id ? savedArtwork : item
         )
       );
       
       // ✅ 方案2: 通知父组件刷新数据(确保父组件也同步更新)
       if (onDataUpdate) {
-        onDataUpdate();
+        void onDataUpdate(savedArtwork);
       }
-      
-      // ✅ 方案3: 同时后台刷新数据(确保与服务器同步)
-      setTimeout(async () => {
-        try {
-          const refreshed = await fetchKnowledgeBase();
-          console.log('[Collections] Background refresh completed, items:', refreshed.length);
-          setItems(refreshed);
-        } catch (error) {
-          console.error('[Collections] Background refresh failed:', error);
-        }
-      }, 500);
     } catch (error: any) {
       console.error('[Collections] Update failed:', error);
       setAdminError(error.message || t("collections.updateFailed"));
@@ -612,8 +607,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     try {
       await deleteImportedArtwork(id);
       setManageMessage(t("cases.deleteSuccess"));
-      const updated = await fetchKnowledgeBase();
-      setItems(updated);
+      setItems(prevItems => prevItems.filter(item => item.id !== id));
+      if (onDataUpdate) {
+        void onDataUpdate({ deletedId: id });
+      }
     } catch (error: any) {
       setAdminError(error.message || t("cases.deleteFailed"));
     }
@@ -1057,7 +1054,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 
   // 上传模式（默认）
   return (
-    <OuterWrapper>
+    <OuterWrapper embedded={embedded}>
       <Stack spacing="xl">
         <Paper p="xl">
           <Stack spacing="lg">
@@ -1395,6 +1392,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 onClick={handleSaveToKnowledgeBase}
                 leftIcon={<IconCheck size={16} />}
                 disabled={
+                  isSaving ||
                   adminImages.length === 0 || 
                   !adminItemName.trim() || 
                   (shopMode ? !adminPrice.trim() || parseFloat(adminPrice) <= 0 : (adminIsForSale && (!adminPrice.trim() || parseFloat(adminPrice) <= 0)))
