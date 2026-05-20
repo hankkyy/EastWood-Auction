@@ -35,6 +35,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     backgroundImage: shopMode 
       ? `url(https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
       : `url(https://images.unsplash.com/photo-1566054719594-bf2e32c769a2?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：中式美学博物馆背景（典雅、明亮）
+    backgroundColor: shopMode ? "#2c1810" : "#f5f5f0", // ✅ 添加备用背景色：古董商店深棕色，藏品展示浅米色
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
