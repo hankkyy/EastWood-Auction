@@ -6,13 +6,14 @@ import {
   Header,
   Indicator,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import { supabase } from "@/lib/supabase/client";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
-import { IconInbox } from "@tabler/icons-react";
+import { IconInbox, IconMessageCircle } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 const useStyles = createStyles((theme) => ({
@@ -25,16 +26,30 @@ const useStyles = createStyles((theme) => ({
     backgroundColor: "#0f1216",
     color: theme.colors.dark[0],
     borderBottom: `1px solid rgba(216, 183, 109, 0.18)`,
+
+    [theme.fn.smallerThan("sm")]: {
+      padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+    },
+  },
+
+  actionGroup: {
+    gap: theme.spacing.xs,
+
+    [theme.fn.smallerThan("sm")]: {
+      width: "100%",
+      justifyContent: "space-between",
+    },
   },
 }));
 
 export default function TopBar() {
   const { classes } = useStyles();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user, loading, roleLoading, isAdmin } = useAuth();
   const authReady = !loading && !roleLoading;
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
+  const isMobile = useMediaQuery("(max-width: 600px)");
 
   const handleInquiryClick = () => {
     if (!authReady) {
@@ -135,32 +150,49 @@ export default function TopBar() {
   return (
     <Header height="100%" sx={{ borderBottom: 0 }}>
       <Container className={classes.inner} fluid>
-        <Group spacing="xs" noWrap>
+        <Group className={classes.actionGroup} noWrap>
           <Indicator
             inline
-            size={18}
+            size={isMobile ? 16 : 18}
             offset={4}
             color="red"
             disabled={!unreadCount}
             label={unreadCount > 99 ? "99+" : unreadCount}
           >
             <Button
-              size="xs"
-              variant="light"
-              color="yellow"
+              size={isMobile ? "sm" : "xs"}
+              variant={isMobile ? "subtle" : "light"}
+              color={isMobile ? "gray" : "yellow"}
               onClick={handleInboxClick}
               leftIcon={<IconInbox size={16} />}
+              compact={isMobile}
+              styles={{
+                root: {
+                  minWidth: isMobile ? 0 : undefined,
+                  paddingLeft: isMobile ? 10 : undefined,
+                  paddingRight: isMobile ? 10 : undefined,
+                },
+              }}
             >
-              {t("inbox.pageTitle")}
+              {isMobile ? (locale === "zh" ? "消息" : "Inbox") : t("inbox.pageTitle")}
             </Button>
           </Indicator>
           <Button
-            size="xs"
-            variant="light"
+            size={isMobile ? "sm" : "xs"}
+            variant={isMobile ? "subtle" : "light"}
             color="yellow"
             onClick={handleInquiryClick}
+            leftIcon={isMobile ? <IconMessageCircle size={16} /> : undefined}
+            compact={isMobile}
+            styles={{
+              root: {
+                minWidth: isMobile ? 0 : undefined,
+                paddingLeft: isMobile ? 10 : undefined,
+                paddingRight: isMobile ? 10 : undefined,
+              },
+            }}
           >
-            {t("inquiry.entryButton")}
+            {isMobile ? (locale === "zh" ? "询价" : "Ask") : t("inquiry.entryButton")}
           </Button>
           <LanguagePicker />
         </Group>

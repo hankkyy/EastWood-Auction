@@ -17,6 +17,7 @@ body {
     linear-gradient(180deg, #171b21 0%, #12161b 44%, #0f1216 100%);
   color: #f6efe3;
   -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
+  scroll-padding-top: calc(120px + env(safe-area-inset-top, 0px));
 }
 
 /* 仅在移动端禁用下拉刷新 */
@@ -40,6 +41,7 @@ body {
 #__next {
   min-height: 100vh;
   background-color: #15191f;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 ::selection {
@@ -136,6 +138,16 @@ a {
   color: #f6efe3 !important;
 }
 
+.mantine-Drawer-header,
+.mantine-Modal-header {
+  padding-top: calc(16px + env(safe-area-inset-top, 0px)) !important;
+}
+
+.mantine-Drawer-body,
+.mantine-Modal-body {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
 .mantine-Paper-root {
   background-color: #20262e;
   border-color: rgba(216, 183, 109, 0.18);
@@ -150,6 +162,13 @@ a {
 
 .mantine-TextInput-input::placeholder {
   color: #928b84 !important;
+}
+
+.mantine-Button-root,
+.mantine-ActionIcon-root,
+.mantine-Menu-item,
+.mantine-Tabs-tab {
+  touch-action: manipulation;
 }
 
 .mantine-Accordion-item {

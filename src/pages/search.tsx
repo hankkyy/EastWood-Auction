@@ -21,6 +21,7 @@ import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
+import { IconArrowRight } from "@tabler/icons-react";
 
 interface SearchPageProps {
   initialData: Artwork[];
@@ -306,7 +307,27 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                           {getLocalized(locale, item.period, item.periodZh)}
                         </Badge>
                       </Group>
-                      <Button component={Link} href={getDetailHref(item)} variant="light">
+                      <Button
+                        component={Link}
+                        href={getDetailHref(item)}
+                        variant="filled"
+                        color="yellow"
+                        fullWidth
+                        rightIcon={<IconArrowRight size={16} />}
+                        styles={{
+                          root: {
+                            minHeight: 46,
+                            fontSize: 15,
+                            fontWeight: 700,
+                            background: "linear-gradient(135deg, #d8b76d 0%, #c89c3d 100%)",
+                            color: "#1b1f24",
+                            boxShadow: "0 10px 24px rgba(200, 156, 61, 0.28)",
+                          },
+                          rightIcon: {
+                            marginLeft: 6,
+                          },
+                        }}
+                      >
                         {locale === "zh" ? "查看详情" : "View details"}
                       </Button>
                     </Stack>

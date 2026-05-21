@@ -10,9 +10,8 @@ import {
   Divider,
   Badge,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { useMediaQuery } from "@mantine/hooks";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/lib/supabase/client";
 import { useI18n } from "@/i18n";
 
 interface ProfileModalProps {
@@ -23,6 +22,7 @@ interface ProfileModalProps {
 export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
   const { user, updateProfile, logout } = useAuth();
   const { t, locale } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userId, setUserId] = useState("");
@@ -75,13 +75,13 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
       title={t("auth.profileTitle")}
       centered
       size="md"
-      fullScreen
+      fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
       styles={{
         content: {
-          borderRadius: 16,
-          padding: 24,
-          maxHeight: "90vh",
+          borderRadius: isMobile ? 0 : 16,
+          padding: isMobile ? 16 : 24,
+          maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
         },
       }}
@@ -111,6 +111,12 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
         </Group>
 
         <Divider />
+
+        <Text size="sm" color="dimmed">
+          {locale === "zh"
+            ? "建议先完善姓名与用户编号，后续询价和沟通会更顺畅。"
+            : "Filling in your name and user ID first makes inquiries and follow-up much smoother."}
+        </Text>
 
         {/* 编辑表单 */}
         <form onSubmit={handleUpdateProfile}>

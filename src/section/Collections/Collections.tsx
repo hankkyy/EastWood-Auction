@@ -44,7 +44,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     position: "relative", // ✅ 确保背景层正确定位
 
     [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(500),
+      minHeight: rem(420),
     },
   },
   heroContainer: {
@@ -58,8 +58,10 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     position: "relative",
 
     [theme.fn.smallerThan("sm")]: {
-      height: rem(500),
-      paddingBottom: `calc(${theme.spacing.xl} * 3)`,
+      height: rem(420),
+      paddingBottom: `calc(${theme.spacing.xl} * 2.25)`,
+      paddingLeft: theme.spacing.xs,
+      paddingRight: theme.spacing.xs,
     },
   },
   title: {
@@ -69,13 +71,14 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     lineHeight: 1.1,
 
     [theme.fn.smallerThan("sm")]: {
-      fontSize: rem(40),
-      lineHeight: 1.2,
+      fontSize: rem(34),
+      lineHeight: 1.15,
+      maxWidth: rem(280),
     },
 
     [theme.fn.smallerThan("xs")]: {
       fontSize: rem(28),
-      lineHeight: 1.3,
+      lineHeight: 1.2,
     },
   },
   contentWrapper: {
@@ -83,6 +86,11 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     color: theme.colors.dark[0],
     paddingTop: remValue(72),
     paddingBottom: remValue(96),
+
+    [theme.fn.smallerThan("sm")]: {
+      paddingTop: remValue(32),
+      paddingBottom: remValue(56),
+    },
   },
   tabs: {
     marginBottom: remValue(46),
@@ -91,6 +99,21 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       justifyContent: "center",
       borderBottom: "1px solid rgba(246, 239, 227, 0.22)",
       gap: remValue(24),
+
+      [theme.fn.smallerThan("sm")]: {
+        justifyContent: "flex-start",
+        flexWrap: "nowrap",
+        overflowX: "auto",
+        overflowY: "hidden",
+        gap: remValue(16),
+        paddingBottom: remValue(8),
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+      },
     },
 
     ".mantine-Tabs-tab": {
@@ -106,6 +129,60 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
         color: theme.colors.dark[0],
         borderBottomColor: theme.colors.dark[0],
       },
+
+      [theme.fn.smallerThan("sm")]: {
+        flex: "0 0 auto",
+        fontSize: remValue(16),
+        paddingBottom: remValue(14),
+      },
+    },
+  },
+  actionsRow: {
+    [theme.fn.smallerThan("sm")]: {
+      width: "100%",
+      flexDirection: "column",
+      alignItems: "stretch",
+    },
+  },
+  contentContainer: {
+    [theme.fn.smallerThan("sm")]: {
+      paddingLeft: rem(14),
+      paddingRight: rem(14),
+    },
+  },
+  gridPanel: {
+    marginTop: 64,
+    paddingLeft: 48,
+    paddingRight: 48,
+
+    [theme.fn.smallerThan("sm")]: {
+      marginTop: 20,
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+  },
+  cardLink: {
+    display: "block",
+    textDecoration: "none",
+    cursor: "pointer",
+    padding: remValue(12),
+    borderRadius: remValue(20),
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))",
+    border: "1px solid rgba(216, 183, 109, 0.14)",
+    boxShadow: "0 18px 40px rgba(0, 0, 0, 0.16)",
+    transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+
+    "&:hover": {
+      opacity: 1,
+      transform: "translateY(-3px)",
+      borderColor: "rgba(216, 183, 109, 0.26)",
+      boxShadow: "0 22px 46px rgba(0, 0, 0, 0.24)",
+    },
+
+    [theme.fn.smallerThan("sm")]: {
+      padding: remValue(10),
+      borderRadius: remValue(18),
     },
   },
 
@@ -113,6 +190,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
     overflow: "hidden",
     height: remValue(420),
+    borderRadius: remValue(16),
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -121,6 +199,11 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     [theme.fn.smallerThan("md")]: {
       height: remValue(320),
       padding: remValue(6), // ✅ 响应式调整（从 12 改为 6）
+    },
+
+    [theme.fn.smallerThan("sm")]: {
+      height: remValue(260),
+      borderRadius: remValue(14),
     },
   },
 
@@ -142,10 +225,35 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
 
   itemTitle: {
     marginTop: remValue(16), // ✅ 减小上边距（从 18 改为 16）
-    textAlign: "center",
+    textAlign: "left",
     color: theme.colors.dark[0],
     fontSize: remValue(20), // ✅ 进一步减小字体（从 22 改为 20），更加精致
     fontWeight: 800,
+
+    [theme.fn.smallerThan("sm")]: {
+      marginTop: remValue(12),
+      fontSize: remValue(17),
+      lineHeight: 1.35,
+    },
+  },
+  itemMeta: {
+    marginTop: remValue(8),
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: remValue(12),
+
+    [theme.fn.smallerThan("sm")]: {
+      marginTop: remValue(6),
+    },
+  },
+  itemPrice: {
+    color: "rgba(246, 239, 227, 0.78)",
+    lineHeight: 1.2,
+  },
+  itemHint: {
+    color: "rgba(246, 239, 227, 0.5)",
+    whiteSpace: "nowrap",
   },
 }));
 
@@ -302,15 +410,16 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
       {/* Content Section - 上传按钮和藏品列表在图片下面 */}
       <Box className={classes.contentWrapper}>
-        <Container fluid px={72}> {/* ✅ 增加左右内边距 */}
+        <Container fluid px={smallerThan ? 14 : 72} className={classes.contentContainer}>
           <Stack spacing="xl">
             {/* ✅ 操作按钮区域 - 仅管理员可见(普通用户不需要看到) */}
             {isAdmin && !showUploadForm && !showManageMode && (
-              <Group position="right">
+              <Group position="right" className={classes.actionsRow}>
                 {/* 上传按钮 - 仅管理员可见 */}
                 <Button
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
+                  fullWidth={smallerThan}
                 >
                   {shopMode 
                     ? (locale === "zh" ? "导入新商品" : "Import New Product")
@@ -322,6 +431,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   onClick={handleManageClick}
                   variant="default"
                   leftIcon={<IconEdit size={18} />}
+                  fullWidth={smallerThan}
                 >
                   {shopMode 
                     ? (locale === "zh" ? "管理商品" : "Manage Products")
@@ -440,11 +550,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                           { maxWidth: "md", cols: 2, spacing: "lg" },
                           { maxWidth: "sm", cols: 1, spacing: "md" },
                         ]}
-                        sx={{ 
-                          marginTop: 64, // ✅ 增加上下间距
-                          paddingLeft: 48, // ✅ 增加左边距
-                          paddingRight: 48 // ✅ 增加右边距
-                        }}
+                        className={classes.gridPanel}
                       >
                         {visibleItems.map((item) => {
                           // 获取原始 artwork 数据以检查 galleryImages
@@ -456,14 +562,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               key={item.key}
                               component={Link}
                               href={item.href}
-                              sx={{ 
-                                textDecoration: "none", 
-                                display: "block",
-                                cursor: "pointer", // ✅ 明确设置鼠标指针样式
-                                "&:hover": {
-                                  opacity: 0.95 // ✅ 添加悬停效果，提供视觉反馈
-                                }
-                              }}
+                              className={classes.cardLink}
                             >
                               <Box className={classes.imageWrap} sx={{ position: "relative" }}>
                                 <Box component="img" src={item.image} alt={item.title} className={classes.image} />
@@ -479,33 +578,32 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       color: "#fff",
                                       padding: "6px 10px",
                                       borderRadius: 6,
-                                      fontSize: 13,
+                                      fontSize: smallerThan ? 12 : 13,
                                       fontWeight: 600,
                                       backdropFilter: "blur(4px)",
                                       boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
                                     }}
                                   >
-                                    📷 {photoCount} {t("collections.photosCount")}
+                                    {photoCount} {t("collections.photosCount")}
                                   </Box>
                                 )}
                               </Box>
                               <Text className={classes.itemTitle}>{item.title}</Text>
-                              
-                              {/* ✅ 商店模式：在标题下方显示价格（简约灰白色设计） */}
-                              {shopMode && artwork?.isForSale && artwork?.price && (
-                                <Text 
-                                  size="md" // ✅ 进一步减小字体（从 lg 改为 md），更加精致
-                                  weight={600} // ✅ 降低字重（从 700 改为 600）
-                                  sx={{ 
-                                    color: "rgba(246, 239, 227, 0.65)", // ✅ 价格使用更灰的颜色（65%透明度），更加低调
-                                    marginTop: 8,
-                                    lineHeight: 1.2,
-                                    textAlign: "center" // ✅ 与标题保持居中对齐
-                                  }}
-                                >
-                                  {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+
+                              <Box className={classes.itemMeta}>
+                                {shopMode && artwork?.isForSale && artwork?.price ? (
+                                  <Text size={smallerThan ? "sm" : "md"} weight={700} className={classes.itemPrice}>
+                                    {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+                                  </Text>
+                                ) : (
+                                  <Text size="sm" className={classes.itemPrice}>
+                                    {locale === "zh" ? "查看详情" : "View details"}
+                                  </Text>
+                                )}
+                                <Text size="xs" className={classes.itemHint}>
+                                  {locale === "zh" ? "点击进入" : "Tap to open"}
                                 </Text>
-                              )}
+                              </Box>
                             </Box>
                           );
                         })}

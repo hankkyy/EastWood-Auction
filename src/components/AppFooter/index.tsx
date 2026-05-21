@@ -40,6 +40,11 @@ const useStyles = createStyles((theme) => ({
   container: {
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing.xl,
+
+    [theme.fn.smallerThan("sm")]: {
+      paddingTop: theme.spacing.lg,
+      paddingBottom: theme.spacing.lg,
+    },
   },
 
   logo: {
@@ -123,6 +128,17 @@ const useStyles = createStyles((theme) => ({
   social: {
     [theme.fn.smallerThan("sm")]: {
       marginTop: theme.spacing.xs,
+    },
+  },
+  newsletterRow: {
+    [theme.fn.smallerThan("sm")]: {
+      flexDirection: "column",
+      alignItems: "stretch",
+    },
+  },
+  legalRow: {
+    [theme.fn.smallerThan("sm")]: {
+      flexWrap: "wrap",
     },
   },
 }));
@@ -242,14 +258,14 @@ export default function AppFooter({ data }: FooterLinksProps) {
             <Text size={smallerThan ? "md" : "lg"}>
               {t("footer.newsletter")}
             </Text>
-            <Flex gap={smallerThan ? "sm" : "xs"}>
+            <Flex gap={smallerThan ? "sm" : "xs"} className={classes.newsletterRow}>
               <TextInput
                 size="md"
                 sx={{ flexGrow: 1 }}
                 aria-label={t("footer.emailAria")}
                 placeholder={t("footer.emailPlaceholder")}
               />
-              <Button size="md">{t("footer.signup")}</Button>
+              <Button size="md" fullWidth={smallerThan}>{t("footer.signup")}</Button>
             </Flex>
           </Stack>
         </Flex>
@@ -298,7 +314,7 @@ export default function AppFooter({ data }: FooterLinksProps) {
           direction={{ base: "column", md: "row" }}
           gap={{ base: "sm", sm: "lg" }}
         >
-          <Flex gap="sm" justify="center" align="center">
+          <Flex gap="sm" justify="center" align="center" className={classes.legalRow}>
             <Anchor weight={500} color="violet.7">
               {t("footer.privacy")}
             </Anchor>

@@ -19,7 +19,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
@@ -74,6 +74,9 @@ const useStyles = createStyles((theme) => ({
       display: "none",
     },
   },
+  mobileHeaderActions: {
+    gap: theme.spacing.xs,
+  },
   brandButton: {
     display: "flex",
     alignItems: "center",
@@ -101,6 +104,9 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.smallerThan("sm")]: {
       fontSize: rem(21),
     },
+  },
+  drawerBody: {
+    paddingBottom: `calc(${theme.spacing.xl} * 2 + env(safe-area-inset-bottom, 0px))`,
   },
 }));
 
@@ -136,24 +142,33 @@ export default function TopNav() {
     useDisclosure(false);
   
   // 自定义的 openAuthModal 函数：打开模态框时自动关闭 Drawer
-  const openAuthModal = () => {
+  const openAuthModal = useCallback(() => {
     closeDrawer(); // 先关闭移动端菜单
     openAuthModalRaw(); // 再打开登录模态框
-  };
+  }, [closeDrawer, openAuthModalRaw]);
   
   // 自定义的 openProfileModal 函数：打开模态框时自动关闭 Drawer
-  const openProfileModal = () => {
+  const openProfileModal = useCallback(() => {
     closeDrawer(); // 先关闭移动端菜单
     openProfileModalRaw(); // 再打开个人资料模态框
-  };
+  }, [closeDrawer, openProfileModalRaw]);
   
   const { classes, cx, theme } = useStyles();
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   
   // 直接使用 useAuth hook
   const { user, loading, roleLoading, logout, isAdmin } = useAuth();
   const authReady = !loading && !roleLoading;
+
+  useEffect(() => {
+    const handleOpenAuthModal = () => {
+      openAuthModal();
+    };
+
+    window.addEventListener("open-auth-modal", handleOpenAuthModal as EventListener);
+    return () => window.removeEventListener("open-auth-modal", handleOpenAuthModal as EventListener);
+  }, [openAuthModal]);
 
   const handleInquiryClick = () => {
     closeDrawer();
@@ -200,6 +215,16 @@ export default function TopNav() {
     void router.push("/inbox");
   };
 
+  const handleAdminClick = () => {
+    closeDrawer();
+
+    if (!authReady || !user || !isAdmin) {
+      return;
+    }
+
+    void router.push("/admin");
+  };
+
   const urlResolver = (url: string): boolean => {
     return router.pathname === url;
   };
@@ -222,14 +247,14 @@ export default function TopNav() {
   ));
 
   // 用户菜单渲染
-  const renderUserMenu = () => {
+  const renderUserMenu = (mobile = false) => {
     // 加载中状态：显示占位符，避免 Hydration 错误
     if (!authReady) {
       return (
         <Avatar
           color="gray"
           radius="xl"
-          size="md"
+          size={mobile ? "sm" : "md"}
           sx={{ cursor: "default", opacity: 0.5 }}
         >
           ...
@@ -239,8 +264,14 @@ export default function TopNav() {
 
     if (!user) {
       return (
-        <Button onClick={openAuthModal} variant="filled" color="violet">
-          {t("auth.loginRegister")}
+        <Button
+          onClick={openAuthModal}
+          variant="filled"
+          color="violet"
+          fullWidth={mobile}
+          size={mobile ? "sm" : "md"}
+        >
+          {mobile ? (locale === "zh" ? "登录" : "Sign in") : t("auth.loginRegister")}
         </Button>
       );
     }
@@ -250,6 +281,59 @@ export default function TopNav() {
       ? user.email.substring(0, 2).toUpperCase()
       : "U";
     const avatarColor = isAdmin ? "red" : "blue";
+
+    if (mobile) {
+      return (
+        <Stack spacing="sm">
+          <Group noWrap>
+            <Avatar
+              color={avatarColor}
+              radius="xl"
+              size="md"
+            >
+              {initials}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Text size="sm" weight={600} sx={{ wordBreak: "break-word" }}>
+                {user.email}
+              </Text>
+              {isAdmin && (
+                <Text size="xs" color="red" weight={600}>
+                  {t("auth.roleLabel")}: {t("auth.adminRole")}
+                </Text>
+              )}
+            </Box>
+          </Group>
+          <Button variant="light" fullWidth onClick={openProfileModal}>
+            {t("auth.profileTitle")}
+          </Button>
+          {isAdmin && (
+            <Button
+              variant="light"
+              color="red"
+              fullWidth
+              onClick={handleAdminClick}
+            >
+              {t("auth.adminBackend")}
+            </Button>
+          )}
+          <Button
+            color="blue"
+            variant="filled"
+            fullWidth
+            onClick={() => void logout()}
+            sx={{
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: 'rgba(59, 130, 246, 0.9)',
+              },
+            }}
+          >
+            {t("auth.logout")}
+          </Button>
+        </Stack>
+      );
+    }
 
     return (
       <Menu position="bottom-end" withinPortal>
@@ -277,7 +361,7 @@ export default function TopNav() {
           </Menu.Label>
           <Menu.Item onClick={openProfileModal}>{t("auth.profileTitle")}</Menu.Item>
           {isAdmin && (
-            <Menu.Item component={Link} href="/admin">
+            <Menu.Item onClick={handleAdminClick}>
               {t("auth.adminBackend")}
             </Menu.Item>
           )}
@@ -329,12 +413,25 @@ export default function TopNav() {
             {renderUserMenu()}
           </Group>
 
-          <Burger
-            opened={drawerOpened}
-            onClick={toggleDrawer}
-            className={classes.hiddenDesktop}
-            title={t("nav.openMenu")}
-          />
+          <Group noWrap className={cx(classes.hiddenDesktop, classes.mobileHeaderActions)}>
+            {authReady && user ? (
+              <UnstyledButton
+                onClick={openProfileModal}
+                aria-label={t("auth.profileTitle")}
+              >
+                <Avatar color={isAdmin ? "red" : "blue"} radius="xl" size="sm">
+                  {user.email ? user.email.substring(0, 2).toUpperCase() : "U"}
+                </Avatar>
+              </UnstyledButton>
+            ) : (
+              renderUserMenu(true)
+            )}
+            <Burger
+              opened={drawerOpened}
+              onClick={toggleDrawer}
+              title={t("nav.openMenu")}
+            />
+          </Group>
         </Group>
       </Header>
 
@@ -350,8 +447,13 @@ export default function TopNav() {
         withCloseButton
         transitionProps={{ transition: "slide-left", duration: 300 }}
         overlayProps={{ opacity: 0.6, blur: 4 }}
+        styles={{
+          body: {
+            paddingBottom: `calc(${rem(24)} + env(safe-area-inset-bottom, 0px))`,
+          },
+        }}
       >
-        <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md" type="auto">
+        <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md" type="auto" className={classes.drawerBody}>
           <Stack spacing="lg" px="md" py="md">
             {/* 主要导航链接 - 增大触摸区域 */}
             {links.map((link, index) => (
@@ -404,7 +506,7 @@ export default function TopNav() {
               
               {/* 用户菜单 */}
               <Box sx={{ marginTop: 8 }}>
-                {renderUserMenu()}
+                {renderUserMenu(true)}
               </Box>
             </Stack>
           </Stack>

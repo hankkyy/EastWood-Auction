@@ -14,11 +14,11 @@ import {
   Group,
   Modal,
   ScrollArea,
-  SimpleGrid,
   Stack,
   Text,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
@@ -26,6 +26,7 @@ import { useEffect, useMemo, useState } from "react";
 export default function CollectionDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
@@ -58,6 +59,7 @@ export default function CollectionDetailPage() {
   }, [item]);
 
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
+  const activeImage = selectedImage || gallery[0] || item?.image || "";
 
   useEffect(() => {
     if (!item) {
@@ -124,6 +126,27 @@ export default function CollectionDetailPage() {
 
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const inquiryHref = item.collectionId
+    ? `/inquiries?code=${encodeURIComponent(item.collectionId)}&returnTo=${encodeURIComponent(router.asPath || `/collections/${collectionId}`)}`
+    : "/inquiries";
+  const showInquiryButton = Boolean(item.collectionId);
+
+  const goToImage = (index: number) => {
+    const nextImage = gallery[index];
+    if (nextImage) {
+      setSelectedImage(nextImage);
+    }
+  };
+
+  const goToPrevious = () => {
+    if (!gallery.length) return;
+    goToImage((selectedIndex - 1 + gallery.length) % gallery.length);
+  };
+
+  const goToNext = () => {
+    if (!gallery.length) return;
+    goToImage((selectedIndex + 1) % gallery.length);
+  };
 
   return (
     <>
@@ -133,20 +156,20 @@ export default function CollectionDetailPage() {
 
       <Wrapper>
         <AnimatedBox>
-          <Container py={80}>
-            <Stack spacing="xl">
+          <Container py={isMobile ? 28 : 80} px={isMobile ? 16 : undefined}>
+            <Stack spacing={isMobile ? "lg" : "xl"}>
               {/* 返回按钮 */}
               <Button
                 component={Link}
                 href="/collections"
                 variant="filled"
                 color="blue"
-                size="md"
+                size={isMobile ? "sm" : "md"}
                 leftIcon={<IconChevronLeft size={18} />}
                 sx={{ 
                   alignSelf: "flex-start",
                   fontWeight: 600,
-                  padding: '12px 24px',
+                  padding: isMobile ? "10px 16px" : '12px 24px',
                   boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
@@ -159,8 +182,23 @@ export default function CollectionDetailPage() {
               </Button>
 
               {/* 标题和基本信息 */}
-              <Stack spacing="md">
-                <Title order={2}>{title}</Title>
+              <Stack spacing={isMobile ? "sm" : "md"}>
+                <Title order={isMobile ? 3 : 2} sx={{ lineHeight: 1.18 }}>
+                  {title}
+                </Title>
+
+                {showInquiryButton && (
+                  <Button
+                    component={Link}
+                    href={inquiryHref}
+                    variant="outline"
+                    color="yellow"
+                    size="md"
+                    fullWidth={isMobile}
+                  >
+                    {locale === "zh" ? "咨询此藏品" : "Ask about this item"}
+                  </Button>
+                )}
 
                 {item.collectionId && (
                   <Badge 
@@ -177,7 +215,7 @@ export default function CollectionDetailPage() {
                 )}
 
                 {item.isForSale && item.price ? (
-                  <Group spacing="sm">
+                  <Group spacing="sm" align="center" noWrap={false}>
                     <Badge color="green" variant="filled" size="lg">
                       {t("collections.forSaleLabel")}
                     </Badge>
@@ -198,32 +236,54 @@ export default function CollectionDetailPage() {
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
+                <Text size="sm" color="dimmed">
+                  {locale === "zh"
+                    ? "手机端建议先看图片细节，再决定是否询价。"
+                    : "On mobile, review the image details first, then decide whether to inquire."}
+                </Text>
               </Stack>
 
               {/* 主图展示 */}
               <Box
                 sx={{
                   background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
-                  borderRadius: 8,
+                  borderRadius: 14,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
-                  minHeight: 400,
+                  minHeight: isMobile ? 280 : 400,
+                  padding: isMobile ? 10 : 0,
+                  border: "1px solid rgba(216, 183, 109, 0.16)",
+                  position: "relative",
                 }}
               >
                 <Box
                   component="img"
-                  src={selectedImage}
+                  src={activeImage}
                   alt={title}
                   sx={{
                     width: "100%",
-                    maxHeight: "70vh",
+                    maxHeight: isMobile ? "46vh" : "70vh",
                     objectFit: "contain",
                     cursor: gallery.length > 1 ? "pointer" : "default",
                   }}
                   onClick={() => gallery.length > 1 && setLightboxOpened(true)}
                 />
+                <Badge
+                  variant="filled"
+                  color="dark"
+                  sx={{
+                    position: "absolute",
+                    right: 12,
+                    bottom: 12,
+                    backgroundColor: "rgba(0, 0, 0, 0.62)",
+                  }}
+                >
+                  {gallery.length > 1
+                    ? (locale === "zh" ? "点图查看大图" : "Tap image to enlarge")
+                    : (locale === "zh" ? "藏品主图" : "Main image")}
+                </Badge>
               </Box>
 
               {/* 缩略图导航 */}
@@ -236,19 +296,15 @@ export default function CollectionDetailPage() {
                     <Group spacing="xs">
                       <ActionIcon
                         variant="light"
-                        onClick={() => {
-                          const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
-                          setSelectedImage(gallery[newIndex]);
-                        }}
+                        size={isMobile ? "lg" : "md"}
+                        onClick={goToPrevious}
                       >
                         <IconChevronLeft size={18} />
                       </ActionIcon>
                       <ActionIcon
                         variant="light"
-                        onClick={() => {
-                          const newIndex = (selectedIndex + 1) % gallery.length;
-                          setSelectedImage(gallery[newIndex]);
-                        }}
+                        size={isMobile ? "lg" : "md"}
+                        onClick={goToNext}
                       >
                         <IconChevronRight size={18} />
                       </ActionIcon>
@@ -256,17 +312,18 @@ export default function CollectionDetailPage() {
                   </Group>
 
                   <ScrollArea type="always" offsetScrollbars>
-                    <SimpleGrid cols={6} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 3 }]}>
+                    <Group spacing="sm" noWrap={isMobile}>
                       {gallery.map((imageUrl, index) => (
                         <Box
                           key={index}
                           onClick={() => setSelectedImage(imageUrl)}
                           sx={{
                             border: selectedImage === imageUrl ? "2px solid #d8b76d" : "1px solid transparent",
-                            borderRadius: 6,
+                            borderRadius: 8,
                             overflow: "hidden",
                             cursor: "pointer",
                             transition: "all 0.2s",
+                            minWidth: isMobile ? 92 : undefined,
                             "&:hover": {
                               borderColor: "#d8b76d",
                             },
@@ -277,22 +334,30 @@ export default function CollectionDetailPage() {
                             src={imageUrl}
                             alt={`Photo ${index + 1}`}
                             sx={{ 
-                              width: "100%", 
-                              height: 80, 
+                              width: isMobile ? 92 : "100%", 
+                              height: isMobile ? 92 : 80, 
                               objectFit: "contain",
                               backgroundColor: "rgba(34, 39, 47, 0.5)"
                             }}
                           />
                         </Box>
                       ))}
-                    </SimpleGrid>
+                    </Group>
                   </ScrollArea>
                 </Stack>
               )}
 
               {/* 藏品介绍 */}
               {description && (
-                <Stack spacing="sm">
+                <Stack
+                  spacing="sm"
+                  sx={{
+                    padding: isMobile ? 16 : 20,
+                    borderRadius: 14,
+                    background: "rgba(255, 255, 255, 0.03)",
+                    border: "1px solid rgba(216, 183, 109, 0.12)",
+                  }}
+                >
                   <Title order={4}>{t("collections.detailDescription")}</Title>
                   <Text size="md" color="dark.1" style={{ whiteSpace: "pre-wrap" }}>
                     {description}
@@ -309,7 +374,7 @@ export default function CollectionDetailPage() {
         opened={lightboxOpened}
         onClose={() => setLightboxOpened(false)}
         fullScreen
-        padding="xl"
+        padding={isMobile ? "md" : "xl"}
         withCloseButton
         styles={{
           content: {
@@ -368,22 +433,19 @@ export default function CollectionDetailPage() {
           />
 
           {gallery.length > 1 && (
-            <Group position="center" spacing="xl" mt="md">
+            <Group position="center" spacing={isMobile ? "md" : "xl"} mt="md" noWrap>
               <ActionIcon
                 size="xl"
                 variant="filled"
-                onClick={() => {
-                  const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
-                  setSelectedImage(gallery[newIndex]);
-                }}
+                onClick={goToPrevious}
                 styles={{
                   root: {
-                    width: 56, // 增大触摸区域
-                    height: 56,
+                    width: isMobile ? 48 : 56,
+                    height: isMobile ? 48 : 56,
                   },
                 }}
               >
-                <IconChevronLeft size={28} />
+                <IconChevronLeft size={isMobile ? 24 : 28} />
               </ActionIcon>
 
               <Text color="dark.1" size="lg">
@@ -393,18 +455,15 @@ export default function CollectionDetailPage() {
               <ActionIcon
                 size="xl"
                 variant="filled"
-                onClick={() => {
-                  const newIndex = (selectedIndex + 1) % gallery.length;
-                  setSelectedImage(gallery[newIndex]);
-                }}
+                onClick={goToNext}
                 styles={{
                   root: {
-                    width: 56, // 增大触摸区域
-                    height: 56,
+                    width: isMobile ? 48 : 56,
+                    height: isMobile ? 48 : 56,
                   },
                 }}
               >
-                <IconChevronRight size={28} />
+                <IconChevronRight size={isMobile ? 24 : 28} />
               </ActionIcon>
             </Group>
           )}
@@ -414,6 +473,26 @@ export default function CollectionDetailPage() {
           </Text>
         </Stack>
       </Modal>
+
+      {isMobile && showInquiryButton && (
+        <Box
+          sx={{
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 5,
+            padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))",
+            background: "rgba(15, 18, 22, 0.96)",
+            borderTop: "1px solid rgba(216, 183, 109, 0.16)",
+            backdropFilter: "blur(14px)",
+          }}
+        >
+          <Button component={Link} href={inquiryHref} color="yellow" size="md" fullWidth>
+            {locale === "zh" ? "咨询此藏品" : "Ask about this item"}
+          </Button>
+        </Box>
+      )}
     </>
   );
 }

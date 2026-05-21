@@ -30,7 +30,16 @@ export default function Wrapper({ children }: IProps) {
         <TopBar />
         <TopNav />
       </Box>
-      <Box sx={{ marginTop: rem(104) }}>{children}</Box>
+      <Box
+        sx={(theme) => ({
+          marginTop: `calc(${rem(104)} + env(safe-area-inset-top, 0px))`,
+          [theme.fn.smallerThan("sm")]: {
+            marginTop: `calc(${rem(120)} + env(safe-area-inset-top, 0px))`,
+          },
+        })}
+      >
+        {children}
+      </Box>
       <AppFooter data={FooterData.data} />
     </motion.div>
   );

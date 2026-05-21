@@ -7,8 +7,9 @@ import {
   Button,
   Stack,
   Text,
-  Group,
+  Box,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
@@ -28,7 +29,8 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
 
   const { login, register } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,13 +115,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       centered
       size="md"
       closeOnClickOutside={false} // 禁止点击外部关闭
-      fullScreen // 移动端全屏显示
+      fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
       styles={{
         content: {
-          borderRadius: 16,
-          padding: 24,
-          maxHeight: "90vh",
+          borderRadius: isMobile ? 0 : 16,
+          padding: isMobile ? 16 : 24,
+          maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
         },
         header: {
@@ -127,6 +129,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
         },
       }}
     >
+      <Stack spacing="md">
+        <Text size="sm" color="dimmed">
+          {locale === "zh"
+            ? "手机端建议优先使用邮箱登录；注册后请留意邮箱验证。"
+            : "On mobile, email sign-in is the fastest path. After registering, check your inbox for verification."}
+        </Text>
+
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
         <Tabs.List grow mb="lg">
           <Tabs.Tab 
@@ -159,7 +168,7 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
 
         <Tabs.Panel value="login" pt="md">
           <form onSubmit={handleLogin}>
-            <Stack spacing="md">
+            <Stack spacing="md" pb={isMobile ? 12 : 0}>
               <TextInput
                 label={t("auth.emailLabel")}
                 placeholder="your@email.com"
@@ -189,6 +198,14 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                   },
                 }}
               />
+              <Box sx={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <Text size="xs" color="dimmed">
+                  {locale === "zh" ? "密码区分大小写" : "Passwords are case-sensitive"}
+                </Text>
+                <Text size="xs" color="dimmed">
+                  {locale === "zh" ? "登录后可在头像里编辑资料" : "You can edit your profile after signing in"}
+                </Text>
+              </Box>
               <Button 
                 type="submit" 
                 loading={loading} 
@@ -210,7 +227,7 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
 
         <Tabs.Panel value="register" pt="md">
           <form onSubmit={handleRegister}>
-            <Stack spacing="md">
+            <Stack spacing="md" pb={isMobile ? 12 : 0}>
               <TextInput
                 label={t("auth.firstNameLabel")}
                 placeholder={t("auth.firstNamePlaceholder")}
@@ -304,6 +321,7 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
           </form>
         </Tabs.Panel>
       </Tabs>
+      </Stack>
     </Modal>
   );
 }
