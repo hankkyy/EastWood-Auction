@@ -805,48 +805,100 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   component={Link}
                   href={`/cases/${item.id}`}
                   padding="md"
-                  radius="sm"
+                  radius="lg"
                   sx={{
-                    backgroundColor: "rgba(34, 39, 47, 0.96)",
-                    border: "1px solid rgba(216, 183, 109, 0.16)",
+                    background: `
+                      radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 38%),
+                      linear-gradient(180deg, rgba(38, 31, 24, 0.96), rgba(19, 23, 29, 0.98))
+                    `,
+                    border: "1px solid rgba(216, 183, 109, 0.2)",
                     textDecoration: "none",
                     color: "inherit",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease",
+                    boxShadow: "0 22px 54px rgba(0, 0, 0, 0.24)",
+                    position: "relative",
+                    overflow: "hidden",
+                    padding: 14,
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      inset: 8,
+                      borderRadius: 16,
+                      border: "1px solid rgba(216, 183, 109, 0.1)",
+                      pointerEvents: "none",
+                    },
                     "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "0 8px 18px rgba(0, 0, 0, 0.24)",
+                      transform: "translateY(-5px)",
+                      borderColor: "rgba(216, 183, 109, 0.32)",
+                      boxShadow: "0 28px 62px rgba(0, 0, 0, 0.32)",
                     },
                   }}
                 >
-                  <Card.Section>
-                    <Box sx={{ height: 220, background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))", display: "flex", alignItems: "center", justifyContent: "center", padding: 12, position: "relative" }}>
-                      <Box component="img" src={item.image} alt={itemTitle} sx={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      
-                      {/* 照片数量提示 */}
-                      {item.galleryImages && item.galleryImages.length > 1 && (
-                        <Badge 
-                          variant="filled"
-                          sx={{ 
-                            position: "absolute", 
-                            bottom: 12, 
-                            right: 12,
-                            fontSize: 13,
-                            padding: "6px 10px",
-                            backgroundColor: "rgba(0, 0, 0, 0.75)",
-                            color: "#fff",
-                            fontWeight: 600,
-                            backdropFilter: "blur(4px)",
-                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
-                          }}
-                        >
-                          📷 {item.galleryImages.length}{t("cases.photosCountBadge")}
-                        </Badge>
-                      )}
-                    </Box>
-                  </Card.Section>
+                  <Box
+                    sx={{
+                      height: 228,
+                      background: `
+                        radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 46%),
+                        linear-gradient(180deg, rgba(67, 52, 37, 0.54), rgba(24, 29, 35, 0.9))
+                      `,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 16,
+                      position: "relative",
+                      borderRadius: 16,
+                      overflow: "hidden",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={item.image}
+                      alt={itemTitle}
+                      sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                    />
+                    
+                    {/* 照片数量提示 */}
+                    {item.galleryImages && item.galleryImages.length > 1 && (
+                      <Badge 
+                        variant="filled"
+                        sx={{ 
+                          position: "absolute", 
+                          bottom: 12, 
+                          right: 12,
+                          fontSize: 12,
+                          padding: "5px 10px",
+                          background: "rgba(20, 18, 16, 0.72)",
+                          color: "#efe3c6",
+                          fontWeight: 600,
+                          letterSpacing: "0.08em",
+                          border: "1px solid rgba(216, 183, 109, 0.26)",
+                          backdropFilter: "blur(6px)",
+                          boxShadow: "0 8px 18px rgba(0, 0, 0, 0.2)",
+                          borderRadius: 999,
+                        }}
+                      >
+                        {locale === "zh"
+                          ? `${item.galleryImages.length} 图`
+                          : `${item.galleryImages.length} Photos`}
+                      </Badge>
+                    )}
+                  </Box>
                   
-                  <Stack spacing="sm" mt="md">
-                    <Title order={3} size="h3">{itemTitle}</Title>
+                  <Stack spacing="xs" mt="md" sx={{ position: "relative", zIndex: 1, padding: "6px 8px 2px" }}>
+                    <Title
+                      order={3}
+                      size="h3"
+                      align="center"
+                      sx={{
+                        color: "#f3ead8",
+                        letterSpacing: "0.04em",
+                        fontWeight: 700,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {itemTitle}
+                    </Title>
                   </Stack>
                 </Card>
               );

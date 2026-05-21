@@ -236,11 +236,6 @@ export default function ShopDetailPage() {
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
-                <Text size="sm" color="dimmed">
-                  {locale === "zh"
-                    ? "先看大图和编号，再点询价会更高效。"
-                    : "Review the main image and item code first, then use inquiry for a faster conversation."}
-                </Text>
               </Stack>
 
               {/* 主图展示 */}

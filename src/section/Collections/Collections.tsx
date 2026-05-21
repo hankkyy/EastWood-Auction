@@ -165,45 +165,69 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     display: "block",
     textDecoration: "none",
     cursor: "pointer",
-    padding: remValue(12),
-    borderRadius: remValue(20),
-    background:
-      "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015))",
-    border: "1px solid rgba(216, 183, 109, 0.14)",
-    boxShadow: "0 18px 40px rgba(0, 0, 0, 0.16)",
-    transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
+    padding: remValue(14),
+    borderRadius: remValue(26),
+    background: `
+      radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 38%),
+      linear-gradient(180deg, rgba(38, 31, 24, 0.96), rgba(19, 23, 29, 0.98))
+    `,
+    border: "1px solid rgba(216, 183, 109, 0.2)",
+    boxShadow: "0 22px 54px rgba(0, 0, 0, 0.24)",
+    transition: "transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease",
+    position: "relative",
+    overflow: "hidden",
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      inset: remValue(8),
+      borderRadius: remValue(18),
+      border: "1px solid rgba(216, 183, 109, 0.1)",
+      pointerEvents: "none",
+    },
 
     "&:hover": {
       opacity: 1,
-      transform: "translateY(-3px)",
-      borderColor: "rgba(216, 183, 109, 0.26)",
-      boxShadow: "0 22px 46px rgba(0, 0, 0, 0.24)",
+      transform: "translateY(-5px)",
+      borderColor: "rgba(216, 183, 109, 0.32)",
+      boxShadow: "0 28px 62px rgba(0, 0, 0, 0.32)",
     },
 
     [theme.fn.smallerThan("sm")]: {
-      padding: remValue(10),
-      borderRadius: remValue(18),
+      padding: remValue(12),
+      borderRadius: remValue(22),
     },
+  },
+  itemBody: {
+    padding: `${remValue(6)} ${remValue(8)} ${remValue(2)}`,
+    position: "relative",
+    zIndex: 1,
   },
 
   imageWrap: {
-    background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
+    background: `
+      radial-gradient(circle at top, rgba(216, 183, 109, 0.12), transparent 44%),
+      linear-gradient(180deg, rgba(74, 57, 39, 0.62), rgba(24, 29, 35, 0.96))
+    `,
     overflow: "hidden",
-    height: remValue(420),
-    borderRadius: remValue(16),
+    height: remValue(430),
+    borderRadius: remValue(18),
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: remValue(8), // ✅ 减小内边距（从 16 改为 8），减少灰色留白
+    padding: remValue(14),
+    border: "1px solid rgba(216, 183, 109, 0.14)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
 
     [theme.fn.smallerThan("md")]: {
-      height: remValue(320),
-      padding: remValue(6), // ✅ 响应式调整（从 12 改为 6）
+      height: remValue(340),
+      padding: remValue(12),
     },
 
     [theme.fn.smallerThan("sm")]: {
-      height: remValue(260),
+      height: remValue(280),
       borderRadius: remValue(14),
+      padding: remValue(10),
     },
   },
 
@@ -225,35 +249,41 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
 
   itemTitle: {
     marginTop: remValue(16), // ✅ 减小上边距（从 18 改为 16）
-    textAlign: "left",
-    color: theme.colors.dark[0],
-    fontSize: remValue(20), // ✅ 进一步减小字体（从 22 改为 20），更加精致
-    fontWeight: 800,
+    textAlign: "center",
+    color: "#f3ead8",
+    fontSize: remValue(21),
+    fontWeight: 700,
+    letterSpacing: "0.04em",
+    lineHeight: 1.5,
 
     [theme.fn.smallerThan("sm")]: {
       marginTop: remValue(12),
       fontSize: remValue(17),
-      lineHeight: 1.35,
+      lineHeight: 1.45,
     },
   },
   itemMeta: {
-    marginTop: remValue(8),
+    marginTop: remValue(10),
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
-    gap: remValue(12),
+    justifyContent: "center",
+    minHeight: remValue(20),
 
     [theme.fn.smallerThan("sm")]: {
       marginTop: remValue(6),
     },
   },
   itemPrice: {
-    color: "rgba(246, 239, 227, 0.78)",
+    color: "#d8b76d",
     lineHeight: 1.2,
-  },
-  itemHint: {
-    color: "rgba(246, 239, 227, 0.5)",
-    whiteSpace: "nowrap",
+    textAlign: "center",
+    fontSize: remValue(14),
+    letterSpacing: "0.08em",
+    fontWeight: 600,
+
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: remValue(13),
+    },
   },
 }));
 
@@ -574,35 +604,32 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       position: "absolute",
                                       bottom: 12,
                                       right: 12,
-                                      backgroundColor: "rgba(0, 0, 0, 0.75)",
-                                      color: "#fff",
-                                      padding: "6px 10px",
-                                      borderRadius: 6,
-                                      fontSize: smallerThan ? 12 : 13,
+                                      background: "rgba(20, 18, 16, 0.72)",
+                                      color: "#efe3c6",
+                                      padding: "5px 10px",
+                                      borderRadius: 999,
+                                      fontSize: smallerThan ? 11 : 12,
                                       fontWeight: 600,
-                                      backdropFilter: "blur(4px)",
-                                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+                                      letterSpacing: "0.08em",
+                                      border: "1px solid rgba(216, 183, 109, 0.26)",
+                                      backdropFilter: "blur(6px)",
+                                      boxShadow: "0 8px 18px rgba(0, 0, 0, 0.2)",
                                     }}
                                   >
-                                    {photoCount} {t("collections.photosCount")}
+                                    {locale === "zh" ? `${photoCount} 图` : `${photoCount} Photos`}
                                   </Box>
                                 )}
                               </Box>
-                              <Text className={classes.itemTitle}>{item.title}</Text>
+                              <Box className={classes.itemBody}>
+                                <Text className={classes.itemTitle}>{item.title}</Text>
 
-                              <Box className={classes.itemMeta}>
-                                {shopMode && artwork?.isForSale && artwork?.price ? (
-                                  <Text size={smallerThan ? "sm" : "md"} weight={700} className={classes.itemPrice}>
-                                    {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
-                                  </Text>
-                                ) : (
-                                  <Text size="sm" className={classes.itemPrice}>
-                                    {locale === "zh" ? "查看详情" : "View details"}
-                                  </Text>
-                                )}
-                                <Text size="xs" className={classes.itemHint}>
-                                  {locale === "zh" ? "点击进入" : "Tap to open"}
-                                </Text>
+                                <Box className={classes.itemMeta}>
+                                  {shopMode && artwork?.isForSale && artwork?.price ? (
+                                    <Text className={classes.itemPrice}>
+                                      {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+                                    </Text>
+                                  ) : null}
+                                </Box>
                               </Box>
                             </Box>
                           );

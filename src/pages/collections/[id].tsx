@@ -236,11 +236,6 @@ export default function CollectionDetailPage() {
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
-                <Text size="sm" color="dimmed">
-                  {locale === "zh"
-                    ? "手机端建议先看图片细节，再决定是否询价。"
-                    : "On mobile, review the image details first, then decide whether to inquire."}
-                </Text>
               </Stack>
 
               {/* 主图展示 */}
