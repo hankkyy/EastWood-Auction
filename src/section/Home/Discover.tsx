@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -28,6 +29,7 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export default function DiscoverSection() {
+  const router = useRouter();
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { t } = useI18n();
@@ -35,6 +37,10 @@ export default function DiscoverSection() {
   const buttonProps: ButtonProps = {
     variant: "outline",
     fullWidth: smallerThan,
+  };
+
+  const handleDiscoverMore = () => {
+    router.push("/shop");
   };
 
   return (
@@ -68,7 +74,11 @@ export default function DiscoverSection() {
               <Text>
                 {t("home.discoverFeatureP3")}
               </Text>
-              <Button {...buttonProps} size={smallerThan ? "sm" : "md"}>
+              <Button 
+                {...buttonProps} 
+                size={smallerThan ? "sm" : "md"}
+                onClick={handleDiscoverMore}
+              >
                 {t("home.continueReading")}
               </Button>
             </Stack>
@@ -93,12 +103,22 @@ export default function DiscoverSection() {
             <Text mb="md">
               {t("home.newsText")}
             </Text>
-            <Button {...buttonProps}>{t("home.readMore")}</Button>
+            <Button 
+              {...buttonProps}
+              onClick={handleDiscoverMore}
+            >
+              {t("home.readMore")}
+            </Button>
           </Paper>
         ))}
       </SimpleGrid>
       <Center mt={smallerThan ? 36 : "xl"}>
-        <Button size="xl" variant="outline" fullWidth={smallerThan}>
+        <Button 
+          size="xl" 
+          variant="outline" 
+          fullWidth={smallerThan}
+          onClick={handleDiscoverMore}
+        >
           {t("home.discoverMore")}
         </Button>
       </Center>

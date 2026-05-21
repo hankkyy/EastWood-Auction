@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AnimatedBox, Wrapper } from "@/layout";
-import { getKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
+import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import {
@@ -32,31 +32,70 @@ const frameStyles = {
   overflow: "hidden",
 } as const;
 
+const getCaseCategoryLabel = (locale: "zh" | "en", rawCategory?: string, rawCategoryZh?: string) => {
+  const raw = `${rawCategoryZh ?? ""} ${rawCategory ?? ""}`.trim().toLowerCase();
+  const key = rawCategory?.toLowerCase() ?? "";
+
+  if (raw.includes("字画") || raw.includes("书画") || raw.includes("painting") || raw.includes("calligraphy") || key === "calligraphy") {
+    return locale === "zh" ? "字画" : "Paintings & Calligraphy";
+  }
+  if (raw.includes("瓷") || raw.includes("porcelain") || key === "porcelain") {
+    return locale === "zh" ? "瓷器" : "Porcelain";
+  }
+  if (raw.includes("玉") || raw.includes("jade") || key === "jade") {
+    return locale === "zh" ? "翡翠玉器" : "Jade";
+  }
+  if (raw.includes("铜") || raw.includes("bronze") || key === "bronze") {
+    return locale === "zh" ? "铜器" : "Bronze";
+  }
+  return locale === "zh" ? "杂项" : "Miscellaneous";
+};
+
 export default function CaseDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const [items, setItems] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
   const caseId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
-    setItems(getKnowledgeBase());
+    void fetchKnowledgeBase().then((data) => {
+      setItems(data);
+      setIsLoading(false);
+    });
   }, []);
 
   const item = useMemo(
     () => items.find((entry) => entry.id === caseId && entry.caseRecord),
     [caseId, items]
   );
-  const gallery = useMemo(
-    () => (item ? [item.image, ...(item.galleryImages ?? []).filter((imageUrl) => imageUrl !== item.image)] : []),
-    [item]
-  );
+  
+  // 构建画廊图片数组（直接使用 galleryImages，如果没有则使用 image）
+  const gallery = useMemo(() => {
+    if (!item) return [];
+    
+    // 优先使用 galleryImages
+    if (item.galleryImages && item.galleryImages.length > 0) {
+      return item.galleryImages;
+    }
+    
+    // 如果没有 galleryImages，使用 image 作为单张图片
+    return [item.image];
+  }, [item]);
   const selectedIndex = Math.max(0, gallery.findIndex((imageUrl) => imageUrl === selectedImage));
 
   useEffect(() => {
-    setSelectedImage(gallery[0] ?? "");
-  }, [item?.id, gallery]);
+    if (!item) {
+      setSelectedImage("");
+      return;
+    }
+
+    const initialImage =
+      gallery.find((imageUrl) => imageUrl === item.image) ?? gallery[0] ?? "";
+    setSelectedImage(initialImage);
+  }, [item, gallery]);
 
   useEffect(() => {
     if (!lightboxOpened || gallery.length <= 1) {
@@ -85,6 +124,19 @@ export default function CaseDetailPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gallery, lightboxOpened]);
 
+  // 数据加载中，显示统一的 Loading 状态
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <AnimatedBox>
+          <Container py={80}>
+            <Text align="center">{locale === "zh" ? "加载中..." : "Loading..."}</Text>
+          </Container>
+        </AnimatedBox>
+      </Wrapper>
+    );
+  }
+
   if (!item || !item.caseRecord) {
     return (
       <Wrapper>
@@ -99,7 +151,11 @@ export default function CaseDetailPage() {
 
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const caseCategoryLabel = getCaseCategoryLabel(locale, item.category, item.categoryZh);
   const activeImage = selectedImage || gallery[0] || item.image;
+  const inquiryHref = item.caseRecord?.caseId
+    ? `/inquiries?code=${encodeURIComponent(item.caseRecord.caseId)}&returnTo=${encodeURIComponent(router.asPath || `/cases/${caseId}`)}`
+    : "/inquiries";
 
   const goToImage = (index: number) => {
     const nextImage = gallery[index];
@@ -131,16 +187,53 @@ export default function CaseDetailPage() {
         <AnimatedBox>
           <Container py={64}>
             <Stack spacing="xl">
-              <Button component={Link} href="/cases" variant="subtle" px={0} sx={{ alignSelf: "flex-start" }}>
+              <Button 
+                component={Link} 
+                href="/cases" 
+                variant="filled"
+                color="blue"
+                size="md"
+                leftIcon={<IconChevronLeft size={18} />}
+                sx={{ 
+                  alignSelf: "flex-start",
+                  fontWeight: 600,
+                  padding: '12px 24px',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+              >
                 {t("support.caseBack")}
               </Button>
 
               <Stack spacing="sm">
-                <Badge color="yellow" variant="filled" sx={{ alignSelf: "flex-start" }}>
-                  {t("support.caseDetailTitle")}
-                </Badge>
+                {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
+                <Group spacing="xs">
+                  <Badge 
+                    color={item.isOfficial === true ? "blue" : "green"} 
+                    variant="outline"
+                    sx={{ alignSelf: "flex-start" }}
+                    >
+                    {item.isOfficial === true 
+                      ? t("cases.platformUpload")
+                      : t("cases.personalUserUpload")}
+                  </Badge>
+                </Group>
                 <Title order={1}>{title}</Title>
-                <Text color="dark.1">{description}</Text>
+                <Group>
+                  <Button
+                    component={Link}
+                    href={inquiryHref}
+                    variant="outline"
+                    color="yellow"
+                    size="md"
+                  >
+                    {t("support.caseInquiryButton")}
+                  </Button>
+                </Group>
               </Stack>
 
               <Box sx={{ position: "relative" }}>
@@ -249,9 +342,18 @@ export default function CaseDetailPage() {
                 </ScrollArea>
               ) : null}
 
+              {/* ✅ 案例详情描述 - 放在图片展示下方 */}
+              {description && (
+                <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+                  <Title order={4} mb="md">{t("support.caseDetails")}</Title>
+                  <Text size="lg" color="dark.1">{description}</Text>
+                </Box>
+              )}
+
               <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
+                  <Text><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
                   <Text><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
                   <Text><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
                   <Text><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>
@@ -270,27 +372,69 @@ export default function CaseDetailPage() {
       <Modal
         opened={lightboxOpened}
         onClose={() => setLightboxOpened(false)}
-        centered
-        size="90vw"
+        fullScreen // 改为全屏显示，更适合移动端
         withCloseButton
         overlayProps={{ opacity: 0.72, blur: 4 }}
-        styles={{ body: { paddingTop: 8 } }}
+        styles={{ 
+          body: { paddingTop: 8 },
+          content: {
+            backgroundColor: "rgba(0, 0, 0, 0.95)",
+          },
+        }}
       >
-        <Stack spacing="md">
-          <Box sx={{ position: "relative" }}>
+        <Stack spacing="md" sx={{ height: "100%", justifyContent: "center" }}>
+          <Box sx={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Box
               sx={{
                 ...frameStyles,
                 minHeight: 620,
                 padding: 20,
                 border: "1px solid rgba(216, 183, 109, 0.18)",
+                maxWidth: "95vw",
+                maxHeight: "85vh",
               }}
             >
               <Box
                 component="img"
                 src={activeImage}
                 alt={title}
-                sx={{ maxWidth: "100%", maxHeight: "72vh", width: "auto", height: "auto", objectFit: "contain" }}
+                sx={{ 
+                  maxWidth: "100%", 
+                  maxHeight: "72vh", 
+                  width: "auto", 
+                  height: "auto", 
+                  objectFit: "contain",
+                  cursor: "zoom-in",
+                  touchAction: "manipulation",
+                  WebkitUserSelect: "none",
+                  userSelect: "none",
+                }}
+                onDoubleClick={(e) => {
+                  const img = e.currentTarget;
+                  if (img.style.transform === "scale(2)") {
+                    img.style.transform = "scale(1)";
+                  } else {
+                    img.style.transform = "scale(2)";
+                    img.style.transition = "transform 0.3s ease";
+                  }
+                }}
+                onTouchStart={(e) => {
+                  const touch = e.touches[0];
+                  (e.currentTarget as any).touchStartX = touch.clientX;
+                }}
+                onTouchEnd={(e) => {
+                  const touch = e.changedTouches[0];
+                  const startX = (e.currentTarget as any).touchStartX;
+                  const diff = startX - touch.clientX;
+                  
+                  if (Math.abs(diff) > 50 && gallery.length > 1) {
+                    if (diff > 0) {
+                      goToNext();
+                    } else {
+                      goToPrevious();
+                    }
+                  }
+                }}
               />
             </Box>
 
@@ -299,7 +443,7 @@ export default function CaseDetailPage() {
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={56} // 增大触摸区域
                   onClick={goToPrevious}
                   sx={{
                     position: "absolute",
@@ -310,12 +454,12 @@ export default function CaseDetailPage() {
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronLeft size={24} />
+                  <IconChevronLeft size={28} />
                 </ActionIcon>
                 <ActionIcon
                   variant="filled"
                   radius="xl"
-                  size={48}
+                  size={56} // 增大触摸区域
                   onClick={goToNext}
                   sx={{
                     position: "absolute",
@@ -326,15 +470,21 @@ export default function CaseDetailPage() {
                     border: "1px solid rgba(216, 183, 109, 0.24)",
                   }}
                 >
-                  <IconChevronRight size={24} />
+                  <IconChevronRight size={28} />
                 </ActionIcon>
               </>
             ) : null}
           </Box>
 
+          {gallery.length > 1 && (
+            <Text color="dark.1" size="sm" align="center" sx={{ opacity: 0.7, marginBottom: 8 }}>
+              {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
+            </Text>
+          )}
+
           {gallery.length > 1 ? (
             <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
-              <Group spacing="md" noWrap>
+              <Group spacing="md" noWrap position="center">
                 {gallery.map((imageUrl, index) => {
                   const isActive = imageUrl === activeImage;
 

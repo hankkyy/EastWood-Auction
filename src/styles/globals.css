@@ -4,6 +4,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
 }
 
 html,
@@ -15,10 +16,25 @@ body {
     radial-gradient(circle at top left, rgba(59, 65, 74, 0.55), transparent 32rem),
     linear-gradient(180deg, #171b21 0%, #12161b 44%, #0f1216 100%);
   color: #f6efe3;
+  -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
+}
+
+/* 仅在移动端禁用下拉刷新 */
+@media (max-width: 768px) {
+  html, body {
+    overscroll-behavior-y: none; /* 防止移动端下拉刷新 */
+  }
 }
 
 body {
   top: 0 !important;
+}
+
+/* 仅在移动端优化触摸响应 */
+@media (max-width: 768px) {
+  body {
+    touch-action: manipulation; /* 优化触摸响应 */
+  }
 }
 
 #__next {
@@ -29,6 +45,72 @@ body {
 ::selection {
   background-color: rgba(216, 183, 109, 0.35);
   color: #fff7e8;
+}
+
+/* ========== 移动端优化 ========== */
+
+/* 增大触摸目标 */
+@media (max-width: 768px) {
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px; /* Apple HIG 推荐的最小触摸目标 */
+  }
+  
+  /* 优化输入框在移动端的显示 */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* 防止 iOS 自动缩放 */
+  }
+  
+  /* 优化滚动条 */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(216, 183, 109, 0.3);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(216, 183, 109, 0.5);
+  }
+}
+
+/* 禁用不必要的动画（减少运动偏好） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 防止图片拖拽 */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+/* 优化表单元素 */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid rgba(216, 183, 109, 0.6);
+  outline-offset: 2px;
 }
 
 .mantine-UnstyledButton-root,

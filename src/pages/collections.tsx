@@ -3,8 +3,15 @@ import { AnimatedBox, Wrapper } from "@/layout";
 import { CollectionsSection, LinksSection } from "@/section/Collections";
 import DonationSection from "@/section/shared/Donation";
 import SupportSection from "@/section/shared/Support";
+import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
+import type { Artwork } from "@/data/artworks";
+import { GetStaticProps } from "next";
 
-export default function Collections() {
+interface CollectionsPageProps {
+  initialData: Artwork[];
+}
+
+export default function Collections({ initialData }: CollectionsPageProps) {
   return (
     <>
       <Head>
@@ -12,7 +19,7 @@ export default function Collections() {
       </Head>
       <Wrapper>
         <AnimatedBox>
-          <CollectionsSection />
+          <CollectionsSection initialData={initialData} />
         </AnimatedBox>
         <AnimatedBox>
           <LinksSection />
@@ -25,3 +32,21 @@ export default function Collections() {
     </>
   );
 }
+
+// ✅ 使用 getStaticProps 在构建时预加载数据
+export const getStaticProps: GetStaticProps<CollectionsPageProps> = async () => {
+  try {
+    const data = await fetchKnowledgeBaseServer();
+    
+    return {
+      props: {
+        initialData: data || [],
+      },
+      // ✅ 每 60 秒重新生成页面（增量静态再生）
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error("Failed to fetch collections data:", error);
+    throw error;
+  }
+};

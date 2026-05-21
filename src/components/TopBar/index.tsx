@@ -1,165 +1,167 @@
 import {
   Button,
-  ButtonProps,
   Container,
   createStyles,
-  Divider,
-  Flex,
   Group,
   Header,
-  Paper,
-  rem,
-  Text,
+  Indicator,
 } from "@mantine/core";
-import { Carousel } from "@mantine/carousel";
-import React, { useRef } from "react";
-import Autoplay from "embla-carousel-autoplay";
 import LanguagePicker from "@/components/LanguagePicker";
-import { useMediaQuery } from "@mantine/hooks";
+import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
-
-const { Slide } = Carousel;
+import { supabase } from "@/lib/supabase/client";
+import { notifications } from "@mantine/notifications";
+import { useRouter } from "next/router";
+import { IconInbox } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
 const useStyles = createStyles((theme) => ({
   inner: {
     height: "100%",
     display: "flex",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
-    flexWrap: "nowrap",
     padding: `${theme.spacing.xs} ${theme.spacing.xl}`,
     backgroundColor: "#0f1216",
     color: theme.colors.dark[0],
     borderBottom: `1px solid rgba(216, 183, 109, 0.18)`,
-
-    [theme.fn.smallerThan("md")]: {
-      justifyContent: "space-between",
-    },
-
-    [theme.fn.smallerThan("sm")]: {
-      flexDirection: "column",
-      justifyContent: "center",
-    },
-  },
-
-  links: {
-    [theme.fn.smallerThan("sm")]: {
-      display: "none",
-    },
-  },
-
-  burger: {
-    [theme.fn.largerThan("sm")]: {
-      display: "none",
-    },
-  },
-
-  link: {
-    display: "block",
-    lineHeight: 1,
-    padding: `${rem(8)} ${rem(12)}`,
-    borderRadius: theme.radius.sm,
-    textDecoration: "none",
-    color:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[0]
-        : theme.colors.dark[0],
-    fontSize: theme.fontSizes.sm,
-    fontWeight: 500,
-
-    "&:hover": {
-      backgroundColor: theme.colors.dark[6],
-    },
-  },
-
-  linkLabel: {
-    marginRight: rem(5),
-  },
-
-  announcementCard: {
-    backgroundColor: "rgba(216, 183, 109, 0.12)",
-    color: theme.colors.dark[0],
-    border: `1px solid rgba(216, 183, 109, 0.22)`,
-    textAlign: "center",
-    padding: rem(8),
-
-    [theme.fn.smallerThan("sm")]: {
-      padding: 0,
-    },
-  },
-
-  hiddenTablet: {
-    [theme.fn.smallerThan("md")]: {
-      display: "none",
-    },
-  },
-
-  leftSection: {
-    justifyContent: "space-between",
-
-    [theme.fn.smallerThan("md")]: {
-      width: "100%",
-    },
-    [theme.fn.smallerThan("sm")]: {
-      justifyContent: "center",
-    },
   },
 }));
-
-const announcementsData = [
-  "top.announcementMuseum",
-  "top.announcementCovid",
-] as const;
 
 export default function TopBar() {
   const { classes } = useStyles();
   const { t } = useI18n();
-  const autoplay = useRef(Autoplay({ delay: 15000 }));
-  const smallerThan = useMediaQuery("(max-width: 600px)");
+  const { user, loading, roleLoading, isAdmin } = useAuth();
+  const authReady = !loading && !roleLoading;
+  const router = useRouter();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  const buttonProps: ButtonProps = {
-    variant: "subtle",
+  const handleInquiryClick = () => {
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
+      void router.push("/inquiries?authRequired=1");
+      return;
+    }
+
+    if (isAdmin) {
+      notifications.show({
+        title: t("inquiry.adminBlockedTitle"),
+        message: t("inquiry.adminBlockedMessage"),
+        color: "yellow",
+      });
+      void router.push("/inbox");
+      return;
+    }
+
+    void router.push("/inquiries");
   };
+
+  const handleInboxClick = () => {
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
+      notifications.show({
+        title: t("inbox.loginRequiredTitle"),
+        message: t("inbox.loginRequiredMessage"),
+        color: "yellow",
+      });
+      void router.push("/inbox");
+      return;
+    }
+
+    void router.push("/inbox");
+  };
+
+  useEffect(() => {
+    const loadInboxCount = async () => {
+      if (!user) {
+        setUnreadCount(0);
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+          setUnreadCount(0);
+          return;
+        }
+
+        const response = await fetch("/api/inquiries?countOnly=1", {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        const payload = (await response.json()) as {
+          unreadCount?: number;
+        };
+
+        if (!response.ok) {
+          setUnreadCount(0);
+          return;
+        }
+
+        setUnreadCount(payload.unreadCount ?? 0);
+      } catch {
+        setUnreadCount(0);
+      }
+    };
+
+    if (authReady) {
+      void loadInboxCount();
+    }
+
+    const handleRefresh = () => {
+      void loadInboxCount();
+    };
+
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("inquiries:changed", handleRefresh as EventListener);
+
+    return () => {
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("inquiries:changed", handleRefresh as EventListener);
+    };
+  }, [authReady, user, router.asPath]);
 
   return (
     <Header height="100%" sx={{ borderBottom: 0 }}>
       <Container className={classes.inner} fluid>
-        <Flex gap="sm" align="center" className={classes.leftSection}>
-          <Text size={smallerThan ? "xs" : "sm"} weight={600}>
-            {t("top.openToday")}
-          </Text>
-          <Divider orientation="vertical" className={classes.hiddenTablet} />
-          <Carousel
-            slideSize="100%"
-            align="start"
-            withIndicators={false}
-            loop={true}
-            draggable={false}
-            height={36}
-            orientation="vertical"
-            plugins={[autoplay.current]}
-            onMouseEnter={autoplay.current.stop}
-            onMouseLeave={autoplay.current.reset}
-            withControls={false}
+        <Group spacing="xs" noWrap>
+          <Indicator
+            inline
+            size={18}
+            offset={4}
+            color="red"
+            disabled={!unreadCount}
+            label={unreadCount > 99 ? "99+" : unreadCount}
           >
-            {announcementsData.map((a, i) => (
-              <Slide key={`announcement-${i}`}>
-                <Paper className={classes.announcementCard}>
-                  <Text
-                    size={smallerThan ? "xs" : "sm"}
-                    weight={500}
-                    transform="uppercase"
-                  >
-                    {t(a)}
-                  </Text>
-                </Paper>
-              </Slide>
-            ))}
-          </Carousel>
-        </Flex>
-        <Group spacing="sm" className={classes.hiddenTablet}>
-          <Button {...buttonProps}>{t("top.joinGive")}</Button>
-          <Button {...buttonProps}>{t("top.shop")}</Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="yellow"
+              onClick={handleInboxClick}
+              leftIcon={<IconInbox size={16} />}
+            >
+              {t("inbox.pageTitle")}
+            </Button>
+          </Indicator>
+          <Button
+            size="xs"
+            variant="light"
+            color="yellow"
+            onClick={handleInquiryClick}
+          >
+            {t("inquiry.entryButton")}
+          </Button>
           <LanguagePicker />
         </Group>
       </Container>
