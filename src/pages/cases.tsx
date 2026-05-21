@@ -1,6 +1,7 @@
 import { AnimatedBox, Wrapper } from "@/layout";
 import Head from "next/head";
-import { CasesSection, HeroSection } from "@/section/Support";
+import HeroSection from "@/section/Support/Hero";
+import CasesSection from "@/section/Support/Cases";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import type { Artwork } from "@/data/artworks";
 import { GetStaticProps } from "next";

@@ -8,6 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import type { Artwork, ArtworkCaseRecord } from "@/data/artworks";
+import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 import { useRouter } from "next/router"; // ✅ 导入 useRouter
 import {
   Alert,
@@ -397,16 +398,17 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 <Button
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
+                  sx={primaryActionButtonSx}
                 >
                   {t("cases.uploadNewCaseButton")}
                 </Button>
                 
                 {/* 管理按钮 - 所有登录用户可见 */}
                 <Button
-                  variant={isAdmin ? "default" : "filled"}
-                  color={isAdmin ? undefined : "violet"}
+                  variant="default"
                   onClick={handleManageClick}
                   leftIcon={<IconLayoutList size={18} />}
+                  sx={secondaryActionButtonSx}
                 >
                   {t("cases.manageCasesButton")}
                 </Button>
@@ -422,16 +424,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   setShowManageMode(false);
                 }}
                 leftIcon={<IconX size={18} />}
-                sx={{
-                  fontWeight: 600,
-                  padding: '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-                  },
-                  transition: 'all 0.2s ease',
-                }}
+                sx={primaryActionButtonSx}
               >
                 {t("cases.exitOperation")}
               </Button>
@@ -783,9 +776,12 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
           </Alert>
         ) : !showManageMode && !showUploadForm && (
           <SimpleGrid 
-            cols={2}
-            spacing={64}
-            breakpoints={[{ maxWidth: "md", cols: 1 }]}
+            cols={3}
+            spacing={56}
+            breakpoints={[
+              { maxWidth: "md", cols: 2, spacing: "lg" },
+              { maxWidth: "sm", cols: 1, spacing: "md" },
+            ]}
             sx={{ 
               paddingLeft: 48, // ✅ 增加左边距
               paddingRight: 48, // ✅ 增加右边距
@@ -807,40 +803,34 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   padding="md"
                   radius="lg"
                   sx={{
-                    background: `
-                      radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 38%),
-                      linear-gradient(180deg, rgba(38, 31, 24, 0.96), rgba(19, 23, 29, 0.98))
-                    `,
-                    border: "1px solid rgba(216, 183, 109, 0.2)",
+                    background: artworkCardShellBackground,
+                    border: "1px solid rgba(216, 183, 109, 0.14)",
                     textDecoration: "none",
                     color: "inherit",
                     transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease",
-                    boxShadow: "0 22px 54px rgba(0, 0, 0, 0.24)",
+                    boxShadow: "0 20px 44px rgba(6, 8, 12, 0.22)",
                     position: "relative",
                     overflow: "hidden",
                     padding: 14,
-                    "&::before": {
+                    "&::after": {
                       content: '""',
                       position: "absolute",
-                      inset: 8,
-                      borderRadius: 16,
-                      border: "1px solid rgba(216, 183, 109, 0.1)",
+                      inset: 0,
+                      borderRadius: 18,
+                      boxShadow: "inset 0 1px 0 rgba(255, 248, 236, 0.04)",
                       pointerEvents: "none",
                     },
                     "&:hover": {
-                      transform: "translateY(-5px)",
-                      borderColor: "rgba(216, 183, 109, 0.32)",
-                      boxShadow: "0 28px 62px rgba(0, 0, 0, 0.32)",
+                      transform: "translateY(-4px)",
+                      borderColor: "rgba(216, 183, 109, 0.22)",
+                      boxShadow: "0 24px 52px rgba(6, 8, 12, 0.26)",
                     },
                   }}
                 >
                   <Box
                     sx={{
-                      height: 300,
-                      background: `
-                        radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 46%),
-                        linear-gradient(180deg, rgba(67, 52, 37, 0.54), rgba(24, 29, 35, 0.9))
-                      `,
+                      ...buildArtworkImageSurfaceSx(item.image),
+                      height: 430,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -848,14 +838,20 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       position: "relative",
                       borderRadius: 16,
                       overflow: "hidden",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                      "@media (max-width: 62em)": {
+                        height: 340,
+                      },
+                      "@media (max-width: 48em)": {
+                        height: 280,
+                        padding: 12,
+                      },
                     }}
                   >
                     <Box
                       component="img"
                       src={item.image}
                       alt={itemTitle}
-                      sx={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      sx={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }}
                     />
                     
                     {/* 照片数量提示 */}
@@ -866,6 +862,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                           position: "absolute", 
                           bottom: 12, 
                           right: 12,
+                          zIndex: 2,
                           fontSize: 12,
                           padding: "5px 10px",
                           background: "rgba(20, 18, 16, 0.72)",
@@ -892,10 +889,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       align="center"
                       sx={{
                         color: "#f3ead8",
-                        letterSpacing: "0.04em",
+                        letterSpacing: "0.02em",
                         fontWeight: 700,
-                        lineHeight: 1.5,
-                        fontSize: 28,
+                        lineHeight: 1.45,
+                        fontSize: 21,
                       }}
                     >
                       {itemTitle}

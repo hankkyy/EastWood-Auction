@@ -4,6 +4,8 @@ import { AnimatedBox, Wrapper } from "@/layout";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
+import { artworkSourceBadgeSx } from "@/components/artworkStyles";
+import { useAuth } from "@/hooks/useAuth";
 import {
   ActionIcon,
   Alert,
@@ -26,11 +28,13 @@ import { useEffect, useMemo, useState } from "react";
 export default function ShopDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const { isAdmin } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
+  const [uploaderEmail, setUploaderEmail] = useState<string | null>(null);
   const itemId = typeof router.query.id === "string" ? router.query.id : "";
 
   useEffect(() => {
@@ -98,6 +102,44 @@ export default function ShopDetailPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gallery, lightboxOpened]);
+
+  useEffect(() => {
+    if (!isAdmin || !item?.uploadedBy || item.isOfficial === true) {
+      setUploaderEmail(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchUploaderEmail = async () => {
+      try {
+        const response = await fetch("/api/admin/profiles");
+        const payload = (await response.json()) as {
+          profiles?: Array<{ id: string; email: string | null }>;
+        };
+
+        if (!response.ok) {
+          throw new Error("Unable to load profiles");
+        }
+
+        if (!cancelled) {
+          const profile = payload.profiles?.find((entry) => entry.id === item.uploadedBy);
+          setUploaderEmail(profile?.email ?? null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("[ShopDetailPage] Failed to load uploader email:", error);
+          setUploaderEmail(null);
+        }
+      }
+    };
+
+    void fetchUploaderEmail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin, item?.uploadedBy, item?.isOfficial]);
 
   // 数据加载中，显示统一的 Loading 状态
   if (isLoading) {
@@ -187,21 +229,7 @@ export default function ShopDetailPage() {
                   <Badge
                     size="lg"
                     variant="light"
-                    sx={{
-                      alignSelf: "flex-start",
-                      backgroundColor:
-                        item.isOfficial === true
-                          ? "rgba(59, 130, 246, 0.14)"
-                          : "rgba(34, 197, 94, 0.14)",
-                      color: item.isOfficial === true ? "#93c5fd" : "#86efac",
-                      border: `1px solid ${
-                        item.isOfficial === true
-                          ? "rgba(59, 130, 246, 0.28)"
-                          : "rgba(34, 197, 94, 0.28)"
-                      }`,
-                      letterSpacing: "0.04em",
-                      fontWeight: 600,
-                    }}
+                    sx={artworkSourceBadgeSx(item.isOfficial)}
                   >
                     {item.isOfficial === true
                       ? t("cases.platformUpload")
@@ -237,6 +265,11 @@ export default function ShopDetailPage() {
                   >
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
+                )}
+                {isAdmin && item.isOfficial !== true && uploaderEmail && (
+                  <Text size="sm" color="dimmed">
+                    {locale === "zh" ? "上传用户邮箱" : "Uploader email"}: {uploaderEmail}
+                  </Text>
                 )}
 
                 {item.isForSale && item.price ? (

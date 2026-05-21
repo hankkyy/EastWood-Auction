@@ -13,9 +13,9 @@ interface IProps {
 export default function Wrapper({ children }: IProps) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
+      initial={false}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.24, ease: "easeOut" }}
       style={{ backgroundColor: "#15191f", color: "#f6efe3", minHeight: "100vh" }}
     >
       <Box

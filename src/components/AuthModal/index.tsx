@@ -130,12 +130,6 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       }}
     >
       <Stack spacing="md">
-        <Text size="sm" color="dimmed">
-          {locale === "zh"
-            ? "手机端建议优先使用邮箱登录；注册后请留意邮箱验证。"
-            : "On mobile, email sign-in is the fastest path. After registering, check your inbox for verification."}
-        </Text>
-
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
         <Tabs.List grow mb="lg">
           <Tabs.Tab 

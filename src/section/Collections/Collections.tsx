@@ -4,8 +4,9 @@ import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import type { Artwork } from "@/data/artworks";
+import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconDatabaseImport, IconEdit, IconX } from "@tabler/icons-react";
+import { IconDatabaseImport, IconLayoutList, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import CollectionsManagementSection from "./CollectionsManagement";
 import { useRouter } from "next/router";
@@ -167,30 +168,27 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     cursor: "pointer",
     padding: remValue(14),
     borderRadius: remValue(26),
-    background: `
-      radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 38%),
-      linear-gradient(180deg, rgba(38, 31, 24, 0.96), rgba(19, 23, 29, 0.98))
-    `,
-    border: "1px solid rgba(216, 183, 109, 0.2)",
-    boxShadow: "0 22px 54px rgba(0, 0, 0, 0.24)",
+    background: artworkCardShellBackground,
+    border: "1px solid rgba(216, 183, 109, 0.14)",
+    boxShadow: "0 20px 44px rgba(6, 8, 12, 0.22)",
     transition: "transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease",
     position: "relative",
     overflow: "hidden",
 
-    "&::before": {
+    "&::after": {
       content: '""',
       position: "absolute",
-      inset: remValue(8),
-      borderRadius: remValue(18),
-      border: "1px solid rgba(216, 183, 109, 0.1)",
+      inset: 0,
+      borderRadius: remValue(26),
+      boxShadow: "inset 0 1px 0 rgba(255, 248, 236, 0.04)",
       pointerEvents: "none",
     },
 
     "&:hover": {
       opacity: 1,
-      transform: "translateY(-5px)",
-      borderColor: "rgba(216, 183, 109, 0.32)",
-      boxShadow: "0 28px 62px rgba(0, 0, 0, 0.32)",
+      transform: "translateY(-4px)",
+      borderColor: "rgba(216, 183, 109, 0.22)",
+      boxShadow: "0 24px 52px rgba(6, 8, 12, 0.26)",
     },
 
     [theme.fn.smallerThan("sm")]: {
@@ -205,10 +203,6 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
 
   imageWrap: {
-    background: `
-      radial-gradient(circle at top, rgba(216, 183, 109, 0.12), transparent 44%),
-      linear-gradient(180deg, rgba(74, 57, 39, 0.62), rgba(24, 29, 35, 0.96))
-    `,
     overflow: "hidden",
     height: remValue(430),
     borderRadius: remValue(18),
@@ -216,9 +210,6 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     alignItems: "center",
     justifyContent: "center",
     padding: remValue(14),
-    border: "1px solid rgba(216, 183, 109, 0.14)",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
-
     [theme.fn.smallerThan("md")]: {
       height: remValue(340),
       padding: remValue(12),
@@ -253,8 +244,8 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     color: "#f3ead8",
     fontSize: remValue(21),
     fontWeight: 700,
-    letterSpacing: "0.04em",
-    lineHeight: 1.5,
+    letterSpacing: "0.02em",
+    lineHeight: 1.45,
 
     [theme.fn.smallerThan("sm")]: {
       marginTop: remValue(12),
@@ -274,7 +265,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     },
   },
   itemPrice: {
-    color: "#d8b76d",
+    color: "#d7bc7e",
     lineHeight: 1.2,
     textAlign: "center",
     fontSize: remValue(14),
@@ -450,6 +441,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   onClick={handleUploadClick}
                   leftIcon={<IconDatabaseImport size={18} />}
                   fullWidth={smallerThan}
+                  sx={primaryActionButtonSx}
                 >
                   {shopMode 
                     ? (locale === "zh" ? "导入新商品" : "Import New Product")
@@ -460,8 +452,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                 <Button
                   onClick={handleManageClick}
                   variant="default"
-                  leftIcon={<IconEdit size={18} />}
+                  leftIcon={<IconLayoutList size={18} />}
                   fullWidth={smallerThan}
+                  sx={secondaryActionButtonSx}
                 >
                   {shopMode 
                     ? (locale === "zh" ? "管理商品" : "Manage Products")
@@ -484,16 +477,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                         setShowManageMode(false);
                       }}
                       leftIcon={<IconX size={18} />}
-                      sx={{
-                        fontWeight: 600,
-                        padding: '12px 24px',
-                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-                        },
-                        transition: 'all 0.2s ease',
-                      }}
+                      sx={primaryActionButtonSx}
                     >
                       {t("cases.exitOperation")}
                     </Button>
@@ -594,8 +578,20 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               href={item.href}
                               className={classes.cardLink}
                             >
-                              <Box className={classes.imageWrap} sx={{ position: "relative" }}>
-                                <Box component="img" src={item.image} alt={item.title} className={classes.image} />
+                              <Box
+                                className={classes.imageWrap}
+                                sx={{
+                                  ...buildArtworkImageSurfaceSx(item.image),
+                                  position: "relative",
+                                }}
+                              >
+                                <Box
+                                  component="img"
+                                  src={item.image}
+                                  alt={item.title}
+                                  className={classes.image}
+                                  sx={{ position: "relative", zIndex: 1 }}
+                                />
                                 
                                 {/* 照片数量提示 */}
                                 {photoCount > 1 && (
@@ -604,6 +600,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                       position: "absolute",
                                       bottom: 12,
                                       right: 12,
+                                      zIndex: 2,
                                       background: "rgba(20, 18, 16, 0.72)",
                                       color: "#efe3c6",
                                       padding: "5px 10px",
