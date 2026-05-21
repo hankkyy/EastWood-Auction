@@ -18,9 +18,11 @@ export default function Shop({ initialData }: ShopPageProps) {
         <title>Eastwood Auction - Antique Shop</title>
       </Head>
       <Wrapper>
+        {/* Primary catalog content is server-prefetched, then hydrated on the client. */}
         <AnimatedBox>
           <CollectionsSection initialData={initialData} shopMode={true} />
         </AnimatedBox>
+        {/* Secondary conversion-focused blocks are kept below the product listing. */}
         <AnimatedBox>
           <LinksSection />
         </AnimatedBox>
@@ -33,19 +35,20 @@ export default function Shop({ initialData }: ShopPageProps) {
   );
 }
 
-// ✅ 使用 getStaticProps 在构建时预加载数据
+// Pre-render the shop page with server-side artwork data.
 export const getStaticProps: GetStaticProps<ShopPageProps> = async () => {
   try {
     const data = await fetchKnowledgeBaseServer();
-    
+
     return {
       props: {
         initialData: data || [],
       },
-      // ✅ 每 60 秒重新生成页面（增量静态再生）
+      // Keep inventory reasonably fresh without paying per-request SSR cost.
       revalidate: 60,
     };
   } catch (error) {
+    // Surface build-time/data-source failures early instead of silently serving empty pages.
     console.error("Failed to fetch shop data:", error);
     throw error;
   }

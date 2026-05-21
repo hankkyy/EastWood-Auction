@@ -35,6 +35,7 @@ const showNotification = (titleKey: keyof typeof messages.en, messageKey: keyof 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileResolved, setProfileResolved] = useState(false);
 
   // 获取用户资料（带缓存）
   const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
@@ -83,14 +84,19 @@ export const useAuth = () => {
             email: session.user.email || null,
             profile: null,
           });
-          
+          setProfileResolved(false);
+
           // 异步加载用户资料
           fetchProfile(session.user.id).then((profile) => {
             setUser((prev) => prev ? { ...prev, profile } : null);
+            setProfileResolved(true);
           });
+        } else {
+          setProfileResolved(true);
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
+        setProfileResolved(true);
       } finally {
         setLoading(false);
       }
@@ -109,13 +115,16 @@ export const useAuth = () => {
           email: session.user.email || null,
           profile: null,
         });
-        
+        setProfileResolved(false);
+
         // 异步加载用户资料
         fetchProfile(session.user.id).then((profile) => {
           setUser((prev) => prev ? { ...prev, profile } : null);
+          setProfileResolved(true);
         });
       } else {
         setUser(null);
+        setProfileResolved(true);
         // 清除缓存
         profileCache.clear();
       }
@@ -143,6 +152,7 @@ export const useAuth = () => {
           email: data.user.email || null,
           profile: null, // 稍后异步加载
         });
+        setProfileResolved(false);
 
         // 显示成功通知
         showNotification("auth.loginSuccess", "auth.welcomeBack", "green");
@@ -150,6 +160,7 @@ export const useAuth = () => {
         // 异步加载用户资料（不阻塞 UI）
         fetchProfile(data.user.id).then((profile) => {
           setUser((prev) => prev ? { ...prev, profile } : null);
+          setProfileResolved(true);
         });
       }
 
@@ -286,21 +297,25 @@ export const useAuth = () => {
 
   // 检查是否为管理员
   const isAdmin = user?.profile?.role === "admin";
+  const roleLoading = !!user && !profileResolved;
 
   return {
     user,
     loading,
+    roleLoading,
     login,
     register,
     logout,
     updateProfile,
     refreshProfile: async () => {
       if (user) {
+        setProfileResolved(false);
         // 清除缓存
         profileCache.delete(user.id);
         // 重新获取
         const profile = await fetchProfile(user.id);
         setUser((prev) => prev ? { ...prev, profile } : null);
+        setProfileResolved(true);
       }
     },
     isAdmin,

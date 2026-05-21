@@ -60,7 +60,7 @@ type InquiryRecord = {
 
 export default function InboxPage() {
   const { t, locale } = useI18n();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, roleLoading, isAdmin } = useAuth();
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -199,10 +199,10 @@ export default function InboxPage() {
       }
     };
 
-    if (!loading) {
+    if (!loading && !roleLoading) {
       void loadInbox();
     }
-  }, [loading, user, t, isAdmin, markMessagesRead]);
+  }, [loading, roleLoading, user, t, isAdmin, markMessagesRead]);
 
   const processedCount = useMemo(
     () => inquiries.filter((item) => item.is_processed && !item.is_archived).length,
@@ -766,19 +766,56 @@ export default function InboxPage() {
       <Stack spacing="md">
         <Group position="apart" align="flex-start">
           <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Group spacing="xs" mb={6} align="center">
-              <Text weight={800} size="lg">
+            <Box
+              mb={6}
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "flex-start",
+                gap: 8,
+              }}
+            >
+              <Text
+                weight={800}
+                size="lg"
+                sx={{
+                  flex: "1 1 420px",
+                  minWidth: 0,
+                  lineHeight: 1.45,
+                  whiteSpace: "normal",
+                  wordBreak: "keep-all",
+                  overflowWrap: "anywhere",
+                  writingMode: "horizontal-tb",
+                  textOrientation: "mixed",
+                }}
+              >
                 {formatInquiryTitle(inquiry)}
               </Text>
-              <Badge color={inquiry.is_archived ? "gray" : inquiry.is_processed ? "teal" : "yellow"} variant="light">
+              <Badge
+                color={inquiry.is_archived ? "gray" : inquiry.is_processed ? "teal" : "yellow"}
+                variant="light"
+                sx={{ flexShrink: 0, alignSelf: "flex-start" }}
+              >
                 {getInquiryStatusLabel(inquiry)}
               </Badge>
-            </Group>
+            </Box>
             {isAdmin ? (
               <Stack spacing={2} mb={8}>
                 <Stack spacing={2}>
                   {formatInquiryOwnerMeta(inquiry).map((item) => (
-                    <Text key={item.label} size="sm" color="dimmed" sx={{ wordBreak: "break-word" }}>
+                    <Text
+                      key={item.label}
+                      size="sm"
+                      color="dimmed"
+                      sx={{
+                        lineHeight: 1.6,
+                        whiteSpace: "normal",
+                        wordBreak: "keep-all",
+                        overflowWrap: "anywhere",
+                        writingMode: "horizontal-tb",
+                        textOrientation: "mixed",
+                      }}
+                    >
                       <Text component="span" weight={600} color="gray.3">
                         {item.label}
                         {locale === "zh" ? "：" : ": "}
@@ -793,11 +830,30 @@ export default function InboxPage() {
               {t("inbox.submittedAt")}
               {formatInquiryTime(inquiry.created_at)}
             </Text>
-            <Text size="sm" sx={{ wordBreak: "break-word" }} mt={6}>
+            <Text
+              size="sm"
+              sx={{
+                whiteSpace: "normal",
+                wordBreak: "keep-all",
+                overflowWrap: "anywhere",
+                writingMode: "horizontal-tb",
+                textOrientation: "mixed",
+              }}
+              mt={6}
+            >
               {t("inbox.contactPhone")}
               {inquiry.contact_phone}
             </Text>
-            <Text size="sm" sx={{ wordBreak: "break-word" }}>
+            <Text
+              size="sm"
+              sx={{
+                whiteSpace: "normal",
+                wordBreak: "keep-all",
+                overflowWrap: "anywhere",
+                writingMode: "horizontal-tb",
+                textOrientation: "mixed",
+              }}
+            >
               {t("inbox.contactEmail")}
               {inquiry.contact_email}
             </Text>
@@ -875,7 +931,10 @@ export default function InboxPage() {
                     size="sm"
                     sx={{
                       whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
+                      wordBreak: "normal",
+                      overflowWrap: "anywhere",
+                      writingMode: "horizontal-tb",
+                      textOrientation: "mixed",
                       lineHeight: 1.7,
                     }}
                   >
@@ -1007,7 +1066,7 @@ export default function InboxPage() {
               ) : null}
             </Group>
 
-            {!loading && !user ? (
+            {!loading && !roleLoading && !user ? (
               <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inbox.loginRequiredTitle")}>
                 <Stack spacing="sm">
                   <Text>{t("inbox.loginRequiredMessage")}</Text>
@@ -1023,7 +1082,7 @@ export default function InboxPage() {
               </Alert>
             ) : null}
 
-            {!loading && !user ? null : isLoading ? (
+            {!loading && !roleLoading && !user ? null : isLoading || roleLoading ? (
               <Group position="center" py="xl">
                 <Loader color="yellow" />
               </Group>
