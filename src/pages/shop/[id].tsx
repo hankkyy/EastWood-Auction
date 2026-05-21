@@ -183,6 +183,31 @@ export default function ShopDetailPage() {
 
               {/* 标题和基本信息 */}
               <Stack spacing={isMobile ? "sm" : "md"}>
+                <Group spacing="xs">
+                  <Badge
+                    size="lg"
+                    variant="light"
+                    sx={{
+                      alignSelf: "flex-start",
+                      backgroundColor:
+                        item.isOfficial === true
+                          ? "rgba(59, 130, 246, 0.14)"
+                          : "rgba(34, 197, 94, 0.14)",
+                      color: item.isOfficial === true ? "#93c5fd" : "#86efac",
+                      border: `1px solid ${
+                        item.isOfficial === true
+                          ? "rgba(59, 130, 246, 0.28)"
+                          : "rgba(34, 197, 94, 0.28)"
+                      }`,
+                      letterSpacing: "0.04em",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.isOfficial === true
+                      ? t("cases.platformUpload")
+                      : t("cases.personalUserUpload")}
+                  </Badge>
+                </Group>
                 <Title order={isMobile ? 3 : 2} sx={{ lineHeight: 1.18 }}>
                   {title}
                 </Title>

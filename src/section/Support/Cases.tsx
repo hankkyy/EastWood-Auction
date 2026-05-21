@@ -783,9 +783,9 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
           </Alert>
         ) : !showManageMode && !showUploadForm && (
           <SimpleGrid 
-            cols={3} 
-            spacing={56} // ✅ 增加卡片间距（从 xl 改为 56px）
-            breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}
+            cols={2}
+            spacing={64}
+            breakpoints={[{ maxWidth: "md", cols: 1 }]}
             sx={{ 
               paddingLeft: 48, // ✅ 增加左边距
               paddingRight: 48, // ✅ 增加右边距
@@ -836,7 +836,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 >
                   <Box
                     sx={{
-                      height: 228,
+                      height: 300,
                       background: `
                         radial-gradient(circle at top, rgba(216, 183, 109, 0.1), transparent 46%),
                         linear-gradient(180deg, rgba(67, 52, 37, 0.54), rgba(24, 29, 35, 0.9))
@@ -844,7 +844,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      padding: 16,
+                      padding: 18,
                       position: "relative",
                       borderRadius: 16,
                       overflow: "hidden",
@@ -885,7 +885,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     )}
                   </Box>
                   
-                  <Stack spacing="xs" mt="md" sx={{ position: "relative", zIndex: 1, padding: "6px 8px 2px" }}>
+                  <Stack spacing="sm" mt="lg" sx={{ position: "relative", zIndex: 1, padding: "8px 10px 4px" }}>
                     <Title
                       order={3}
                       size="h3"
@@ -895,6 +895,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         letterSpacing: "0.04em",
                         fontWeight: 700,
                         lineHeight: 1.5,
+                        fontSize: 28,
                       }}
                     >
                       {itemTitle}

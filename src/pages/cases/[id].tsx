@@ -19,6 +19,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight, IconZoomIn } from "@tabler/icons-react";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
@@ -54,6 +55,7 @@ const getCaseCategoryLabel = (locale: "zh" | "en", rawCategory?: string, rawCate
 export default function CaseDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
@@ -156,6 +158,7 @@ export default function CaseDetailPage() {
   const inquiryHref = item.caseRecord?.caseId
     ? `/inquiries?code=${encodeURIComponent(item.caseRecord.caseId)}&returnTo=${encodeURIComponent(router.asPath || `/cases/${caseId}`)}`
     : "/inquiries";
+  const showInquiryButton = Boolean(item.caseRecord?.caseId);
 
   const goToImage = (index: number) => {
     const nextImage = gallery[index];
@@ -185,19 +188,19 @@ export default function CaseDetailPage() {
       </Head>
       <Wrapper>
         <AnimatedBox>
-          <Container py={64}>
-            <Stack spacing="xl">
+          <Container py={isMobile ? 28 : 64} px={isMobile ? 16 : undefined}>
+            <Stack spacing={isMobile ? "lg" : "xl"}>
               <Button 
                 component={Link} 
                 href="/cases" 
                 variant="filled"
                 color="blue"
-                size="md"
+                size={isMobile ? "sm" : "md"}
                 leftIcon={<IconChevronLeft size={18} />}
                 sx={{ 
                   alignSelf: "flex-start",
                   fontWeight: 600,
-                  padding: '12px 24px',
+                  padding: isMobile ? "10px 16px" : '12px 24px',
                   boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
@@ -209,31 +212,48 @@ export default function CaseDetailPage() {
                 {t("support.caseBack")}
               </Button>
 
-              <Stack spacing="sm">
+              <Stack spacing={isMobile ? "sm" : "md"}>
                 {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
                 <Group spacing="xs">
                   <Badge 
-                    color={item.isOfficial === true ? "blue" : "green"} 
-                    variant="outline"
-                    sx={{ alignSelf: "flex-start" }}
-                    >
+                    size="lg"
+                    variant="light"
+                    sx={{
+                      alignSelf: "flex-start",
+                      backgroundColor:
+                        item.isOfficial === true
+                          ? "rgba(59, 130, 246, 0.14)"
+                          : "rgba(34, 197, 94, 0.14)",
+                      color: item.isOfficial === true ? "#93c5fd" : "#86efac",
+                      border: `1px solid ${
+                        item.isOfficial === true
+                          ? "rgba(59, 130, 246, 0.28)"
+                          : "rgba(34, 197, 94, 0.28)"
+                      }`,
+                      letterSpacing: "0.04em",
+                      fontWeight: 600,
+                    }}
+                  >
                     {item.isOfficial === true 
                       ? t("cases.platformUpload")
                       : t("cases.personalUserUpload")}
                   </Badge>
                 </Group>
-                <Title order={1}>{title}</Title>
-                <Group>
+                <Title order={isMobile ? 3 : 1} sx={{ lineHeight: 1.18 }}>
+                  {title}
+                </Title>
+                {showInquiryButton && (
                   <Button
                     component={Link}
                     href={inquiryHref}
                     variant="outline"
                     color="yellow"
                     size="md"
+                    fullWidth={isMobile}
                   >
                     {t("support.caseInquiryButton")}
                   </Button>
-                </Group>
+                )}
               </Stack>
 
               <Box sx={{ position: "relative" }}>
@@ -368,6 +388,26 @@ export default function CaseDetailPage() {
           </Container>
         </AnimatedBox>
       </Wrapper>
+
+      {isMobile && showInquiryButton && (
+        <Box
+          sx={{
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 5,
+            padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))",
+            background: "rgba(15, 18, 22, 0.96)",
+            borderTop: "1px solid rgba(216, 183, 109, 0.16)",
+            backdropFilter: "blur(14px)",
+          }}
+        >
+          <Button component={Link} href={inquiryHref} color="yellow" size="md" fullWidth>
+            {t("support.caseInquiryButton")}
+          </Button>
+        </Box>
+      )}
 
       <Modal
         opened={lightboxOpened}
