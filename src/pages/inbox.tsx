@@ -62,7 +62,7 @@ export default function InboxPage() {
   const { t, locale } = useI18n();
   const { user, loading, roleLoading, isAdmin } = useAuth();
   const roleResolved = !user || !roleLoading;
-  const adminPreviewGridTemplate = "minmax(0, 1.35fr) minmax(0, 1.25fr) 84px";
+  const adminPreviewGridTemplate = "minmax(0, 1.35fr) minmax(0, 1.25fr) 84px 28px";
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -663,7 +663,6 @@ export default function InboxPage() {
         onClick={() => setSelectedInquiryId(inquiry.id)}
         sx={{
           cursor: "pointer",
-          position: "relative",
           border: "none",
           borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
           borderLeft: `3px solid ${isUnread && !isSelected ? accentColor : "transparent"}`,
@@ -739,14 +738,16 @@ export default function InboxPage() {
               {getInquiryStatusLabel(inquiry)}
             </Text>
           </Box>
+          {isAdmin ? (
+            <Box sx={{ width: 28, justifySelf: "end" }}>
+              {isUnread ? (
+                <Badge color="red" variant={isSelected ? "light" : "filled"} size="xs">
+                  {unreadIncomingCount}
+                </Badge>
+              ) : null}
+            </Box>
+          ) : null}
         </Box>
-        {isAdmin && isUnread ? (
-          <Box sx={{ position: "absolute", top: 8, right: 10 }}>
-            <Badge color="red" variant={isSelected ? "light" : "filled"} size="xs">
-              {unreadIncomingCount}
-            </Badge>
-          </Box>
-        ) : null}
       </Paper>
     );
   };
@@ -791,6 +792,7 @@ export default function InboxPage() {
           {locale === "zh" ? "状态" : "Status"}
         </Text>
       </Box>
+      {isAdmin ? <Box sx={{ width: 28 }} /> : null}
     </Box>
   );
 
@@ -1165,7 +1167,21 @@ export default function InboxPage() {
                     <Button onClick={() => setAuthModalOpened(true)}>
                       {t("auth.loginRegister")}
                     </Button>
-                    <Button variant="light" component={Link} href="/inquiries">
+                    <Button
+                      variant="filled"
+                      color="yellow"
+                      component={Link}
+                      href="/inquiries"
+                      sx={{
+                        backgroundColor: "#f6e7b0",
+                        color: "#4f3b12",
+                        boxShadow: "0 6px 16px rgba(246, 231, 176, 0.38)",
+                        "&:hover": {
+                          backgroundColor: "#f2dc8f",
+                          boxShadow: "0 8px 18px rgba(242, 220, 143, 0.48)",
+                        },
+                      }}
+                    >
                       {t("inquiry.entryButton")}
                     </Button>
                   </Group>

@@ -31,17 +31,17 @@ const useStyles = createStyles((theme) => ({
 export default function TopBar() {
   const { classes } = useStyles();
   const { t } = useI18n();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, roleLoading, isAdmin } = useAuth();
+  const authReady = !loading && !roleLoading;
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
 
   const handleInquiryClick = () => {
-    if (!loading && !user) {
-      notifications.show({
-        title: t("inquiry.loginRequiredTitle"),
-        message: t("inquiry.loginRequiredMessage"),
-        color: "yellow",
-      });
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
       void router.push("/inquiries?authRequired=1");
       return;
     }
@@ -60,7 +60,11 @@ export default function TopBar() {
   };
 
   const handleInboxClick = () => {
-    if (!loading && !user) {
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
       notifications.show({
         title: t("inbox.loginRequiredTitle"),
         message: t("inbox.loginRequiredMessage"),
@@ -111,7 +115,7 @@ export default function TopBar() {
       }
     };
 
-    if (!loading) {
+    if (authReady) {
       void loadInboxCount();
     }
 
@@ -126,7 +130,7 @@ export default function TopBar() {
       window.removeEventListener("focus", handleRefresh);
       window.removeEventListener("inquiries:changed", handleRefresh as EventListener);
     };
-  }, [loading, user, router.asPath]);
+  }, [authReady, user, router.asPath]);
 
   return (
     <Header height="100%" sx={{ borderBottom: 0 }}>

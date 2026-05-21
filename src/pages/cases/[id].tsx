@@ -32,6 +32,25 @@ const frameStyles = {
   overflow: "hidden",
 } as const;
 
+const getCaseCategoryLabel = (locale: "zh" | "en", rawCategory?: string, rawCategoryZh?: string) => {
+  const raw = `${rawCategoryZh ?? ""} ${rawCategory ?? ""}`.trim().toLowerCase();
+  const key = rawCategory?.toLowerCase() ?? "";
+
+  if (raw.includes("字画") || raw.includes("书画") || raw.includes("painting") || raw.includes("calligraphy") || key === "calligraphy") {
+    return locale === "zh" ? "字画" : "Paintings & Calligraphy";
+  }
+  if (raw.includes("瓷") || raw.includes("porcelain") || key === "porcelain") {
+    return locale === "zh" ? "瓷器" : "Porcelain";
+  }
+  if (raw.includes("玉") || raw.includes("jade") || key === "jade") {
+    return locale === "zh" ? "翡翠玉器" : "Jade";
+  }
+  if (raw.includes("铜") || raw.includes("bronze") || key === "bronze") {
+    return locale === "zh" ? "铜器" : "Bronze";
+  }
+  return locale === "zh" ? "杂项" : "Miscellaneous";
+};
+
 export default function CaseDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -132,6 +151,7 @@ export default function CaseDetailPage() {
 
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const caseCategoryLabel = getCaseCategoryLabel(locale, item.category, item.categoryZh);
   const activeImage = selectedImage || gallery[0] || item.image;
   const inquiryHref = item.caseRecord?.caseId
     ? `/inquiries?code=${encodeURIComponent(item.caseRecord.caseId)}&returnTo=${encodeURIComponent(router.asPath || `/cases/${caseId}`)}`
@@ -333,6 +353,7 @@ export default function CaseDetailPage() {
               <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
+                  <Text><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
                   <Text><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
                   <Text><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
                   <Text><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>

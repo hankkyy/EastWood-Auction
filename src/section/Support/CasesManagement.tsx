@@ -80,6 +80,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const [adminCoverIndex, setAdminCoverIndex] = useState<number>(0); // 封面照片索引
   
   const [adminCaseName, setAdminCaseName] = useState(""); // ✅ 案例名称(必填)
+  const [adminCategory, setAdminCategory] = useState("misc");
   const [adminItemDetails, setAdminItemDetails] = useState("");
   const [adminCaseId, setAdminCaseId] = useState("");
   const [adminSalePrice, setAdminSalePrice] = useState("");
@@ -95,6 +96,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const [isSaving, setIsSaving] = useState(false);
   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
   const [editCaseName, setEditCaseName] = useState(""); // ✅ 编辑时的案例名称
+  const [editCategory, setEditCategory] = useState("misc");
   const [editItemDetails, setEditItemDetails] = useState("");
   const [editCaseId, setEditCaseId] = useState("");
   const [editSalePrice, setEditSalePrice] = useState("");
@@ -109,6 +111,29 @@ const CasesManagementSection = memo(function CasesManagementSection({
   // ✅ 编辑模式的图片管理状态
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editCoverIndex, setEditCoverIndex] = useState(0);
+
+  const caseCategoryOptions = [
+    { value: "calligraphy", label: locale === "zh" ? "字画" : "Paintings & Calligraphy" },
+    { value: "misc", label: locale === "zh" ? "杂项" : "Miscellaneous" },
+    { value: "porcelain", label: locale === "zh" ? "瓷器" : "Porcelain" },
+    { value: "jade", label: locale === "zh" ? "翡翠玉器" : "Jade" },
+    { value: "bronze", label: locale === "zh" ? "铜器" : "Bronze" },
+  ];
+
+  const getCategoryTextZh = (value: string) => {
+    switch (value) {
+      case "calligraphy":
+        return "字画";
+      case "porcelain":
+        return "瓷器";
+      case "jade":
+        return "翡翠玉器";
+      case "bronze":
+        return "铜器";
+      default:
+        return "杂项";
+    }
+  };
 
   useEffect(() => {
     if (initialItems.length > 0) {
@@ -249,6 +274,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
     setAdminImages([]);
     setAdminCoverIndex(0);
     setAdminCaseName("");
+    setAdminCategory("misc");
     setAdminItemDetails("");
     setAdminCaseId(generateCaseId()); // ✅ 自动生成编号
     setAdminSalePrice("");
@@ -309,7 +335,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
       const newArtwork: Artwork = {
         id: `imported-${Date.now()}`,
         title: adminCaseName, // ✅ 使用独立的案例名称字段
-        category: "misc",
+        category: adminCategory || "misc",
+        categoryZh: getCategoryTextZh(adminCategory || "misc"),
         period: "",
         image: adminImages[adminCoverIndex], // 封面照片
         galleryImages: adminImages, // 所有照片
@@ -343,6 +370,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const handleStartEdit = (artwork: Artwork) => {
     setEditingArtworkId(artwork.id);
     setEditCaseName(artwork.title || ""); // ✅ 初始化案例名称
+    setEditCategory(artwork.category || "misc");
     setEditItemDetails(artwork.description || "");
     
     // ✅ 初始化图片数组 - 优先使用 galleryImages,否则使用 image
@@ -368,6 +396,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
   const resetEditForm = () => {
     setEditingArtworkId(null);
     setEditCaseName(""); // ✅ 重置案例名称
+    setEditCategory("misc");
     setEditItemDetails("");
     setEditCaseId("");
     setEditSalePrice("");
@@ -414,6 +443,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
       const updatedArtwork: Artwork = {
         ...artwork,
         title: editCaseName, // ✅ 使用编辑后的案例名称
+        category: editCategory || "misc",
+        categoryZh: getCategoryTextZh(editCategory || "misc"),
         description: editItemDetails || artwork.description,
         image: editImages[editCoverIndex], // 封面照片
         galleryImages: editImages, // 所有照片
@@ -705,6 +736,15 @@ const CasesManagementSection = memo(function CasesManagementSection({
                   value={editItemDetails}
                   onChange={(event) => setEditItemDetails(event.currentTarget.value)}
                   minRows={3}
+                />
+
+                <Select
+                  label={locale === "zh" ? "分类" : "Category"}
+                  data={caseCategoryOptions}
+                  value={editCategory}
+                  onChange={(value) => setEditCategory(value || "misc")}
+                  withinPortal
+                  zIndex={5000}
                 />
 
                 {/* 基本信息 */}
@@ -1132,6 +1172,15 @@ const CasesManagementSection = memo(function CasesManagementSection({
               onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
               placeholder={t("cases.enterCaseDetails")}
               minRows={3}
+            />
+
+            <Select
+              label={locale === "zh" ? "分类" : "Category"}
+              data={caseCategoryOptions}
+              value={adminCategory}
+              onChange={(value) => setAdminCategory(value || "misc")}
+              withinPortal
+              zIndex={5000}
             />
 
             <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>

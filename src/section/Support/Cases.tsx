@@ -18,6 +18,7 @@ import {
   Container,
   Group,
   Paper,
+  Select,
   SimpleGrid,
   Stack,
   Text,
@@ -97,6 +98,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   };
 
   const [adminCaseName, setAdminCaseName] = useState(""); // ✅ 案例名称(必填)
+  const [adminCategory, setAdminCategory] = useState("misc");
   const [adminItemDetails, setAdminItemDetails] = useState("");
   const [adminCaseId, setAdminCaseId] = useState("");
   const [adminSalePrice, setAdminSalePrice] = useState("");
@@ -110,6 +112,29 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [adminError, setAdminError] = useState<string | null>(null);
   const [manageMessage, setManageMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const caseCategoryOptions = [
+    { value: "calligraphy", label: locale === "zh" ? "字画" : "Paintings & Calligraphy" },
+    { value: "misc", label: locale === "zh" ? "杂项" : "Miscellaneous" },
+    { value: "porcelain", label: locale === "zh" ? "瓷器" : "Porcelain" },
+    { value: "jade", label: locale === "zh" ? "翡翠玉器" : "Jade" },
+    { value: "bronze", label: locale === "zh" ? "铜器" : "Bronze" },
+  ];
+
+  const getCategoryTextZh = (value: string) => {
+    switch (value) {
+      case "calligraphy":
+        return "字画";
+      case "porcelain":
+        return "瓷器";
+      case "jade":
+        return "翡翠玉器";
+      case "bronze":
+        return "铜器";
+      default:
+        return "杂项";
+    }
+  };
 
   const refreshKnowledgeBase = useCallback(async () => {
     try {
@@ -255,6 +280,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     setAdminImages([]);
     setAdminCoverIndex(0);
     setAdminCaseName(""); // ✅ 重置案例名称
+    setAdminCategory("misc");
     setAdminItemDetails("");
     setAdminCaseId(generateCaseId()); // ✅ 重置时重新生成编号
     setAdminSalePrice("");
@@ -311,7 +337,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       const newArtwork: Artwork = {
         id: `imported-${Date.now()}`,
         title: adminCaseName, // ✅ 使用独立的案例名称字段
-        category: "misc",
+        category: adminCategory || "misc",
+        categoryZh: getCategoryTextZh(adminCategory || "misc"),
         period: "",
         image: coverImage,
         galleryImages: adminImages,
@@ -612,6 +639,15 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 onChange={(event) => setAdminItemDetails(event.currentTarget.value)}
                 placeholder={t("cases.enterCaseDetails")}
                 minRows={3}
+              />
+
+              <Select
+                label={locale === "zh" ? "分类" : "Category"}
+                value={adminCategory}
+                onChange={(value) => setAdminCategory(value || "misc")}
+                data={caseCategoryOptions}
+                withinPortal
+                zIndex={5000}
               />
 
               <TextInput

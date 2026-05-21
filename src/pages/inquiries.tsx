@@ -20,12 +20,13 @@ import {
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircle, IconCircleCheck } from "@tabler/icons-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function InquiriesPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, roleLoading, isAdmin } = useAuth();
+  const authReady = !loading && !roleLoading;
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [inquiryCode, setInquiryCode] = useState("");
@@ -33,37 +34,56 @@ export default function InquiriesPage() {
   const [details, setDetails] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const authNoticeShownRef = useRef(false);
+  const adminNoticeShownRef = useRef(false);
   const returnTo =
     typeof router.query.returnTo === "string" && router.query.returnTo.startsWith("/")
       ? router.query.returnTo
       : "/";
 
   useEffect(() => {
-    if (!router.isReady || loading || user) {
+    if (!router.isReady || !authReady || user) {
       return;
     }
 
     if (router.query.authRequired === "1") {
+      if (authNoticeShownRef.current) {
+        return;
+      }
+      authNoticeShownRef.current = true;
       notifications.show({
         title: t("inquiry.loginRequiredTitle"),
         message: t("inquiry.loginRequiredMessage"),
         color: "yellow",
       });
-      setAuthModalOpened(true);
     }
-  }, [router.isReady, router.query.authRequired, loading, user, t]);
+  }, [router.isReady, router.query.authRequired, authReady, user, t]);
 
   useEffect(() => {
-    if (!router.isReady || loading || !user || !isAdmin) {
+    if (!router.isReady || !authReady || !user || !isAdmin) {
       return;
     }
+
+    if (adminNoticeShownRef.current) {
+      return;
+    }
+    adminNoticeShownRef.current = true;
 
     notifications.show({
       title: t("inquiry.adminBlockedTitle"),
       message: t("inquiry.adminBlockedMessage"),
       color: "yellow",
     });
-  }, [router.isReady, loading, user, isAdmin, t]);
+  }, [router.isReady, authReady, user, isAdmin, t]);
+
+  useEffect(() => {
+    if (router.query.authRequired !== "1") {
+      authNoticeShownRef.current = false;
+    }
+    if (!user || !isAdmin) {
+      adminNoticeShownRef.current = false;
+    }
+  }, [router.query.authRequired, user, isAdmin]);
 
   useEffect(() => {
     if (!user?.email) {
@@ -89,6 +109,10 @@ export default function InquiriesPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!authReady) {
+      return;
+    }
 
     if (!user) {
       notifications.show({
@@ -198,7 +222,7 @@ export default function InquiriesPage() {
               </Text>
             </div>
 
-            {!loading && !user ? (
+            {authReady && !user ? (
               <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.loginRequiredTitle")}>
                 <Stack spacing="sm">
                   <Text>{t("inquiry.loginRequiredMessage")}</Text>
@@ -225,7 +249,7 @@ export default function InquiriesPage() {
               </Alert>
             ) : null}
 
-            {!loading && user && isAdmin ? (
+            {authReady && user && isAdmin ? (
               <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.adminBlockedTitle")}>
                 <Stack spacing="sm">
                   <Text>{t("inquiry.adminBlockedMessage")}</Text>
@@ -259,25 +283,25 @@ export default function InquiriesPage() {
               sx={
                 !user
                   ? {
-                      backgroundColor: "rgba(246, 231, 176, 0.14)",
-                      borderColor: "rgba(246, 231, 176, 0.3)",
+                      backgroundColor: "rgba(32, 38, 46, 0.85)",
+                      borderColor: "rgba(216, 183, 109, 0.22)",
                       "& .mantine-Input-input:disabled, & .mantine-Textarea-input:disabled": {
-                        backgroundColor: "rgba(255, 248, 220, 0.78)",
-                        borderColor: "rgba(246, 231, 176, 0.42)",
-                        color: "#5b4820",
+                        backgroundColor: "rgba(16, 20, 26, 0.92)",
+                        borderColor: "rgba(216, 183, 109, 0.28)",
+                        color: "#f6efe3",
                         opacity: 1,
-                        WebkitTextFillColor: "#5b4820",
+                        WebkitTextFillColor: "#f6efe3",
                       },
                       "& .mantine-Input-input:disabled::placeholder, & .mantine-Textarea-input:disabled::placeholder": {
-                        color: "rgba(91, 72, 32, 0.72)",
+                        color: "rgba(246, 239, 227, 0.52)",
                       },
                       "& .mantine-Checkbox-input:disabled": {
-                        backgroundColor: "rgba(255, 248, 220, 0.78)",
-                        borderColor: "rgba(246, 231, 176, 0.5)",
+                        backgroundColor: "rgba(16, 20, 26, 0.92)",
+                        borderColor: "rgba(216, 183, 109, 0.32)",
                         opacity: 1,
                       },
                       "& .mantine-Checkbox-label": {
-                        color: "#f3e7c8",
+                        color: "#f6efe3",
                       },
                     }
                   : undefined
@@ -290,14 +314,14 @@ export default function InquiriesPage() {
                     placeholder={t("inquiry.codePlaceholder")}
                     value={inquiryCode}
                     onChange={(event) => setInquiryCode(event.currentTarget.value)}
-                    disabled={noInquiryCode || !user || isAdmin}
+                    disabled={!authReady || noInquiryCode || !user || isAdmin}
                     required={!noInquiryCode}
                   />
                   <Checkbox
                     checked={noInquiryCode}
                     onChange={(event) => setNoInquiryCode(event.currentTarget.checked)}
                     label={t("inquiry.noCodeLabel")}
-                    disabled={!user || isAdmin}
+                    disabled={!authReady || !user || isAdmin}
                   />
                   <Textarea
                     label={t("inquiry.detailsLabel")}
@@ -306,7 +330,7 @@ export default function InquiriesPage() {
                     value={details}
                     onChange={(event) => setDetails(event.currentTarget.value)}
                     required
-                    disabled={!user || isAdmin}
+                    disabled={!authReady || !user || isAdmin}
                   />
                   <TextInput
                     label={t("inquiry.phoneLabel")}
@@ -314,7 +338,7 @@ export default function InquiriesPage() {
                     value={contactPhone}
                     onChange={(event) => setContactPhone(event.currentTarget.value)}
                     required
-                    disabled={!user || isAdmin}
+                    disabled={!authReady || !user || isAdmin}
                   />
                   <TextInput
                     label={t("inquiry.emailLabel")}
@@ -323,7 +347,7 @@ export default function InquiriesPage() {
                     onChange={(event) => setContactEmail(event.currentTarget.value)}
                     required
                     type="email"
-                    disabled={!user || isAdmin}
+                    disabled={!authReady || !user || isAdmin}
                   />
                   <Group position="right">
                     <Button
@@ -341,7 +365,7 @@ export default function InquiriesPage() {
                     >
                       {t("inquiry.cancelButton")}
                     </Button>
-                    <Button type="submit" loading={submitting} disabled={!user || isAdmin}>
+                    <Button type="submit" loading={submitting} disabled={!authReady || !user || isAdmin}>
                       {t("inquiry.submitButton")}
                     </Button>
                   </Group>

@@ -152,17 +152,17 @@ export default function TopNav() {
   const { t } = useI18n();
   
   // 直接使用 useAuth hook
-  const { user, loading, logout, isAdmin } = useAuth();
+  const { user, loading, roleLoading, logout, isAdmin } = useAuth();
+  const authReady = !loading && !roleLoading;
 
   const handleInquiryClick = () => {
     closeDrawer();
 
-    if (!loading && !user) {
-      notifications.show({
-        title: t("inquiry.loginRequiredTitle"),
-        message: t("inquiry.loginRequiredMessage"),
-        color: "yellow",
-      });
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
       void router.push("/inquiries?authRequired=1");
       return;
     }
@@ -183,7 +183,11 @@ export default function TopNav() {
   const handleInboxClick = () => {
     closeDrawer();
 
-    if (!loading && !user) {
+    if (!authReady) {
+      return;
+    }
+
+    if (!user) {
       notifications.show({
         title: t("inbox.loginRequiredTitle"),
         message: t("inbox.loginRequiredMessage"),
@@ -220,7 +224,7 @@ export default function TopNav() {
   // 用户菜单渲染
   const renderUserMenu = () => {
     // 加载中状态：显示占位符，避免 Hydration 错误
-    if (loading) {
+    if (!authReady) {
       return (
         <Avatar
           color="gray"

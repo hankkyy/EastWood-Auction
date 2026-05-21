@@ -1346,16 +1346,16 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 const getStoredLocale = (): Locale => {
   if (typeof window === "undefined") {
-    return "en";
+    return "zh";
   }
 
   const storedLocale = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
 
-  return storedLocale === "zh" || storedLocale === "zh-CN" ? "zh" : "en";
+  return storedLocale === "en" ? "en" : "zh";
 };
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+  const [locale, setLocaleState] = useState<Locale>("zh");
 
   useEffect(() => {
     const initialLocale = getStoredLocale();

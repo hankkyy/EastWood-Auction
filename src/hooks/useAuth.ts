@@ -15,9 +15,9 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 // 获取当前语言
 const getCurrentLocale = (): "zh" | "en" => {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return "zh";
   const stored = localStorage.getItem("museum-art-language");
-  return stored === "zh" || stored === "zh-CN" ? "zh" : "en";
+  return stored === "en" ? "en" : "zh";
 };
 
 // 国际化通知辅助函数

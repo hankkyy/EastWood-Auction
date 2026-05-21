@@ -231,10 +231,28 @@ export default function AdminPage() {
             </Group>
             <Stack spacing={4}>
               <Text size="sm" color="dimmed">
+                <Text component="span" weight={600} color="gray.3">
+                  {locale === "zh" ? "邮箱：" : "Email: "}
+                </Text>
                 {profile.email || (locale === "zh" ? "无邮箱" : "No email")}
               </Text>
               <Text size="sm" color="dimmed">
-                ID: {profile.user_id || "-"}
+                <Text component="span" weight={600} color="gray.3">
+                  {locale === "zh" ? "用户ID：" : "User ID: "}
+                </Text>
+                {profile.user_id || "-"}
+              </Text>
+              <Text size="sm" color="dimmed">
+                <Text component="span" weight={600} color="gray.3">
+                  {locale === "zh" ? "角色：" : "Role: "}
+                </Text>
+                {profile.role === "admin"
+                  ? locale === "zh"
+                    ? "管理员"
+                    : "Admin"
+                  : locale === "zh"
+                    ? "用户"
+                    : "User"}
               </Text>
             </Stack>
           </Box>
