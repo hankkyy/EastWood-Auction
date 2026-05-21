@@ -32,7 +32,7 @@ const useStyles = createStyles((theme) => ({
 export default function TopBar() {
   const { classes } = useStyles();
   const { t } = useI18n();
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -44,6 +44,16 @@ export default function TopBar() {
         color: "yellow",
       });
       void router.push("/inquiries?authRequired=1");
+      return;
+    }
+
+    if (isAdmin) {
+      notifications.show({
+        title: t("inquiry.adminBlockedTitle"),
+        message: t("inquiry.adminBlockedMessage"),
+        color: "yellow",
+      });
+      void router.push("/inbox");
       return;
     }
 

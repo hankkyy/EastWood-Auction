@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 export default function InquiriesPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [inquiryCode, setInquiryCode] = useState("");
@@ -33,6 +33,10 @@ export default function InquiriesPage() {
   const [details, setDetails] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const returnTo =
+    typeof router.query.returnTo === "string" && router.query.returnTo.startsWith("/")
+      ? router.query.returnTo
+      : "/";
 
   useEffect(() => {
     if (!router.isReady || loading || user) {
@@ -50,12 +54,38 @@ export default function InquiriesPage() {
   }, [router.isReady, router.query.authRequired, loading, user, t]);
 
   useEffect(() => {
+    if (!router.isReady || loading || !user || !isAdmin) {
+      return;
+    }
+
+    notifications.show({
+      title: t("inquiry.adminBlockedTitle"),
+      message: t("inquiry.adminBlockedMessage"),
+      color: "yellow",
+    });
+  }, [router.isReady, loading, user, isAdmin, t]);
+
+  useEffect(() => {
     if (!user?.email) {
       return;
     }
 
     setContactEmail((prev) => prev || user.email || "");
   }, [user?.email]);
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
+    const prefilledCode = typeof router.query.code === "string" ? router.query.code.trim() : "";
+    if (!prefilledCode) {
+      return;
+    }
+
+    setInquiryCode(prefilledCode);
+    setNoInquiryCode(false);
+  }, [router.isReady, router.query.code]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -67,6 +97,15 @@ export default function InquiriesPage() {
         color: "yellow",
       });
       setAuthModalOpened(true);
+      return;
+    }
+
+    if (isAdmin) {
+      notifications.show({
+        title: t("inquiry.adminBlockedTitle"),
+        message: t("inquiry.adminBlockedMessage"),
+        color: "yellow",
+      });
       return;
     }
 
@@ -132,6 +171,7 @@ export default function InquiriesPage() {
       setDetails("");
       setContactPhone("");
       setContactEmail(user.email || "");
+      await router.push("/inbox");
     } catch (error: any) {
       notifications.show({
         title: t("inquiry.submitFailedTitle"),
@@ -166,7 +206,45 @@ export default function InquiriesPage() {
                     <Button onClick={() => setAuthModalOpened(true)}>
                       {t("auth.loginRegister")}
                     </Button>
-                    <Button variant="light" onClick={() => router.push("/")}>
+                    <Button
+                      variant="filled"
+                      color="yellow"
+                      onClick={() => router.push("/")}
+                      sx={{
+                        backgroundColor: "#f6e7b0",
+                        color: "#4f3b12",
+                        "&:hover": {
+                          backgroundColor: "#f2dc8f",
+                        },
+                      }}
+                    >
+                      {locale === "zh" ? "返回首页" : "Back Home"}
+                    </Button>
+                  </Group>
+                </Stack>
+              </Alert>
+            ) : null}
+
+            {!loading && user && isAdmin ? (
+              <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.adminBlockedTitle")}>
+                <Stack spacing="sm">
+                  <Text>{t("inquiry.adminBlockedMessage")}</Text>
+                  <Group>
+                    <Button onClick={() => router.push("/inbox")}>
+                      {t("inbox.pageTitle")}
+                    </Button>
+                    <Button
+                      variant="filled"
+                      color="yellow"
+                      onClick={() => router.push("/")}
+                      sx={{
+                        backgroundColor: "#f6e7b0",
+                        color: "#4f3b12",
+                        "&:hover": {
+                          backgroundColor: "#f2dc8f",
+                        },
+                      }}
+                    >
                       {locale === "zh" ? "返回首页" : "Back Home"}
                     </Button>
                   </Group>
@@ -182,14 +260,14 @@ export default function InquiriesPage() {
                     placeholder={t("inquiry.codePlaceholder")}
                     value={inquiryCode}
                     onChange={(event) => setInquiryCode(event.currentTarget.value)}
-                    disabled={noInquiryCode || !user}
+                    disabled={noInquiryCode || !user || isAdmin}
                     required={!noInquiryCode}
                   />
                   <Checkbox
                     checked={noInquiryCode}
                     onChange={(event) => setNoInquiryCode(event.currentTarget.checked)}
                     label={t("inquiry.noCodeLabel")}
-                    disabled={!user}
+                    disabled={!user || isAdmin}
                   />
                   <Textarea
                     label={t("inquiry.detailsLabel")}
@@ -198,7 +276,7 @@ export default function InquiriesPage() {
                     value={details}
                     onChange={(event) => setDetails(event.currentTarget.value)}
                     required
-                    disabled={!user}
+                    disabled={!user || isAdmin}
                   />
                   <TextInput
                     label={t("inquiry.phoneLabel")}
@@ -206,7 +284,7 @@ export default function InquiriesPage() {
                     value={contactPhone}
                     onChange={(event) => setContactPhone(event.currentTarget.value)}
                     required
-                    disabled={!user}
+                    disabled={!user || isAdmin}
                   />
                   <TextInput
                     label={t("inquiry.emailLabel")}
@@ -215,10 +293,25 @@ export default function InquiriesPage() {
                     onChange={(event) => setContactEmail(event.currentTarget.value)}
                     required
                     type="email"
-                    disabled={!user}
+                    disabled={!user || isAdmin}
                   />
                   <Group position="right">
-                    <Button type="submit" loading={submitting} disabled={!user}>
+                    <Button
+                      variant="filled"
+                      color="yellow"
+                      type="button"
+                      onClick={() => router.push(returnTo)}
+                      sx={{
+                        backgroundColor: "#f6e7b0",
+                        color: "#4f3b12",
+                        "&:hover": {
+                          backgroundColor: "#f2dc8f",
+                        },
+                      }}
+                    >
+                      {t("inquiry.cancelButton")}
+                    </Button>
+                    <Button type="submit" loading={submitting} disabled={!user || isAdmin}>
                       {t("inquiry.submitButton")}
                     </Button>
                   </Group>

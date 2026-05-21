@@ -124,6 +124,9 @@ export default function ShopDetailPage() {
 
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
+  const inquiryHref = item.collectionId
+    ? `/inquiries?code=${encodeURIComponent(item.collectionId)}&returnTo=${encodeURIComponent(router.asPath || `/shop/${itemId}`)}`
+    : "/inquiries";
 
   return (
     <>
@@ -161,6 +164,18 @@ export default function ShopDetailPage() {
               {/* 标题和基本信息 */}
               <Stack spacing="md">
                 <Title order={2}>{title}</Title>
+
+                <Group>
+                  <Button
+                    component={Link}
+                    href={inquiryHref}
+                    variant="outline"
+                    color="yellow"
+                    size="md"
+                  >
+                    {t("home.bookButton")}
+                  </Button>
+                </Group>
 
                 {item.collectionId && (
                   <Badge 

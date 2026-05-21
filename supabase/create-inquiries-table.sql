@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   inquiry_code text,
   no_inquiry_code boolean NOT NULL DEFAULT false,
   is_processed boolean NOT NULL DEFAULT false,
+  is_archived boolean NOT NULL DEFAULT false,
   details text NOT NULL,
   contact_phone text NOT NULL,
   contact_email text NOT NULL,

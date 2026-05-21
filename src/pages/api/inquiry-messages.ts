@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { data: inquiry, error: inquiryError } = await supabase
       .from("inquiries")
-      .select("id, user_id")
+      .select("id, user_id, is_archived")
       .eq("id", inquiryId)
       .maybeSingle();
 
@@ -41,6 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!inquiry) {
       return res.status(404).json({ error: "Inquiry not found." });
+    }
+
+    if (inquiry.is_archived) {
+      return res.status(403).json({ error: "This inquiry has been archived and can no longer receive replies." });
     }
 
     if (!auth.isAdmin && inquiry.user_id !== auth.userId) {
@@ -66,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await supabase
       .from("inquiries")
-      .update({ is_processed: auth.isAdmin } as any)
+      .update(auth.isAdmin ? ({ is_processed: true, is_archived: false } as any) : ({ is_processed: false } as any))
       .eq("id", inquiryId);
 
     return res.status(201).json({ message: data });

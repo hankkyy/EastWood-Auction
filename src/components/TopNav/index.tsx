@@ -167,6 +167,16 @@ export default function TopNav() {
       return;
     }
 
+    if (isAdmin) {
+      notifications.show({
+        title: t("inquiry.adminBlockedTitle"),
+        message: t("inquiry.adminBlockedMessage"),
+        color: "yellow",
+      });
+      void router.push("/inbox");
+      return;
+    }
+
     void router.push("/inquiries");
   };
 

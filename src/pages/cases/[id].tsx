@@ -133,6 +133,9 @@ export default function CaseDetailPage() {
   const title = locale === "zh" && item.titleZh ? item.titleZh : item.title;
   const description = locale === "zh" && item.descriptionZh ? item.descriptionZh : item.description;
   const activeImage = selectedImage || gallery[0] || item.image;
+  const inquiryHref = item.caseRecord?.caseId
+    ? `/inquiries?code=${encodeURIComponent(item.caseRecord.caseId)}&returnTo=${encodeURIComponent(router.asPath || `/cases/${caseId}`)}`
+    : "/inquiries";
 
   const goToImage = (index: number) => {
     const nextImage = gallery[index];
@@ -193,13 +196,24 @@ export default function CaseDetailPage() {
                     color={item.isOfficial === true ? "blue" : "green"} 
                     variant="outline"
                     sx={{ alignSelf: "flex-start" }}
-                  >
+                    >
                     {item.isOfficial === true 
                       ? t("cases.platformUpload")
                       : t("cases.personalUserUpload")}
                   </Badge>
                 </Group>
                 <Title order={1}>{title}</Title>
+                <Group>
+                  <Button
+                    component={Link}
+                    href={inquiryHref}
+                    variant="outline"
+                    color="yellow"
+                    size="md"
+                  >
+                    {t("support.caseInquiryButton")}
+                  </Button>
+                </Group>
               </Stack>
 
               <Box sx={{ position: "relative" }}>

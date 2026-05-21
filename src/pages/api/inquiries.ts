@@ -8,6 +8,7 @@ type InquiryRow = {
   inquiry_code: string | null;
   no_inquiry_code: boolean;
   is_processed: boolean;
+  is_archived: boolean;
   details: string;
   contact_phone: string;
   contact_email: string;
@@ -45,6 +46,7 @@ type InquiryPayload = {
 type InquiryStatusPayload = {
   id?: string;
   isProcessed?: boolean;
+  isArchived?: boolean;
 };
 
 const toSerializable = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -91,6 +93,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const supabase = getSupabaseAdmin();
 
   if (req.method === "POST") {
+    if (auth.isAdmin) {
+      return res.status(403).json({ error: "Administrator accounts cannot submit inquiries." });
+    }
+
     const normalized = normalizePayload(req.body as InquiryPayload);
     if (!normalized.ok) {
       return res.status(normalized.status).json({ error: normalized.error });
@@ -133,8 +139,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const selectFields = countOnly
       ? "id, user_id, is_processed"
       : auth.isAdmin
-        ? "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
-        : "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at";
+        ? "id, user_id, inquiry_code, no_inquiry_code, is_processed, is_archived, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
+        : "id, user_id, inquiry_code, no_inquiry_code, is_processed, is_archived, details, contact_phone, contact_email, created_at, updated_at";
 
     let query = supabase.from(TABLE_NAME).select(selectFields);
 
@@ -154,7 +160,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const inquiries = toSerializable((data ?? []) as unknown as InquiryRow[]);
     const inquiryIds = inquiries.map((item) => item.id);
-    const pendingCount = inquiries.filter((item: any) => !item.is_processed).length;
+    const pendingCount = inquiries.filter((item: any) => !item.is_processed && !item.is_archived).length;
     const totalCount = inquiries.length;
     let unreadCount = 0;
 
@@ -231,21 +237,54 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === "PATCH") {
-    if (!auth.isAdmin) {
-      return res.status(403).json({ error: "Admin access required" });
+    const { id, isProcessed, isArchived } = req.body as InquiryStatusPayload;
+    if (!id || (typeof isProcessed !== "boolean" && typeof isArchived !== "boolean")) {
+      return res.status(400).json({ error: "Inquiry id and at least one status field are required." });
     }
 
-    const { id, isProcessed } = req.body as InquiryStatusPayload;
-    if (!id || typeof isProcessed !== "boolean") {
-      return res.status(400).json({ error: "Inquiry id and processed status are required." });
+    const { data: currentInquiry, error: inquiryError } = await supabase
+      .from(TABLE_NAME)
+      .select("id, user_id, is_archived")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (inquiryError) {
+      return res.status(500).json({ error: inquiryError.message });
+    }
+
+    if (!currentInquiry) {
+      return res.status(404).json({ error: "Inquiry not found." });
+    }
+
+    if (!auth.isAdmin) {
+      if (currentInquiry.user_id !== auth.userId) {
+        return res.status(403).json({ error: "You can only update your own inquiries." });
+      }
+      if (typeof isProcessed === "boolean" || isArchived !== true) {
+        return res.status(403).json({ error: "Users can only archive their own inquiries." });
+      }
+    }
+
+    const updateData: Record<string, boolean> = {};
+    if (typeof isProcessed === "boolean") {
+      updateData.is_processed = isProcessed;
+      if (isProcessed) {
+        updateData.is_archived = false;
+      }
+    }
+    if (typeof isArchived === "boolean") {
+      updateData.is_archived = isArchived;
+      if (isArchived) {
+        updateData.is_processed = false;
+      }
     }
 
     const { data, error } = await supabase
       .from(TABLE_NAME)
-      .update({ is_processed: isProcessed } as any)
+      .update(updateData as any)
       .eq("id", id)
       .select(
-        "id, user_id, inquiry_code, no_inquiry_code, is_processed, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
+        "id, user_id, inquiry_code, no_inquiry_code, is_processed, is_archived, details, contact_phone, contact_email, created_at, updated_at, profiles:user_id (id, first_name, last_name, user_id, email)"
       )
       .single();
 
