@@ -4,5 +4,4 @@ const nextConfig = {
 };
 const withVideos = require("next-videos");
 
-module.exports = nextConfig;
-module.exports = withVideos();
+module.exports = withVideos(nextConfig);
