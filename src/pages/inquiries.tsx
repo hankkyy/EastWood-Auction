@@ -252,7 +252,37 @@ export default function InquiriesPage() {
               </Alert>
             ) : null}
 
-            <Paper withBorder radius="md" p="lg">
+            <Paper
+              withBorder
+              radius="md"
+              p="lg"
+              sx={
+                !user
+                  ? {
+                      backgroundColor: "rgba(246, 231, 176, 0.14)",
+                      borderColor: "rgba(246, 231, 176, 0.3)",
+                      "& .mantine-Input-input:disabled, & .mantine-Textarea-input:disabled": {
+                        backgroundColor: "rgba(255, 248, 220, 0.78)",
+                        borderColor: "rgba(246, 231, 176, 0.42)",
+                        color: "#5b4820",
+                        opacity: 1,
+                        WebkitTextFillColor: "#5b4820",
+                      },
+                      "& .mantine-Input-input:disabled::placeholder, & .mantine-Textarea-input:disabled::placeholder": {
+                        color: "rgba(91, 72, 32, 0.72)",
+                      },
+                      "& .mantine-Checkbox-input:disabled": {
+                        backgroundColor: "rgba(255, 248, 220, 0.78)",
+                        borderColor: "rgba(246, 231, 176, 0.5)",
+                        opacity: 1,
+                      },
+                      "& .mantine-Checkbox-label": {
+                        color: "#f3e7c8",
+                      },
+                    }
+                  : undefined
+              }
+            >
               <form onSubmit={handleSubmit}>
                 <Stack spacing="md">
                   <TextInput
