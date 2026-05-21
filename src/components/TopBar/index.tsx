@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   Button,
   Container,
   createStyles,
@@ -141,15 +140,15 @@ export default function TopBar() {
             disabled={!unreadCount}
             label={unreadCount > 99 ? "99+" : unreadCount}
           >
-            <ActionIcon
-              size="lg"
+            <Button
+              size="xs"
               variant="light"
               color="yellow"
               onClick={handleInboxClick}
-              aria-label={t("inbox.pageTitle")}
+              leftIcon={<IconInbox size={16} />}
             >
-              <IconInbox size={16} />
-            </ActionIcon>
+              {t("inbox.pageTitle")}
+            </Button>
           </Indicator>
           <Button
             size="xs"

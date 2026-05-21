@@ -34,7 +34,7 @@ const formatDisplayName = (profile: AdminProfile, locale: string) => {
 };
 
 export default function AdminPage() {
-  const { user, isAdmin, loading: authLoading, refreshProfile, logout } = useAuth();
+  const { user, isAdmin, loading: authLoading, roleLoading, refreshProfile, logout } = useAuth();
   const { locale } = useI18n();
   const [profiles, setProfiles] = useState<AdminProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,13 +84,13 @@ export default function AdminPage() {
   }, [locale]);
 
   useEffect(() => {
-    if (authLoading) return;
+    if (authLoading || roleLoading) return;
     if (!user || !isAdmin) {
       setIsLoading(false);
       return;
     }
     void loadAdminData();
-  }, [authLoading, user, isAdmin, loadAdminData]);
+  }, [authLoading, roleLoading, user, isAdmin, loadAdminData]);
 
   const adminProfiles = useMemo(
     () => profiles.filter((profile) => profile.role === "admin"),
@@ -362,16 +362,39 @@ export default function AdminPage() {
                 </Text>
               </div>
               <Group spacing="xs">
-                <Button component={Link} href="/inbox" variant="light">
+                <Button
+                  component={Link}
+                  href="/inbox"
+                  variant="filled"
+                  color="teal"
+                  sx={{
+                    boxShadow: "0 8px 18px rgba(18, 184, 134, 0.35)",
+                    "&:hover": {
+                      boxShadow: "0 10px 22px rgba(18, 184, 134, 0.45)",
+                    },
+                  }}
+                >
                   {locale === "zh" ? "前往收件箱" : "Open Inbox"}
                 </Button>
-                <Button component={Link} href="/" variant="light">
+                <Button
+                  component={Link}
+                  href="/"
+                  variant="filled"
+                  color="orange"
+                  sx={{
+                    color: "#111",
+                    boxShadow: "0 8px 18px rgba(245, 159, 0, 0.35)",
+                    "&:hover": {
+                      boxShadow: "0 10px 22px rgba(245, 159, 0, 0.45)",
+                    },
+                  }}
+                >
                   {locale === "zh" ? "返回首页" : "Back Home"}
                 </Button>
               </Group>
             </Group>
 
-            {!authLoading && (!user || !isAdmin) ? (
+            {!authLoading && !roleLoading && (!user || !isAdmin) ? (
               <Alert color="red" title={locale === "zh" ? "无权限访问" : "Access denied"}>
                 {locale === "zh"
                   ? "只有管理员可以进入管理后台。"
@@ -385,7 +408,7 @@ export default function AdminPage() {
               </Alert>
             ) : null}
 
-            {isLoading || authLoading ? (
+            {isLoading || authLoading || roleLoading ? (
               <Group position="center" py="xl">
                 <Loader />
               </Group>

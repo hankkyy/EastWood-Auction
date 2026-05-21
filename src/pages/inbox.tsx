@@ -61,6 +61,8 @@ type InquiryRecord = {
 export default function InboxPage() {
   const { t, locale } = useI18n();
   const { user, loading, roleLoading, isAdmin } = useAuth();
+  const roleResolved = !user || !roleLoading;
+  const adminPreviewGridTemplate = "minmax(0, 1.35fr) minmax(0, 1.25fr) 84px";
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -516,10 +518,22 @@ export default function InboxPage() {
         <Group position="right">
           <Button
             size="xs"
-            color={pendingState.update.isArchived ? "grape" : pendingState.update.isProcessed ? "teal" : "gray"}
+            color={pendingState.update.isArchived ? "grape" : pendingState.update.isProcessed ? "teal" : "yellow"}
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
+            sx={
+              !pendingState.update.isArchived && !pendingState.update.isProcessed
+                ? {
+                    backgroundColor: "rgba(255, 224, 102, 0.28)",
+                    color: "#fff3bf",
+                    border: "1px solid rgba(255, 224, 102, 0.48)",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 224, 102, 0.4)",
+                    },
+                  }
+                : undefined
+            }
             onClick={() => void updateInquiryStatus(inquiry.id, pendingState.update, pendingState.label)}
           >
             {pendingState.label}
@@ -529,6 +543,14 @@ export default function InboxPage() {
             color="gray"
             variant="light"
             disabled={isUpdating}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.12)",
+              color: "#f8f9fa",
+              border: "1px solid rgba(255, 255, 255, 0.22)",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+              },
+            }}
             onClick={() => setStatusConfirmState(null)}
           >
             {locale === "zh" ? "取消" : "Cancel"}
@@ -567,8 +589,8 @@ export default function InboxPage() {
           <>
         <Button
           size="xs"
-          color={inquiry.is_processed ? "gray" : "teal"}
-          variant={inquiry.is_processed ? "light" : "filled"}
+          color={inquiry.is_processed ? "yellow" : "teal"}
+          variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
           onClick={() =>
@@ -596,9 +618,16 @@ export default function InboxPage() {
         <Button
           size="xs"
           color="grape"
-          variant="light"
+          variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
+          sx={{
+            backgroundColor: "#d0bfff",
+            color: "#2b1648",
+            "&:hover": {
+              backgroundColor: "#bda3ff",
+            },
+          }}
           onClick={() =>
             void updateInquiryStatus(
               inquiry.id,
@@ -634,6 +663,7 @@ export default function InboxPage() {
         onClick={() => setSelectedInquiryId(inquiry.id)}
         sx={{
           cursor: "pointer",
+          position: "relative",
           border: "none",
           borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
           borderLeft: `3px solid ${isUnread && !isSelected ? accentColor : "transparent"}`,
@@ -653,17 +683,26 @@ export default function InboxPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: isAdmin ? "1.2fr 1fr minmax(220px, 1.5fr) auto" : "1fr auto",
-            gap: "12px",
+            gridTemplateColumns: isAdmin
+              ? adminPreviewGridTemplate
+              : "1fr auto",
+            gap: "8px",
             alignItems: "center",
             minWidth: 0,
+            width: "100%",
+            overflow: "hidden",
           }}
         >
           <Text
             size="md"
             weight={isUnread && !isSelected ? 800 : 600}
-            sx={{ minWidth: 0 }}
-            lineClamp={1}
+            sx={{
+              minWidth: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+            title={inquiry.no_inquiry_code ? t("inbox.noCode") : inquiry.inquiry_code ?? undefined}
           >
             {inquiry.no_inquiry_code ? t("inbox.noCode") : inquiry.inquiry_code}
           </Text>
@@ -671,16 +710,8 @@ export default function InboxPage() {
             <>
               <Text
                 size="md"
-                weight={isUnread && !isSelected ? 700 : 500}
-                sx={{ minWidth: 0 }}
-                lineClamp={1}
-              >
-                {formatInquiryPreviewOwner(inquiry)}
-              </Text>
-              <Text
-                size="sm"
                 color="dimmed"
-                sx={{ minWidth: 0 }}
+                sx={{ minWidth: 0, paddingLeft: 8 }}
                 lineClamp={1}
                 title={formatInquiryPreviewEmail(inquiry)}
               >
@@ -689,21 +720,33 @@ export default function InboxPage() {
             </>
           ) : null}
 
-          <Group noWrap spacing={6} sx={{ flexShrink: 0, justifySelf: "end" }}>
+          <Box
+            sx={{
+              width: 84,
+              justifySelf: "stretch",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              paddingLeft: 30,
+            }}
+          >
             <Text
               size="sm"
               weight={700}
-              color={inquiry.is_archived ? "gray.4" : inquiry.is_processed ? "teal.2" : "yellow.2"}
+              color={inquiry.is_archived ? "#d0bfff" : inquiry.is_processed ? "teal.2" : "yellow.2"}
+              sx={{ whiteSpace: "nowrap", textAlign: "left" }}
             >
               {getInquiryStatusLabel(inquiry)}
             </Text>
-            {isUnread ? (
-              <Badge color="red" variant={isSelected ? "light" : "filled"} size="xs">
-                {unreadIncomingCount}
-              </Badge>
-            ) : null}
-          </Group>
+          </Box>
         </Box>
+        {isAdmin && isUnread ? (
+          <Box sx={{ position: "absolute", top: 8, right: 10 }}>
+            <Badge color="red" variant={isSelected ? "light" : "filled"} size="xs">
+              {unreadIncomingCount}
+            </Badge>
+          </Box>
+        ) : null}
       </Paper>
     );
   };
@@ -714,10 +757,14 @@ export default function InboxPage() {
       py={8}
       sx={{
         display: "grid",
-        gridTemplateColumns: isAdmin ? "1.2fr 1fr minmax(220px, 1.5fr) auto" : "1fr auto",
-        gap: "12px",
+        gridTemplateColumns: isAdmin
+          ? adminPreviewGridTemplate
+          : "1fr auto",
+        gap: "8px",
         alignItems: "center",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        width: "100%",
+        overflow: "hidden",
       }}
     >
       <Text size="sm" weight={700} color="dimmed" sx={{ minWidth: 0 }}>
@@ -725,17 +772,25 @@ export default function InboxPage() {
       </Text>
       {isAdmin ? (
         <>
-          <Text size="sm" weight={700} color="dimmed" sx={{ minWidth: 0 }}>
-            {locale === "zh" ? "用户姓名" : "User name"}
-          </Text>
-          <Text size="sm" weight={700} color="dimmed" sx={{ minWidth: 0 }}>
+          <Text size="sm" weight={700} color="dimmed" sx={{ minWidth: 0, paddingLeft: 8 }}>
             {locale === "zh" ? "用户邮箱" : "User email"}
           </Text>
         </>
       ) : null}
-      <Text size="sm" weight={700} color="dimmed" sx={{ justifySelf: "end" }}>
-        {locale === "zh" ? "状态" : "Status"}
-      </Text>
+      <Box
+        sx={{
+          width: 84,
+          justifySelf: "stretch",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          paddingLeft: 30,
+        }}
+      >
+        <Text size="sm" weight={700} color="dimmed" sx={{ whiteSpace: "nowrap", textAlign: "left" }}>
+          {locale === "zh" ? "状态" : "Status"}
+        </Text>
+      </Box>
     </Box>
   );
 
@@ -746,6 +801,7 @@ export default function InboxPage() {
       withBorder
       radius="md"
       sx={{
+        width: "100%",
         borderColor: inquiry.is_archived
           ? "rgba(160, 160, 160, 0.35)"
           : inquiry.is_processed
@@ -764,101 +820,132 @@ export default function InboxPage() {
       }}
     >
       <Stack spacing="md">
-        <Group position="apart" align="flex-start">
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Box
-              mb={6}
+        <Box sx={{ width: "100%", minWidth: 0 }}>
+          <Stack spacing={8} mb="sm">
+            <Text
+              weight={800}
+              size="lg"
               sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "flex-start",
-                gap: 8,
+                width: "100%",
+                minWidth: 0,
+                lineHeight: 1.45,
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+                wordBreak: "normal",
               }}
             >
-              <Text
-                weight={800}
-                size="lg"
-                sx={{
-                  flex: "1 1 420px",
-                  minWidth: 0,
-                  lineHeight: 1.45,
-                  whiteSpace: "normal",
-                  wordBreak: "keep-all",
-                  overflowWrap: "anywhere",
-                  writingMode: "horizontal-tb",
-                  textOrientation: "mixed",
-                }}
-              >
-                {formatInquiryTitle(inquiry)}
-              </Text>
+              {formatInquiryTitle(inquiry)}
+            </Text>
+            <Group spacing="xs" noWrap={false}>
               <Badge
-                color={inquiry.is_archived ? "gray" : inquiry.is_processed ? "teal" : "yellow"}
-                variant="light"
-                sx={{ flexShrink: 0, alignSelf: "flex-start" }}
+                color={inquiry.is_archived ? "grape" : inquiry.is_processed ? "teal" : "yellow"}
+                variant={inquiry.is_archived ? "filled" : "light"}
+                sx={
+                  inquiry.is_archived
+                    ? {
+                        backgroundColor: "#d0bfff",
+                        color: "#2b1648",
+                      }
+                    : undefined
+                }
               >
                 {getInquiryStatusLabel(inquiry)}
               </Badge>
-            </Box>
-            {isAdmin ? (
-              <Stack spacing={2} mb={8}>
-                <Stack spacing={2}>
-                  {formatInquiryOwnerMeta(inquiry).map((item) => (
+              <Text size="sm" color="dimmed">
+                {t("inbox.submittedAt")}
+                {formatInquiryTime(inquiry.created_at)}
+              </Text>
+            </Group>
+          </Stack>
+          {isAdmin ? (
+            <Stack spacing={2} mb={8}>
+              <Stack spacing={2}>
+                {formatInquiryOwnerMeta(inquiry).map((item) => (
+                  <Box
+                    key={item.label}
+                    sx={{
+                      width: "100%",
+                      display: "grid",
+                      gridTemplateColumns: "120px minmax(0, 1fr)",
+                      gap: 10,
+                      alignItems: "start",
+                    }}
+                  >
+                    <Text size="sm" weight={600} color="gray.3">
+                      {item.label}
+                      {locale === "zh" ? "：" : ": "}
+                    </Text>
                     <Text
-                      key={item.label}
                       size="sm"
                       color="dimmed"
                       sx={{
+                        minWidth: 0,
                         lineHeight: 1.6,
                         whiteSpace: "normal",
-                        wordBreak: "keep-all",
                         overflowWrap: "anywhere",
-                        writingMode: "horizontal-tb",
-                        textOrientation: "mixed",
+                        wordBreak: "normal",
                       }}
                     >
-                      <Text component="span" weight={600} color="gray.3">
-                        {item.label}
-                        {locale === "zh" ? "：" : ": "}
-                      </Text>
                       {item.value}
                     </Text>
-                  ))}
-                </Stack>
+                  </Box>
+                ))}
               </Stack>
-            ) : null}
-            <Text size="sm" color="dimmed">
-              {t("inbox.submittedAt")}
-              {formatInquiryTime(inquiry.created_at)}
-            </Text>
-            <Text
-              size="sm"
+            </Stack>
+          ) : null}
+          <Stack spacing={2} mt={6}>
+            <Box
               sx={{
-                whiteSpace: "normal",
-                wordBreak: "keep-all",
-                overflowWrap: "anywhere",
-                writingMode: "horizontal-tb",
-                textOrientation: "mixed",
-              }}
-              mt={6}
-            >
-              {t("inbox.contactPhone")}
-              {inquiry.contact_phone}
-            </Text>
-            <Text
-              size="sm"
-              sx={{
-                whiteSpace: "normal",
-                wordBreak: "keep-all",
-                overflowWrap: "anywhere",
-                writingMode: "horizontal-tb",
-                textOrientation: "mixed",
+                width: "100%",
+                display: "grid",
+                gridTemplateColumns: "120px minmax(0, 1fr)",
+                gap: 10,
+                alignItems: "start",
               }}
             >
-              {t("inbox.contactEmail")}
-              {inquiry.contact_email}
-            </Text>
-          </Box>
-        </Group>
+              <Text size="sm" weight={600} color="gray.3">
+                {locale === "zh" ? "联系电话：" : "Phone: "}
+              </Text>
+              <Text
+                size="sm"
+                sx={{
+                  minWidth: 0,
+                  lineHeight: 1.6,
+                  whiteSpace: "normal",
+                  overflowWrap: "anywhere",
+                  wordBreak: "normal",
+                }}
+              >
+                {inquiry.contact_phone}
+              </Text>
+            </Box>
+            <Box
+              sx={{
+                width: "100%",
+                display: "grid",
+                gridTemplateColumns: "120px minmax(0, 1fr)",
+                gap: 10,
+                alignItems: "start",
+              }}
+            >
+              <Text size="sm" weight={600} color="gray.3">
+                {locale === "zh" ? "联系邮箱：" : "Email: "}
+              </Text>
+              <Text
+                size="sm"
+                sx={{
+                  minWidth: 0,
+                  lineHeight: 1.6,
+                  whiteSpace: "normal",
+                  overflowWrap: "anywhere",
+                  wordBreak: "normal",
+                }}
+              >
+                {inquiry.contact_email}
+              </Text>
+            </Box>
+          </Stack>
+        </Box>
 
         {renderStatusAction(inquiry)}
 
@@ -933,8 +1020,6 @@ export default function InboxPage() {
                       whiteSpace: "pre-wrap",
                       wordBreak: "normal",
                       overflowWrap: "anywhere",
-                      writingMode: "horizontal-tb",
-                      textOrientation: "mixed",
                       lineHeight: 1.7,
                     }}
                   >
@@ -1039,17 +1124,23 @@ export default function InboxPage() {
               <div>
                 <Title order={1}>{t("inbox.pageTitle")}</Title>
                 <Text color="dimmed" mt="sm" sx={{ whiteSpace: "pre-line" }}>
-                  {isAdmin ? t("inbox.adminDescription") : t("inbox.pageDescription")}
+                  {roleResolved
+                    ? isAdmin
+                      ? t("inbox.adminDescription")
+                      : t("inbox.pageDescription")
+                    : locale === "zh"
+                      ? "正在确认账户角色并同步收件箱视图。"
+                      : "Confirming your account role and syncing the inbox view."}
                 </Text>
               </div>
               {user ? (
                 <Group spacing="xs">
-                  {unreadCount > 0 ? (
+                  {roleResolved && unreadCount > 0 ? (
                     <Badge color="red" variant="light" size="lg">
                       {locale === "zh" ? `未读 ${unreadCount}` : `Unread ${unreadCount}`}
                     </Badge>
                   ) : null}
-                  {isAdmin ? (
+                  {roleResolved && isAdmin ? (
                     <>
                       <Badge color="yellow" variant="light" size="lg">
                         {locale === "zh" ? `未处理 ${pendingCount}` : `Pending ${pendingCount}`}
@@ -1057,7 +1148,7 @@ export default function InboxPage() {
                       <Badge color="teal" variant="light" size="lg">
                         {locale === "zh" ? `已处理 ${processedCount}` : `Processed ${processedCount}`}
                       </Badge>
-                      <Badge color="gray" variant="light" size="lg">
+                      <Badge color="grape" variant="light" size="lg">
                         {locale === "zh" ? `已归档 ${archivedCount}` : `Archived ${archivedCount}`}
                       </Badge>
                     </>
@@ -1107,7 +1198,7 @@ export default function InboxPage() {
               <Stack spacing="lg">
                 {isAdmin ? (
                   <Grid align="flex-start" gutter="lg">
-                    <Grid.Col span={12} md={6}>
+                    <Grid.Col span={12} lg={6}>
                       <Stack spacing="lg">
                         <Text size="sm" color="dimmed">
                           {locale === "zh"
@@ -1209,7 +1300,7 @@ export default function InboxPage() {
                       </Stack>
                     </Grid.Col>
 
-                    <Grid.Col span={12} md={6}>
+                    <Grid.Col span={12} lg={6}>
                       {selectedInquiry ? (
                         <Stack spacing="sm">
                           <Text size="sm" color="dimmed">
