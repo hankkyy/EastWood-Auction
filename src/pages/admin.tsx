@@ -17,6 +17,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { IconShield, IconUser } from "@tabler/icons-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -36,6 +37,7 @@ const formatDisplayName = (profile: AdminProfile, locale: string) => {
 export default function AdminPage() {
   const { user, isAdmin, loading: authLoading, roleLoading, refreshProfile, logout } = useAuth();
   const { locale } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [profiles, setProfiles] = useState<AdminProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -219,8 +221,16 @@ export default function AdminPage() {
 
     return (
       <Paper key={profile.id} p="md" withBorder radius="md">
-        <Group position="apart" align="flex-start" noWrap>
-          <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Group
+          position="apart"
+          align="flex-start"
+          noWrap={!isMobile}
+          sx={{
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "stretch" : "flex-start",
+          }}
+        >
+          <Box sx={{ minWidth: 0, flex: 1, width: "100%" }}>
             <Group spacing="xs" mb="xs">
               <Text weight={700}>{formatDisplayName(profile, locale)}</Text>
               {isSelf && (
@@ -229,20 +239,32 @@ export default function AdminPage() {
                 </Badge>
               )}
             </Group>
-            <Stack spacing={4}>
-              <Text size="sm" color="dimmed">
+            <Stack spacing="xs">
+              <Text
+                size="sm"
+                color="dimmed"
+                sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
+              >
                 <Text component="span" weight={600} color="gray.3">
                   {locale === "zh" ? "邮箱：" : "Email: "}
                 </Text>
                 {profile.email || (locale === "zh" ? "无邮箱" : "No email")}
               </Text>
-              <Text size="sm" color="dimmed">
+              <Text
+                size="sm"
+                color="dimmed"
+                sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
+              >
                 <Text component="span" weight={600} color="gray.3">
                   {locale === "zh" ? "用户ID：" : "User ID: "}
                 </Text>
                 {profile.user_id || "-"}
               </Text>
-              <Text size="sm" color="dimmed">
+              <Text
+                size="sm"
+                color="dimmed"
+                sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
+              >
                 <Text component="span" weight={600} color="gray.3">
                   {locale === "zh" ? "角色：" : "Role: "}
                 </Text>
@@ -257,7 +279,14 @@ export default function AdminPage() {
             </Stack>
           </Box>
 
-          <Group spacing="xs">
+          <Group
+            spacing="xs"
+            sx={{
+              width: isMobile ? "100%" : "auto",
+              flexDirection: isMobile ? "column" : "row",
+              alignItems: isMobile ? "stretch" : "center",
+            }}
+          >
             {pendingRoleChange ? (
               <>
                 <Button
@@ -267,6 +296,7 @@ export default function AdminPage() {
                   loading={isUpdating && !isDeleteArmed}
                   disabled={isUpdating}
                   onClick={() => updateRole(profile, pendingRoleChange)}
+                  fullWidth={isMobile}
                   sx={
                     pendingRoleChange === "user"
                       ? {
@@ -287,6 +317,7 @@ export default function AdminPage() {
                   variant="light"
                   disabled={isUpdating}
                   onClick={() => setRoleConfirmState(null)}
+                  fullWidth={isMobile}
                 >
                   {locale === "zh" ? "取消" : "Cancel"}
                 </Button>
@@ -299,6 +330,7 @@ export default function AdminPage() {
                 loading={isUpdating && !isDeleteArmed}
                 disabled={isUpdating}
                 onClick={() => updateRole(profile, nextRole)}
+                fullWidth={isMobile}
                 sx={
                   profile.role === "admin"
                     ? {
@@ -329,6 +361,7 @@ export default function AdminPage() {
                   loading={isUpdating}
                   disabled={isUpdating}
                   onClick={() => void deleteProfile(profile)}
+                  fullWidth={isMobile}
                 >
                   {locale === "zh" ? "再次确认删除" : "Confirm delete"}
                 </Button>
@@ -338,6 +371,7 @@ export default function AdminPage() {
                   variant="light"
                   disabled={isUpdating}
                   onClick={() => setDeleteArmedId(null)}
+                  fullWidth={isMobile}
                 >
                   {locale === "zh" ? "取消" : "Cancel"}
                 </Button>
@@ -350,6 +384,7 @@ export default function AdminPage() {
                 loading={isUpdating && isDeleteArmed}
                 disabled={isUpdating}
                 onClick={() => void deleteProfile(profile)}
+                fullWidth={isMobile}
               >
                 {locale === "zh" ? "删除用户" : "Delete user"}
               </Button>
@@ -370,7 +405,12 @@ export default function AdminPage() {
       <Wrapper>
         <Container size="lg" py={48}>
           <Stack spacing="xl">
-            <Group position="apart" align="flex-end">
+            <Group
+              position="apart"
+              align={isMobile ? "stretch" : "flex-end"}
+              noWrap={!isMobile}
+              sx={{ flexDirection: isMobile ? "column" : "row" }}
+            >
               <div>
                 <Title order={1}>{title}</Title>
                 <Text color="dimmed">
@@ -379,12 +419,13 @@ export default function AdminPage() {
                     : "This page is only for administrator and user permission management. Handle consignments and inquiries in the inbox."}
                 </Text>
               </div>
-              <Group spacing="xs">
+              <Group spacing="xs" sx={{ width: isMobile ? "100%" : "auto" }}>
                 <Button
                   component={Link}
                   href="/inbox"
                   variant="filled"
                   color="teal"
+                  fullWidth={isMobile}
                   sx={{
                     boxShadow: "0 8px 18px rgba(18, 184, 134, 0.35)",
                     "&:hover": {
@@ -399,6 +440,7 @@ export default function AdminPage() {
                   href="/"
                   variant="filled"
                   color="orange"
+                  fullWidth={isMobile}
                   sx={{
                     color: "#111",
                     boxShadow: "0 8px 18px rgba(245, 159, 0, 0.35)",
@@ -433,8 +475,8 @@ export default function AdminPage() {
             ) : user && isAdmin ? (
               <Stack spacing="xl">
                 <Paper p="lg" withBorder radius="md">
-                  <Group position="apart" mb="md">
-                    <Group spacing="sm">
+                  <Group position="apart" mb="md" noWrap={!isMobile}>
+                    <Group spacing="sm" noWrap={!isMobile}>
                       <IconShield size={20} />
                       <Title order={3}>{locale === "zh" ? "管理员" : "Administrators"}</Title>
                     </Group>
@@ -450,8 +492,8 @@ export default function AdminPage() {
                 <Divider />
 
                 <Paper p="lg" withBorder radius="md">
-                  <Group position="apart" mb="md">
-                    <Group spacing="sm">
+                  <Group position="apart" mb="md" noWrap={!isMobile}>
+                    <Group spacing="sm" noWrap={!isMobile}>
                       <IconUser size={20} />
                       <Title order={3}>{locale === "zh" ? "用户" : "Users"}</Title>
                     </Group>

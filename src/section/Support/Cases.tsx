@@ -787,10 +787,15 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             spacing={56} // ✅ 增加卡片间距（从 xl 改为 56px）
             breakpoints={[{ maxWidth: "md", cols: 2 }, { maxWidth: "sm", cols: 1 }]}
             sx={{ 
-              paddingLeft: 48, // ✅ 增加左边距
-              paddingRight: 48, // ✅ 增加右边距
+              paddingLeft: 48,
+              paddingRight: 48,
               marginTop: 64, // ✅ 增加顶部间距
-              marginBottom: 64 // ✅ 增加底部间距
+              marginBottom: 64,
+              "@media (max-width: 48em)": {
+                paddingLeft: 0,
+                paddingRight: 0,
+                marginTop: 20,
+              },
             }}
           >
             {cases.map((item) => {
@@ -819,7 +824,11 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     position: "relative",
                     overflow: "hidden",
                     padding: 14,
-                    "&::before": {
+                    "@media (max-width: 48em)": {
+                      padding: 12,
+                      borderRadius: 22,
+                    },
+                    "&::after": {
                       content: '""',
                       position: "absolute",
                       inset: 8,
@@ -849,6 +858,14 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       borderRadius: 16,
                       overflow: "hidden",
                       boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                      "@media (max-width: 62em)": {
+                        height: 340,
+                      },
+                      "@media (max-width: 48em)": {
+                        height: 280,
+                        padding: 10,
+                        borderRadius: 14,
+                      },
                     }}
                   >
                     <Box
@@ -885,7 +902,18 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     )}
                   </Box>
                   
-                  <Stack spacing="xs" mt="md" sx={{ position: "relative", zIndex: 1, padding: "6px 8px 2px" }}>
+                  <Stack
+                    spacing="sm"
+                    mt="lg"
+                    sx={{
+                      position: "relative",
+                      zIndex: 1,
+                      padding: "6px 8px 2px",
+                      "@media (max-width: 48em)": {
+                        padding: "6px 8px 0",
+                      },
+                    }}
+                  >
                     <Title
                       order={3}
                       size="h3"
@@ -894,7 +922,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         color: "#f3ead8",
                         letterSpacing: "0.04em",
                         fontWeight: 700,
-                        lineHeight: 1.5,
+                        lineHeight: 1.45,
+                        fontSize: 21,
+                        marginTop: 16,
+                        "@media (max-width: 48em)": {
+                          marginTop: 12,
+                          fontSize: 17,
+                        },
                       }}
                     >
                       {itemTitle}

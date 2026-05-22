@@ -17,6 +17,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
@@ -100,6 +101,7 @@ const getCategoryLabelByKey = (
 
 export default function SearchPage({ initialData }: SearchPageProps) {
   const { t, locale } = useI18n();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "collection" | "case">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -170,7 +172,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
         <title>Eastwood Auction - {t("search.title")}</title>
       </Head>
       <Wrapper>
-        <Container size="xl" py={48}>
+        <Container size="xl" py={48} px={isMobile ? 14 : undefined}>
           <Stack spacing="lg">
             <div>
               <Title order={1}>{t("search.title")}</Title>
@@ -231,7 +233,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
               </Stack>
             </Card>
 
-            <Group position="apart">
+            <Group position="apart" noWrap={!isMobile}>
               <Text color="dimmed">
                 {locale === "zh" ? `共 ${filtered.length} 条结果` : `${filtered.length} results`}
               </Text>
@@ -273,22 +275,24 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                           height={180}
                         />
                       </Box>
-                      <Group position="apart">
+                      <Group position="apart" noWrap={false} align="flex-start">
                         <Badge color={itemType === "case" ? "grape" : itemType === "product" ? "teal" : "blue"}>
                           {typeLabel}
                         </Badge>
                         {item.collectionId ? (
-                          <Text size="xs" color="dimmed">
+                          <Text size="xs" color="dimmed" sx={{ overflowWrap: "anywhere" }}>
                             {item.collectionId}
                           </Text>
                         ) : item.caseRecord?.caseId ? (
-                          <Text size="xs" color="dimmed">
+                          <Text size="xs" color="dimmed" sx={{ overflowWrap: "anywhere" }}>
                             {item.caseRecord.caseId}
                           </Text>
                         ) : null}
                       </Group>
-                      <Title order={4}>{getLocalized(locale, item.title, item.titleZh)}</Title>
-                      <Group spacing="xs">
+                      <Title order={4} sx={{ lineHeight: 1.4 }}>
+                        {getLocalized(locale, item.title, item.titleZh)}
+                      </Title>
+                      <Group spacing="xs" noWrap={false}>
                         <Badge
                           variant="filled"
                           sx={{

@@ -11,16 +11,32 @@ import {
   Badge,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, type AuthUser } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 
 interface ProfileModalProps {
   opened: boolean;
   onClose: () => void;
+  userOverride?: AuthUser | null;
+  isAdminOverride?: boolean;
+  roleLoadingOverride?: boolean;
+  logoutOverride?: () => Promise<void> | void;
 }
 
-export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
-  const { user, updateProfile, logout } = useAuth();
+export default function ProfileModal({
+  opened,
+  onClose,
+  userOverride,
+  isAdminOverride,
+  roleLoadingOverride,
+  logoutOverride,
+}: ProfileModalProps) {
+  const auth = useAuth();
+  const user = userOverride ?? auth.user;
+  const isAdmin = isAdminOverride ?? auth.isAdmin;
+  const roleLoading = roleLoadingOverride ?? auth.roleLoading;
+  const logout = logoutOverride ?? auth.logout;
+  const updateProfile = auth.updateProfile;
   const { t, locale } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [firstName, setFirstName] = useState("");
@@ -66,7 +82,21 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
   const initials = user.email
     ? user.email.substring(0, 2).toUpperCase()
     : "U";
-  const avatarColor = user.profile?.role === "admin" ? "red" : "blue";
+  const avatarColor = roleLoading ? "gray" : isAdmin ? "red" : "blue";
+  const roleText = roleLoading
+    ? locale === "zh"
+      ? "正在同步角色"
+      : "Syncing role"
+    : isAdmin
+      ? t("auth.adminRole")
+      : t("auth.userRole");
+  const roleBadgeText = roleLoading
+    ? locale === "zh"
+      ? "角色同步中"
+      : "Role syncing"
+    : isAdmin
+      ? t("auth.adminRole")
+      : t("auth.normalUserRole");
 
   return (
     <Modal
@@ -96,7 +126,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
             <div style={{ minWidth: 0, flex: 1 }}>
               <Text weight={600} sx={{ wordBreak: "break-word" }}>{user.email}</Text>
               <Text size="sm" color="dimmed">
-                {t("auth.roleLabel")}: {user.profile?.role === "admin" ? t("auth.adminRole") : t("auth.userRole")}
+                {t("auth.roleLabel")}: {roleText}
               </Text>
               <Badge
                 color={avatarColor}
@@ -104,7 +134,7 @@ export default function ProfileModal({ opened, onClose }: ProfileModalProps) {
                 size="sm"
                 mt="xs"
               >
-                {user.profile?.role === "admin" ? t("auth.adminRole") : t("auth.normalUserRole")}
+                {roleBadgeText}
               </Badge>
             </div>
           </Group>

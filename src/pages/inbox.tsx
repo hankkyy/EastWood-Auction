@@ -22,6 +22,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircle, IconInbox, IconSend } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -61,6 +62,7 @@ type InquiryRecord = {
 export default function InboxPage() {
   const { t, locale } = useI18n();
   const { user, loading, roleLoading, isAdmin } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const roleResolved = !user || !roleLoading;
   const adminPreviewGridTemplate = "minmax(0, 1.35fr) minmax(0, 1.25fr) 84px 28px";
   const [authModalOpened, setAuthModalOpened] = useState(false);
@@ -515,13 +517,22 @@ export default function InboxPage() {
 
     if (pendingState !== null) {
       return (
-        <Group position="right">
+        <Group
+          position={isMobile ? "apart" : "right"}
+          noWrap={false}
+          sx={{
+            width: "100%",
+            flexDirection: isMobile ? "column" : "row",
+            alignItems: isMobile ? "stretch" : "center",
+          }}
+        >
           <Button
             size="xs"
             color={pendingState.update.isArchived ? "grape" : pendingState.update.isProcessed ? "teal" : "yellow"}
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
+            fullWidth={isMobile}
             sx={
               !pendingState.update.isArchived && !pendingState.update.isProcessed
                 ? {
@@ -543,6 +554,7 @@ export default function InboxPage() {
             color="gray"
             variant="light"
             disabled={isUpdating}
+            fullWidth={isMobile}
             sx={{
               backgroundColor: "rgba(255, 255, 255, 0.12)",
               color: "#f8f9fa",
@@ -560,7 +572,15 @@ export default function InboxPage() {
     }
 
     return (
-      <Group position="right">
+      <Group
+        position={isMobile ? "apart" : "right"}
+        noWrap={false}
+        sx={{
+          width: "100%",
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "stretch" : "center",
+        }}
+      >
         {inquiry.is_archived ? (
           <Button
             size="xs"
@@ -568,6 +588,7 @@ export default function InboxPage() {
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
+            fullWidth={isMobile}
             sx={{
               backgroundColor: "#f6e7b0",
               color: "#4f3b12",
@@ -593,6 +614,7 @@ export default function InboxPage() {
           variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
+          fullWidth={isMobile}
           onClick={() =>
             void updateInquiryStatus(
               inquiry.id,
@@ -621,6 +643,7 @@ export default function InboxPage() {
           variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
+          fullWidth={isMobile}
           sx={{
             backgroundColor: "#d0bfff",
             color: "#2b1648",
@@ -653,6 +676,103 @@ export default function InboxPage() {
       : inquiry.is_processed
         ? "rgba(32, 201, 151, 0.9)"
         : "rgba(216, 183, 109, 0.92)";
+
+    if (isMobile) {
+      return (
+        <Paper
+          key={inquiry.id}
+          p="md"
+          withBorder
+          radius="md"
+          onClick={() => setSelectedInquiryId(isSelected ? null : inquiry.id)}
+          sx={{
+            cursor: "pointer",
+            borderColor: isSelected
+              ? accentColor
+              : isUnread
+                ? "rgba(255, 255, 255, 0.2)"
+                : "rgba(255, 255, 255, 0.1)",
+            backgroundColor: isSelected
+              ? "rgba(255, 255, 255, 0.04)"
+              : isUnread
+                ? "rgba(255, 255, 255, 0.07)"
+                : "rgba(255, 255, 255, 0.02)",
+            boxShadow: isSelected
+              ? "0 12px 28px rgba(0, 0, 0, 0.18)"
+              : "0 8px 20px rgba(0, 0, 0, 0.12)",
+            transition: "all 160ms ease",
+            touchAction: "pan-y",
+          }}
+        >
+          <Stack spacing="sm">
+            <Group position="apart" align="flex-start" noWrap={false}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  weight={isUnread && !isSelected ? 800 : 700}
+                  sx={{
+                    minWidth: 0,
+                    lineHeight: 1.45,
+                    whiteSpace: "normal",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {inquiry.no_inquiry_code ? t("inbox.noCode") : inquiry.inquiry_code}
+                </Text>
+                <Text
+                  size="sm"
+                  color="dimmed"
+                  mt={4}
+                  sx={{
+                    lineHeight: 1.6,
+                    whiteSpace: "normal",
+                    overflowWrap: "anywhere",
+                  }}
+                >
+                  {isAdmin ? formatInquiryPreviewEmail(inquiry) : formatInquiryPreviewOwner(inquiry)}
+                </Text>
+              </Box>
+              <Stack spacing={6} align="flex-end">
+                <Badge
+                  color={inquiry.is_archived ? "grape" : inquiry.is_processed ? "teal" : "yellow"}
+                  variant={inquiry.is_archived ? "filled" : "light"}
+                >
+                  {getInquiryStatusLabel(inquiry)}
+                </Badge>
+                {isUnread ? (
+                  <Badge color="red" variant="filled" size="sm">
+                    {locale === "zh" ? `未读 ${unreadIncomingCount}` : `Unread ${unreadIncomingCount}`}
+                  </Badge>
+                ) : null}
+              </Stack>
+            </Group>
+
+            <Group position="apart" noWrap={false} spacing="xs">
+              <Text size="sm" color="dimmed">
+                {formatInquiryTime(inquiry.created_at)}
+              </Text>
+              <Text size="sm" color="dimmed">
+                {isSelected
+                  ? locale === "zh"
+                    ? "收起详情"
+                    : "Collapse details"
+                  : locale === "zh"
+                    ? "点击展开详情"
+                    : "Tap to expand"}
+              </Text>
+            </Group>
+
+            {isSelected ? (
+              <>
+                <Divider />
+                <Box onClick={(event) => event.stopPropagation()}>
+                  {renderInquiryDetail(inquiry)}
+                </Box>
+              </>
+            ) : null}
+          </Stack>
+        </Paper>
+      );
+    }
 
     return (
       <Paper
@@ -752,7 +872,12 @@ export default function InboxPage() {
     );
   };
 
-  const renderInquiryPreviewHeader = () => (
+  const renderInquiryPreviewHeader = () => {
+    if (isMobile) {
+      return null;
+    }
+
+    return (
     <Box
       px="sm"
       py={8}
@@ -794,7 +919,8 @@ export default function InboxPage() {
       </Box>
       {isAdmin ? <Box sx={{ width: 28 }} /> : null}
     </Box>
-  );
+    );
+  };
 
   const renderInquiryDetail = (inquiry: InquiryRecord) => (
     <Paper
@@ -863,15 +989,15 @@ export default function InboxPage() {
             <Stack spacing={2} mb={8}>
               <Stack spacing={2}>
                 {formatInquiryOwnerMeta(inquiry).map((item) => (
-                  <Box
-                    key={item.label}
-                    sx={{
-                      width: "100%",
-                      display: "grid",
-                      gridTemplateColumns: "120px minmax(0, 1fr)",
-                      gap: 10,
-                      alignItems: "start",
-                    }}
+                    <Box
+                      key={item.label}
+                      sx={{
+                        width: "100%",
+                        display: "grid",
+                        gridTemplateColumns: isMobile ? "1fr" : "120px minmax(0, 1fr)",
+                        gap: 10,
+                        alignItems: "start",
+                      }}
                   >
                     <Text size="sm" weight={600} color="gray.3">
                       {item.label}
@@ -900,7 +1026,7 @@ export default function InboxPage() {
               sx={{
                 width: "100%",
                 display: "grid",
-                gridTemplateColumns: "120px minmax(0, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "120px minmax(0, 1fr)",
                 gap: 10,
                 alignItems: "start",
               }}
@@ -925,7 +1051,7 @@ export default function InboxPage() {
               sx={{
                 width: "100%",
                 display: "grid",
-                gridTemplateColumns: "120px minmax(0, 1fr)",
+                gridTemplateColumns: isMobile ? "1fr" : "120px minmax(0, 1fr)",
                 gap: 10,
                 alignItems: "start",
               }}
@@ -967,7 +1093,7 @@ export default function InboxPage() {
                 radius="md"
                 sx={{
                   marginLeft: isOwnMessage ? "auto" : 0,
-                  maxWidth: "88%",
+                  maxWidth: isMobile ? "100%" : "88%",
                   backgroundColor: isAdminMessage
                     ? "rgba(66, 153, 225, 0.18)"
                     : "rgba(245, 159, 0, 0.16)",
@@ -982,8 +1108,8 @@ export default function InboxPage() {
                 }}
               >
                 <Stack spacing={6}>
-                  <Group position="apart" spacing="xs" noWrap>
-                    <Group spacing="xs" noWrap>
+                  <Group position="apart" spacing="xs" noWrap={!isMobile}>
+                    <Group spacing="xs" noWrap={!isMobile}>
                       <Text size="sm" weight={600}>
                         {getMessageLabel(message)}
                       </Text>
@@ -1051,13 +1177,22 @@ export default function InboxPage() {
                 placeholder={t("inbox.replyPlaceholder")}
               />
               {statusConfirmState?.id === inquiry.id && !isAdmin ? (
-                <Group position="right">
+                <Group
+                  position="right"
+                  noWrap={false}
+                  sx={{
+                    width: "100%",
+                    flexDirection: isMobile ? "column" : "row",
+                    alignItems: isMobile ? "stretch" : "center",
+                  }}
+                >
                   <Button
                     size="sm"
                     color="grape"
                     variant="filled"
                     loading={statusUpdatingId === inquiry.id}
                     disabled={statusUpdatingId === inquiry.id}
+                    fullWidth={isMobile}
                     onClick={() =>
                       void updateInquiryStatus(
                         inquiry.id,
@@ -1073,13 +1208,22 @@ export default function InboxPage() {
                     color="gray"
                     variant="light"
                     disabled={statusUpdatingId === inquiry.id}
+                    fullWidth={isMobile}
                     onClick={() => setStatusConfirmState(null)}
                   >
                     {locale === "zh" ? "取消" : "Cancel"}
                   </Button>
                 </Group>
               ) : (
-                <Group position="right">
+                <Group
+                  position="right"
+                  noWrap={false}
+                  sx={{
+                    width: "100%",
+                    flexDirection: isMobile ? "column" : "row",
+                    alignItems: isMobile ? "stretch" : "center",
+                  }}
+                >
                   {!isAdmin ? (
                     <Button
                       size="sm"
@@ -1087,6 +1231,7 @@ export default function InboxPage() {
                       variant="light"
                       loading={statusUpdatingId === inquiry.id}
                       disabled={statusUpdatingId === inquiry.id}
+                      fullWidth={isMobile}
                       onClick={() =>
                         void updateInquiryStatus(
                           inquiry.id,
@@ -1102,6 +1247,7 @@ export default function InboxPage() {
                     leftIcon={<IconSend size={16} />}
                     onClick={() => void handleReplySubmit(inquiry.id)}
                     loading={replyingId === inquiry.id}
+                    fullWidth={isMobile}
                   >
                     {t("inbox.sendReply")}
                   </Button>
@@ -1120,9 +1266,15 @@ export default function InboxPage() {
         <title>{t("inbox.pageTitle")} - Eastwood Auction</title>
       </Head>
       <Wrapper>
-        <Container size={user ? "xl" : "md"} py={48}>
+        <Container
+          size={user ? "xl" : "md"}
+          py={48}
+          sx={{
+            touchAction: isMobile ? "pan-y" : undefined,
+          }}
+        >
           <Stack spacing="xl">
-            <Group position="apart" align="flex-start">
+            <Group position="apart" align="flex-start" noWrap={!isMobile}>
               <div>
                 <Title order={1}>{t("inbox.pageTitle")}</Title>
                 <Text color="dimmed" mt="sm" sx={{ whiteSpace: "pre-line" }}>
@@ -1136,7 +1288,7 @@ export default function InboxPage() {
                 </Text>
               </div>
               {user ? (
-                <Group spacing="xs">
+                <Group spacing="xs" noWrap={false}>
                   {roleResolved && unreadCount > 0 ? (
                     <Badge color="red" variant="light" size="lg">
                       {locale === "zh" ? `未读 ${unreadCount}` : `Unread ${unreadCount}`}
@@ -1212,7 +1364,129 @@ export default function InboxPage() {
               </Paper>
             ) : (
               <Stack spacing="lg">
-                {isAdmin ? (
+                {isMobile ? (
+                  <Stack
+                    spacing="lg"
+                    sx={{
+                      touchAction: "pan-y",
+                    }}
+                  >
+                    <Text size="sm" color="dimmed">
+                      {locale === "zh"
+                        ? "手机端改为单列会话卡片，点击任意卡片可直接展开完整详情和消息记录。"
+                        : "On mobile, conversations are shown as a single-column card list. Tap any card to expand the full details and message thread."}
+                    </Text>
+                    {isAdmin ? (
+                      <>
+                        <Paper
+                          p="md"
+                          withBorder
+                          radius="md"
+                          sx={{
+                            borderColor: "rgba(216, 183, 109, 0.45)",
+                            backgroundColor: "rgba(216, 183, 109, 0.06)",
+                          }}
+                        >
+                          <Group position="apart" mb="sm">
+                            <Text weight={800} color="yellow">
+                              {locale === "zh" ? "待处理会话" : "Pending conversations"}
+                            </Text>
+                            <Badge color="yellow" variant="light">
+                              {pendingInquiries.length}
+                            </Badge>
+                          </Group>
+                          <Stack spacing="sm">
+                            {pendingInquiries.length ? (
+                              pendingInquiries.map(renderInquiryPreviewCard)
+                            ) : (
+                              <Text color="dimmed">
+                                {locale === "zh" ? "当前没有待处理会话。" : "No pending conversations right now."}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Paper>
+
+                        <Paper
+                          p="md"
+                          withBorder
+                          radius="md"
+                          sx={{
+                            borderColor: "rgba(32, 201, 151, 0.4)",
+                            backgroundColor: "rgba(32, 201, 151, 0.05)",
+                          }}
+                        >
+                          <Group position="apart" mb="sm">
+                            <Text weight={800} color="teal">
+                              {locale === "zh" ? "已处理会话" : "Processed conversations"}
+                            </Text>
+                            <Badge color="teal" variant="light">
+                              {processedInquiries.length}
+                            </Badge>
+                          </Group>
+                          <Stack spacing="sm">
+                            {processedInquiries.length ? (
+                              processedInquiries.map(renderInquiryPreviewCard)
+                            ) : (
+                              <Text color="dimmed">
+                                {locale === "zh" ? "当前没有已处理会话。" : "No processed conversations yet."}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Paper>
+
+                        <Paper
+                          p="md"
+                          withBorder
+                          radius="md"
+                          sx={{
+                            borderColor: "rgba(160, 160, 160, 0.35)",
+                            backgroundColor: "rgba(160, 160, 160, 0.06)",
+                          }}
+                        >
+                          <Group position="apart" mb="sm">
+                            <Text weight={800} color="gray.4">
+                              {locale === "zh" ? "已归档会话" : "Archived conversations"}
+                            </Text>
+                            <Badge color="gray" variant="light">
+                              {archivedInquiries.length}
+                            </Badge>
+                          </Group>
+                          <Stack spacing="sm">
+                            {archivedInquiries.length ? (
+                              archivedInquiries.map(renderInquiryPreviewCard)
+                            ) : (
+                              <Text color="dimmed">
+                                {locale === "zh" ? "当前没有已归档会话。" : "No archived conversations yet."}
+                              </Text>
+                            )}
+                          </Stack>
+                        </Paper>
+                      </>
+                    ) : (
+                      <Paper
+                        p="md"
+                        withBorder
+                        radius="md"
+                        sx={{
+                          borderColor: "rgba(59, 130, 246, 0.3)",
+                          backgroundColor: "rgba(59, 130, 246, 0.05)",
+                        }}
+                      >
+                        <Group position="apart" mb="sm">
+                          <Text weight={800} color="blue.3">
+                            {locale === "zh" ? "我的咨询列表" : "My inquiries"}
+                          </Text>
+                          <Badge color="blue" variant="light">
+                            {inquiries.length}
+                          </Badge>
+                        </Group>
+                        <Stack spacing="sm">
+                          {inquiries.map(renderInquiryPreviewCard)}
+                        </Stack>
+                      </Paper>
+                    )}
+                  </Stack>
+                ) : isAdmin ? (
                   <Grid align="flex-start" gutter="lg">
                     <Grid.Col span={12} lg={6}>
                       <Stack spacing="lg">

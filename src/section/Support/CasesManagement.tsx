@@ -26,6 +26,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   IconCheck,
   IconDatabaseImport,
@@ -69,6 +70,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
 }: CasesManagementProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>(initialItems);
   const [isLoading, setIsLoading] = useState(initialItems.length === 0); // 添加加载状态
   
@@ -835,7 +837,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
           ) : (
             /* ✅ 非编辑模式下显示案例列表 */
             <>
-              <Group position="apart">
+              <Group position="apart" align={isMobile ? "stretch" : "center"} noWrap={!isMobile}>
                 <Title order={3}>
                   {locale === "zh" ? "管理案例" : "Manage Cases"}
                 </Title>
@@ -860,7 +862,11 @@ const CasesManagementSection = memo(function CasesManagementSection({
                     : t("cases.noCasesYetUser")}
                 </Text>
               ) : (
-                <SimpleGrid cols={2} spacing="lg">
+                <SimpleGrid
+                  cols={2}
+                  spacing="lg"
+                  breakpoints={[{ maxWidth: "sm", cols: 1 }]}
+                >
                   {cases.map((artwork) => (
                     <Paper key={artwork.id} p="md" withBorder>
                       <Stack spacing="md">
@@ -893,13 +899,22 @@ const CasesManagementSection = memo(function CasesManagementSection({
                           )}
                         </Stack>
                         
-                        <Group position="right" spacing="xs">
+                        <Group
+                          position="right"
+                          spacing="xs"
+                          noWrap={!isMobile}
+                          sx={{
+                            flexDirection: isMobile ? "column" : "row",
+                            alignItems: isMobile ? "stretch" : "center",
+                          }}
+                        >
                           <Button
                             variant="filled"
                             color="blue"
                             size="sm"
                             onClick={() => handleStartEdit(artwork)}
                             leftIcon={<IconEdit size={16} />}
+                            fullWidth={isMobile}
                             sx={{
                               fontWeight: 600,
                               boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
@@ -918,6 +933,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                             size="sm"
                             onClick={() => handleDeleteImportedArtwork(artwork.id)}
                             leftIcon={<IconTrash size={16} />}
+                            fullWidth={isMobile}
                             sx={{
                               fontWeight: 600,
                               boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',

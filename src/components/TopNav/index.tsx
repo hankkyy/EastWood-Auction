@@ -284,21 +284,26 @@ export default function TopNav() {
 
     if (mobile) {
       return (
-        <Stack spacing="sm">
-          <Group noWrap>
+        <Stack spacing="sm" align="center">
+          <Group noWrap align="center" spacing="sm" position="center">
             <Avatar
               color={avatarColor}
               radius="xl"
               size="md"
+              sx={{ flex: "0 0 auto" }}
             >
               {initials}
             </Avatar>
-            <Box sx={{ minWidth: 0 }}>
-              <Text size="sm" weight={600} sx={{ wordBreak: "break-word" }}>
+            <Box sx={{ minWidth: 0, textAlign: "left" }}>
+              <Text
+                size="sm"
+                weight={600}
+                sx={{ wordBreak: "break-word", lineHeight: 1.35 }}
+              >
                 {user.email}
               </Text>
               {isAdmin && (
-                <Text size="xs" color="red" weight={600}>
+                <Text size="xs" color="red" weight={600} mt={4} sx={{ lineHeight: 1.3 }}>
                   {t("auth.roleLabel")}: {t("auth.adminRole")}
                 </Text>
               )}
@@ -455,6 +460,18 @@ export default function TopNav() {
       >
         <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md" type="auto" className={classes.drawerBody}>
           <Stack spacing="lg" px="md" py="md">
+            {authReady && user && (
+              <>
+                <Box sx={{ paddingTop: 4, paddingBottom: 4 }}>
+                  {renderUserMenu(true)}
+                </Box>
+                <Divider
+                  my="xs"
+                  color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
+                />
+              </>
+            )}
+
             {/* 主要导航链接 - 增大触摸区域 */}
             {links.map((link, index) => (
               <Box key={index}>
@@ -503,11 +520,6 @@ export default function TopNav() {
               <Box sx={{ marginTop: 8 }}>
                 <LanguagePicker mobile />
               </Box>
-              
-              {/* 用户菜单 */}
-              <Box sx={{ marginTop: 8 }}>
-                {renderUserMenu(true)}
-              </Box>
             </Stack>
           </Stack>
         </ScrollArea>
@@ -517,7 +529,14 @@ export default function TopNav() {
       <AuthModal opened={authModalOpened} onClose={closeAuthModal} />
       
       {/* 个人资料模态框 */}
-      <ProfileModal opened={profileModalOpened} onClose={closeProfileModal} />
+      <ProfileModal
+        opened={profileModalOpened}
+        onClose={closeProfileModal}
+        userOverride={user}
+        isAdminOverride={isAdmin}
+        roleLoadingOverride={roleLoading}
+        logoutOverride={logout}
+      />
     </Box>
   );
 }

@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface IProps {
   children: ReactNode;
@@ -7,21 +7,17 @@ interface IProps {
 
 const AnimatedBox = ({ children }: IProps) => {
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ marginTop: 240 }}
-        whileInView={{ marginTop: 0 }}
-        transition={{
-          type: "spring",
-          stiffness: 260,
-          damping: 20,
-        }}
-        exit={{ marginTop: 0 }}
-        viewport={{ once: true }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.34,
+        ease: "easeOut",
+      }}
+      style={{ touchAction: "pan-y" }}
+    >
+      {children}
+    </motion.div>
   );
 };
 
