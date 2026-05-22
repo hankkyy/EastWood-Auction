@@ -281,7 +281,7 @@ export default function ShopDetailPage() {
                       size="lg" 
                       weight={700} 
                       sx={{ 
-                        color: "rgba(246, 239, 227, 0.85)",
+                        color: "#d7bc7e",
                         lineHeight: 1.2
                       }}
                     >

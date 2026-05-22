@@ -23,7 +23,7 @@ body {
 /* 仅在移动端禁用下拉刷新 */
 @media (max-width: 768px) {
   html, body {
-    overscroll-behavior-y: none; /* 防止移动端下拉刷新 */
+    overscroll-behavior-y: contain; /* 保留纵向滚动稳定性，避免整页滚动被过度拦截 */
   }
 }
 

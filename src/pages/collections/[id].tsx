@@ -281,7 +281,7 @@ export default function CollectionDetailPage() {
                       size="lg" 
                       weight={700} 
                       sx={{ 
-                        color: "rgba(246, 239, 227, 0.85)", // ✅ 价格使用稍灰的颜色（85%透明度），与标题区分
+                        color: "#d7bc7e",
                         lineHeight: 1.2
                       }}
                     >

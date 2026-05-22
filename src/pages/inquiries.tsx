@@ -17,6 +17,7 @@ import {
   Textarea,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircle, IconCircleCheck } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -26,6 +27,7 @@ export default function InquiriesPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const { user, loading, roleLoading, isAdmin } = useAuth();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const authReady = !loading && !roleLoading;
   const [authModalOpened, setAuthModalOpened] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -213,7 +215,7 @@ export default function InquiriesPage() {
         <title>{t("inquiry.pageTitle")} - Eastwood Auction</title>
       </Head>
       <Wrapper>
-        <Container size="sm" py={48}>
+        <Container size="sm" py={48} px={isMobile ? 14 : undefined}>
           <Stack spacing="xl">
             <div>
               <Title order={1}>{t("inquiry.pageTitle")}</Title>
@@ -226,14 +228,21 @@ export default function InquiriesPage() {
               <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.loginRequiredTitle")}>
                 <Stack spacing="sm">
                   <Text>{t("inquiry.loginRequiredMessage")}</Text>
-                  <Group>
-                    <Button onClick={() => setAuthModalOpened(true)}>
+                  <Group
+                    noWrap={!isMobile}
+                    sx={{
+                      flexDirection: isMobile ? "column" : "row",
+                      alignItems: isMobile ? "stretch" : "center",
+                    }}
+                  >
+                    <Button onClick={() => setAuthModalOpened(true)} fullWidth={isMobile}>
                       {t("auth.loginRegister")}
                     </Button>
                     <Button
                       variant="filled"
                       color="yellow"
                       onClick={() => router.push("/")}
+                      fullWidth={isMobile}
                       sx={{
                         backgroundColor: "#f6e7b0",
                         color: "#4f3b12",
@@ -253,14 +262,21 @@ export default function InquiriesPage() {
               <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.adminBlockedTitle")}>
                 <Stack spacing="sm">
                   <Text>{t("inquiry.adminBlockedMessage")}</Text>
-                  <Group>
-                    <Button onClick={() => router.push("/inbox")}>
+                  <Group
+                    noWrap={!isMobile}
+                    sx={{
+                      flexDirection: isMobile ? "column" : "row",
+                      alignItems: isMobile ? "stretch" : "center",
+                    }}
+                  >
+                    <Button onClick={() => router.push("/inbox")} fullWidth={isMobile}>
                       {t("inbox.pageTitle")}
                     </Button>
                     <Button
                       variant="filled"
                       color="yellow"
                       onClick={() => router.push("/")}
+                      fullWidth={isMobile}
                       sx={{
                         backgroundColor: "#f6e7b0",
                         color: "#4f3b12",
@@ -349,12 +365,20 @@ export default function InquiriesPage() {
                     type="email"
                     disabled={!authReady || !user || isAdmin}
                   />
-                  <Group position="right">
+                  <Group
+                    position="right"
+                    noWrap={!isMobile}
+                    sx={{
+                      flexDirection: isMobile ? "column" : "row",
+                      alignItems: isMobile ? "stretch" : "center",
+                    }}
+                  >
                     <Button
                       variant="filled"
                       color="yellow"
                       type="button"
                       onClick={() => router.push(returnTo)}
+                      fullWidth={isMobile}
                       sx={{
                         backgroundColor: "#f6e7b0",
                         color: "#4f3b12",
@@ -365,7 +389,12 @@ export default function InquiriesPage() {
                     >
                       {t("inquiry.cancelButton")}
                     </Button>
-                    <Button type="submit" loading={submitting} disabled={!authReady || !user || isAdmin}>
+                    <Button
+                      type="submit"
+                      loading={submitting}
+                      disabled={!authReady || !user || isAdmin}
+                      fullWidth={isMobile}
+                    >
                       {t("inquiry.submitButton")}
                     </Button>
                   </Group>

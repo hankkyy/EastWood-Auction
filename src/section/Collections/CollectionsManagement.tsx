@@ -26,6 +26,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   IconCheck,
   IconDatabaseImport,
@@ -86,6 +87,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 }: CollectionsManagementProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>(initialItems);
   const [isLoading, setIsLoading] = useState(initialItems.length === 0); // 添加加载状态
   
@@ -624,13 +626,13 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     return (
       <OuterWrapper embedded={embedded}>
         <Stack spacing="xl">
-          <Group position="apart">
+          <Group position="apart" align={isMobile ? "stretch" : "center"} noWrap={!isMobile}>
             <Title order={3}>
               {shopMode 
                 ? (locale === "zh" ? "已上传商品" : "Uploaded Products")
                 : t("collections.uploadedCollectionsTitle")}
             </Title>
-            <Group>
+            <Group noWrap={!isMobile}>
               {!isLoading && (
                 <Badge color="blue" size="lg">
                   {collections.length} {t("collections.itemsCount")}
@@ -672,7 +674,14 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 : t("cases.noCasesYetUser")}
             </Text>
           ) : (
-            <SimpleGrid cols={3} spacing="lg">
+            <SimpleGrid
+              cols={3}
+              spacing="lg"
+              breakpoints={[
+                { maxWidth: "lg", cols: 2 },
+                { maxWidth: "sm", cols: 1 },
+              ]}
+            >
               {collections.map((artwork) => (
                 <Paper 
                   key={artwork.id} 
@@ -741,7 +750,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           </Box>
                           
                           {/* 缩略图网格 */}
-                          <SimpleGrid cols={3} spacing="xs">
+                          <SimpleGrid
+                            cols={3}
+                            spacing="xs"
+                            breakpoints={[{ maxWidth: "sm", cols: 2 }]}
+                          >
                             {editImages.map((img, index) => (
                               <Box 
                                 key={index}
@@ -906,7 +919,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         />
 
                         {editIsForSale && (
-                          <SimpleGrid cols={2} spacing="xs">
+                          <SimpleGrid
+                            cols={2}
+                            spacing="xs"
+                            breakpoints={[{ maxWidth: "sm", cols: 1 }]}
+                          >
                             <Box>
                               <Text size="sm" weight={500} mb={4}>
                                 {t("collections.editPrice")}
