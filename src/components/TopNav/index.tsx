@@ -24,7 +24,7 @@ import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { notifications } from "@mantine/notifications";
-import { IconInbox } from "@tabler/icons-react";
+import { IconInbox, IconMessageCircle } from "@tabler/icons-react";
 import AuthModal from "@/components/AuthModal";
 import ProfileModal from "@/components/ProfileModal";
 
@@ -309,7 +309,21 @@ export default function TopNav() {
               )}
             </Box>
           </Group>
-          <Button variant="light" fullWidth onClick={openProfileModal}>
+          <Button
+            variant="filled"
+            color="yellow"
+            fullWidth
+            onClick={openProfileModal}
+            sx={{
+              color: "#1b1f24",
+              fontWeight: 700,
+              boxShadow: "0 8px 18px rgba(216, 183, 109, 0.28)",
+              "&:hover": {
+                backgroundColor: "#e3c989",
+                boxShadow: "0 10px 22px rgba(216, 183, 109, 0.36)",
+              },
+            }}
+          >
             {t("auth.profileTitle")}
           </Button>
           {isAdmin && (
@@ -503,6 +517,7 @@ export default function TopNav() {
                 fullWidth
                 size="md"
                 onClick={handleInquiryClick}
+                leftIcon={<IconMessageCircle size={18} />}
               >
                 {t("inquiry.entryButton")}
               </Button>

@@ -164,17 +164,18 @@ export default function TopBar() {
               variant={isMobile ? "subtle" : "light"}
               color={isMobile ? "gray" : "yellow"}
               onClick={handleInboxClick}
-              leftIcon={<IconInbox size={16} />}
-              compact={isMobile}
+              leftIcon={isMobile ? undefined : <IconInbox size={16} />}
               styles={{
                 root: {
                   minWidth: isMobile ? 0 : undefined,
-                  paddingLeft: isMobile ? 10 : undefined,
-                  paddingRight: isMobile ? 10 : undefined,
+                  flex: isMobile ? 1 : undefined,
+                  paddingLeft: isMobile ? 12 : undefined,
+                  paddingRight: isMobile ? 12 : undefined,
+                  fontSize: isMobile ? 13 : undefined,
                 },
               }}
             >
-              {isMobile ? (locale === "zh" ? "消息" : "Inbox") : t("inbox.pageTitle")}
+              {t("inbox.pageTitle")}
             </Button>
           </Indicator>
           <Button
@@ -182,17 +183,18 @@ export default function TopBar() {
             variant={isMobile ? "subtle" : "light"}
             color="yellow"
             onClick={handleInquiryClick}
-            leftIcon={isMobile ? <IconMessageCircle size={16} /> : undefined}
-            compact={isMobile}
+            leftIcon={isMobile ? undefined : <IconMessageCircle size={16} />}
             styles={{
               root: {
                 minWidth: isMobile ? 0 : undefined,
-                paddingLeft: isMobile ? 10 : undefined,
-                paddingRight: isMobile ? 10 : undefined,
+                flex: isMobile ? 1 : undefined,
+                paddingLeft: isMobile ? 12 : undefined,
+                paddingRight: isMobile ? 12 : undefined,
+                fontSize: isMobile ? 13 : undefined,
               },
             }}
           >
-            {isMobile ? (locale === "zh" ? "询价" : "Ask") : t("inquiry.entryButton")}
+            {t("inquiry.entryButton")}
           </Button>
           <LanguagePicker />
         </Group>
