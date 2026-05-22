@@ -22,7 +22,8 @@ import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
-import { IconArrowRight } from "@tabler/icons-react";
+import ArtworkVisualSearchModal from "@/components/ImageSearch/ArtworkVisualSearchModal";
+import { IconArrowRight, IconCameraSearch } from "@tabler/icons-react";
 
 interface SearchPageProps {
   initialData: Artwork[];
@@ -106,6 +107,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
   const [typeFilter, setTypeFilter] = useState<"all" | "collection" | "case">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [saleFilter, setSaleFilter] = useState<"all" | "for-sale" | "not-for-sale">("all");
+  const [visualSearchOpened, setVisualSearchOpened] = useState(false);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -185,6 +187,35 @@ export default function SearchPage({ initialData }: SearchPageProps) {
 
             <Card withBorder radius="md" p="md">
               <Stack spacing="sm">
+                <Group position="apart" align="flex-start" noWrap={!isMobile}>
+                  <div>
+                    <Text
+                      size="sm"
+                      weight={600}
+                      color={locale === "zh" ? "#f3e7c2" : undefined}
+                    >
+                      {locale === "zh" ? "关键词与识图搜索" : "Keyword and visual search"}
+                    </Text>
+                    <Text size="sm" color="dimmed" mt={4}>
+                      {locale === "zh"
+                        ? "保留原有关键词检索，同时支持拍照或上传图片做相似藏品匹配。"
+                        : "Keep keyword search and add camera/gallery visual matching for similar artworks."}
+                    </Text>
+                  </div>
+                  <Button
+                    leftIcon={<IconCameraSearch size={18} />}
+                    onClick={() => setVisualSearchOpened(true)}
+                    fullWidth={isMobile}
+                    sx={{
+                      background:
+                        "linear-gradient(135deg, #d8b76d 0%, #c89c3d 100%)",
+                      color: "#1b1f24",
+                      boxShadow: "0 10px 24px rgba(200, 156, 61, 0.24)",
+                    }}
+                  >
+                    {locale === "zh" ? "拍照识图" : "Visual search"}
+                  </Button>
+                </Group>
                 <TextInput
                   label={locale === "zh" ? "关键词" : "Keyword"}
                   placeholder={
@@ -342,6 +373,10 @@ export default function SearchPage({ initialData }: SearchPageProps) {
           </Stack>
         </Container>
       </Wrapper>
+      <ArtworkVisualSearchModal
+        opened={visualSearchOpened}
+        onClose={() => setVisualSearchOpened(false)}
+      />
     </>
   );
 }

@@ -55,6 +55,7 @@ export type Artwork = {
   descriptionZh?: string;
   listingType: ArtworkListingType;
   featureVector: ArtworkFeatureVector;
+  imageEmbedding?: number[];
   imageSignature?: ArtworkImageSignature;
   caseRecord?: ArtworkCaseRecord;
   uploadedBy?: string; // 上传者用户ID (UUID)

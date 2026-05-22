@@ -7,6 +7,7 @@ import {
   rowToArtwork,
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
+import { triggerArtworkImageIndexing } from "@/features/image-search/visualSearchServer";
 import { verifySupabaseUser } from "@/lib/supabase/auth";
 import { getSupabaseAdmin, getSupabaseBucket } from "@/lib/supabase/server";
 
@@ -202,6 +203,16 @@ export default async function handler(
 
       if (error) {
         throw error;
+      }
+
+      try {
+        await triggerArtworkImageIndexing({
+          artworkId: id,
+          imageUrl: row.image,
+          force: true,
+        });
+      } catch (indexingError) {
+        console.error("[API] Unable to re-index artwork image:", indexingError);
       }
 
       return res.status(200).json({ artwork: rowToArtwork(data as ArtworkRow) });

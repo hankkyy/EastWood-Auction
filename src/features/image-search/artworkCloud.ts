@@ -21,6 +21,7 @@ export type ArtworkRow = {
   description_zh: string | null;
   listing_type: ArtworkListingType;
   feature_vector: ArtworkFeatureVector;
+  image_embedding?: number[] | string | null;
   image_signature: ArtworkImageSignature | null;
   case_record: ArtworkCaseRecord | null;
   uploaded_by: string | null; // 上传者用户ID (UUID)
@@ -42,6 +43,31 @@ export const normalizeArtwork = (artwork: Artwork): Artwork => ({
     artwork.galleryImages?.length ? artwork.galleryImages : [artwork.image],
 });
 
+const parseImageEmbedding = (
+  value: ArtworkRow["image_embedding"]
+): number[] | undefined => {
+  if (!value) {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => Number(item));
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => Number(item));
+      }
+    } catch (error) {
+      console.warn("[artworkCloud] Unable to parse image embedding:", error);
+    }
+  }
+
+  return undefined;
+};
+
 export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
   id: artwork.id,
   title: artwork.title,
@@ -56,6 +82,11 @@ export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
   description_zh: artwork.descriptionZh ?? null,
   listing_type: artwork.listingType ?? "product",
   feature_vector: artwork.featureVector,
+  ...(artwork.imageEmbedding
+    ? {
+        image_embedding: `[${artwork.imageEmbedding.join(",")}]`,
+      }
+    : {}),
   image_signature: artwork.imageSignature ?? null,
   case_record: artwork.caseRecord ?? null,
   uploaded_by: artwork.uploadedBy ?? null,
@@ -81,6 +112,7 @@ export const rowToArtwork = (row: ArtworkRow): Artwork =>
     descriptionZh: row.description_zh ?? undefined,
     listingType: row.listing_type,
     featureVector: row.feature_vector,
+    imageEmbedding: parseImageEmbedding(row.image_embedding),
     imageSignature: row.image_signature ?? undefined,
     caseRecord: row.case_record ?? undefined,
     uploadedBy: row.uploaded_by ?? undefined,
