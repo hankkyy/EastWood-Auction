@@ -22,7 +22,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconChevronLeft, IconChevronRight, IconZoomIn } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 
@@ -318,15 +318,18 @@ export default function CaseDetailPage() {
                   }}
                 >
                   <Box
-                    component="img"
-                    src={activeImage}
-                    alt={title}
-                    sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                    role="img"
+                    aria-label={title}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      minHeight: 320,
+                      backgroundImage: `url("${activeImage}")`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
                   />
-                  <Group spacing={8} sx={{ position: "absolute", right: 16, top: 16, color: "#f4ead7", pointerEvents: "none" }}>
-                    <IconZoomIn size={18} />
-                    <Text size="sm">{locale === "zh" ? "点击放大" : "Click to zoom"}</Text>
-                  </Group>
                 </Box>
 
                 {gallery.length > 1 ? (
@@ -396,10 +399,16 @@ export default function CaseDetailPage() {
                           }}
                         >
                           <Box
-                            component="img"
-                            src={imageUrl}
-                            alt={`${title}-${index + 1}`}
-                            sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
+                            role="img"
+                            aria-label={`${title}-${index + 1}`}
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              backgroundImage: `url("${imageUrl}")`,
+                              backgroundSize: "contain",
+                              backgroundRepeat: "no-repeat",
+                              backgroundPosition: "center",
+                            }}
                           />
                         </Box>
                       );
@@ -434,26 +443,6 @@ export default function CaseDetailPage() {
           </Container>
         </AnimatedBox>
       </Wrapper>
-
-      {isMobile && showInquiryButton && (
-        <Box
-          sx={{
-            position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 5,
-            padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))",
-            background: "rgba(15, 18, 22, 0.96)",
-            borderTop: "1px solid rgba(216, 183, 109, 0.16)",
-            backdropFilter: "blur(14px)",
-          }}
-        >
-          <Button component={Link} href={inquiryHref} color="yellow" size="md" fullWidth>
-            {t("support.caseInquiryButton")}
-          </Button>
-        </Box>
-      )}
 
       <Modal
         opened={lightboxOpened}

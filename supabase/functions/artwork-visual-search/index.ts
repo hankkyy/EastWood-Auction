@@ -1,10 +1,10 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.8";
-import { env, pipeline } from "npm:@xenova/transformers@2.17.2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const MODEL_NAME = "Xenova/clip-vit-base-patch32";
+const EMBEDDING_API_URL = Deno.env.get("VISUAL_SEARCH_EMBEDDING_API_URL") ?? "";
+const EMBEDDING_API_KEY = Deno.env.get("VISUAL_SEARCH_EMBEDDING_API_KEY") ?? "";
 const EMBEDDING_DIMENSION = 512;
 const DEFAULT_THRESHOLD = 0.2;
 const MAX_RESULTS = 5;
@@ -16,28 +16,12 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-env.allowLocalModels = false;
-env.useFSCache = false;
-env.useBrowserCache = false;
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
   },
 });
-
-let extractorPromise: Promise<any> | null = null;
-
-const getExtractor = async () => {
-  if (!extractorPromise) {
-    extractorPromise = pipeline("image-feature-extraction", MODEL_NAME, {
-      quantized: true,
-    });
-  }
-
-  return extractorPromise;
-};
 
 const toVectorLiteral = (values: number[]) => `[${values.join(",")}]`;
 
@@ -53,12 +37,80 @@ const normalizeVector = (values: number[]) => {
   return values.map((value) => value / norm);
 };
 
-const computeImageEmbedding = async (imageUrl: string) => {
-  const extractor = await getExtractor();
-  const tensor = await extractor(imageUrl);
-  const embedding = Array.from(tensor.data as Float32Array).map((value) =>
-    Number(value)
+const fetchWithRetry = async (
+  url: string,
+  init: RequestInit,
+  attempts = 3,
+  timeoutMs = 20000
+): Promise<Response> => {
+  let lastError: unknown;
+
+  for (let i = 0; i < attempts; i += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(url, { ...init, signal: controller.signal });
+      clearTimeout(timer);
+      return response;
+    } catch (error) {
+      clearTimeout(timer);
+      lastError = error;
+
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * (i + 1)));
+      }
+    }
+  }
+
+  const detail =
+    lastError instanceof Error
+      ? `${lastError.name}: ${lastError.message}`
+      : String(lastError ?? "unknown");
+  throw new Error(
+    `Network connection lost after ${attempts} attempts to ${url}. Last error: ${detail}`
   );
+};
+
+const computeImageEmbedding = async (imageUrl: string) => {
+  if (!EMBEDDING_API_URL) {
+    throw new Error(
+      "VISUAL_SEARCH_EMBEDDING_API_URL is not configured for cloud embedding."
+    );
+  }
+
+  const response = await fetchWithRetry(
+    EMBEDDING_API_URL,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(EMBEDDING_API_KEY
+          ? { Authorization: `Bearer ${EMBEDDING_API_KEY}` }
+          : {}),
+      },
+      body: JSON.stringify({
+        imageUrl,
+        dimension: EMBEDDING_DIMENSION,
+      }),
+    },
+    3,
+    20000
+  );
+
+  const responseText = await response.text();
+  const responseJson = responseText ? JSON.parse(responseText) : null;
+
+  if (!response.ok) {
+    throw new Error(
+      responseJson?.error ||
+        `Embedding API request failed with status ${response.status}.`
+    );
+  }
+
+  const embedding = Array.isArray(responseJson?.embedding)
+    ? responseJson.embedding.map((value: unknown) => Number(value))
+    : [];
 
   if (embedding.length !== EMBEDDING_DIMENSION) {
     throw new Error(

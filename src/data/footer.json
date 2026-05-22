@@ -24,48 +24,6 @@
           "link": "#"
         }
       ]
-    },
-    {
-      "title": "Visit",
-      "links": [
-        {
-          "label": "Map",
-          "link": "#"
-        },
-        {
-          "label": "Exhibitions and Events",
-          "link": "#"
-        },
-        {
-          "label": "Accessibility",
-          "link": "#"
-        },
-        {
-          "label": "Audio Guide",
-          "link": "#"
-        }
-      ]
-    },
-    {
-      "title": "Resources",
-      "links": [
-        {
-          "label": "Study Rooms",
-          "link": "#"
-        },
-        {
-          "label": "Library and Archive",
-          "link": "#"
-        },
-        {
-          "label": "Blog",
-          "link": "#"
-        },
-        {
-          "label": "Community",
-          "link": "#"
-        }
-      ]
     }
   ]
 }

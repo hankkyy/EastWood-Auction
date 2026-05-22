@@ -4,12 +4,18 @@ import {
   type ArtworkRow,
 } from "@/features/image-search/artworkCloud";
 import {
-  matchArtworkImage,
-} from "@/features/image-search/visualSearchServer";
-import {
   VISUAL_SEARCH_DEFAULT_THRESHOLD,
   VISUAL_SEARCH_MAX_RESULTS,
 } from "@/features/image-search/visualSearchShared";
+import { matchArtworkImageViaNode } from "@/features/image-search/visualSearchNode";
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb",
+    },
+  },
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,17 +26,42 @@ export default async function handler(
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
   }
 
-  const imageUrl = typeof req.body?.imageUrl === "string" ? req.body.imageUrl : "";
-  const threshold = Number(req.body?.threshold ?? VISUAL_SEARCH_DEFAULT_THRESHOLD);
-  const matchCount = Number(req.body?.matchCount ?? VISUAL_SEARCH_MAX_RESULTS);
+  const parsedBody =
+    typeof req.body === "string"
+      ? (() => {
+          try {
+            return JSON.parse(req.body) as Record<string, unknown>;
+          } catch {
+            return {};
+          }
+        })()
+      : req.body && typeof req.body === "object"
+        ? (req.body as Record<string, unknown>)
+        : {};
 
-  if (!imageUrl) {
-    return res.status(400).json({ error: "An image URL is required." });
+  const imageUrl =
+    typeof parsedBody.imageUrl === "string" ? parsedBody.imageUrl : "";
+  const imageDataUrl =
+    typeof parsedBody.imageDataUrl === "string" ? parsedBody.imageDataUrl : "";
+  const threshold = Number(
+    parsedBody.threshold ?? VISUAL_SEARCH_DEFAULT_THRESHOLD
+  );
+  const matchCount = Number(
+    parsedBody.matchCount ?? VISUAL_SEARCH_MAX_RESULTS
+  );
+
+  if (!imageUrl && !imageDataUrl) {
+    return res.status(400).json({
+      error: "An image source is required.",
+      receivedKeys: Object.keys(parsedBody),
+      bodyType: typeof req.body,
+    });
   }
 
   try {
-    const result = await matchArtworkImage({
+    const result = await matchArtworkImageViaNode({
       imageUrl,
+      imageDataUrl,
       threshold,
       matchCount,
     });

@@ -34,6 +34,12 @@ const featureLabels: { label: string; description: string }[] = [
 
 const clampScore = (value: number) => Math.max(0, Math.min(100, value));
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
+const LOCAL_MATCH_MIN_SCORE = 72;
+const LOCAL_MATCH_MIN_SIGNATURE_SCORE = 0.64;
+const LOCAL_MATCH_MIN_SHAPE_AGREEMENT = 0.58;
+const LOCAL_MATCH_MIN_BASE_SCORE = 0.52;
+const LOCAL_MATCH_MIN_SIGNATURELESS_SCORE = 92;
+const LOCAL_MATCH_MIN_TOP_GAP = 6;
 
 const getSaturation = (red: number, green: number, blue: number) => {
   const max = Math.max(red, green, blue);
@@ -496,7 +502,7 @@ export const searchSimilarArtworks = (
     ? null
     : queryFeature.signature ?? null;
 
-  return collection
+  const rankedResults = collection
     .map((artwork) => {
       const baseScore = vectorSimilarity(queryVector, artwork.featureVector);
       const advanced =
@@ -512,12 +518,40 @@ export const searchSimilarArtworks = (
         score = Math.min(score, 58);
       }
 
+      const hasStrongSignatureMatch = advanced
+        ? advanced.score >= LOCAL_MATCH_MIN_SIGNATURE_SCORE &&
+          advanced.shapeAgreement >= LOCAL_MATCH_MIN_SHAPE_AGREEMENT &&
+          baseScore >= LOCAL_MATCH_MIN_BASE_SCORE
+        : false;
+      const hasStrongVectorOnlyMatch =
+        !advanced && baseScore * 100 >= LOCAL_MATCH_MIN_SIGNATURELESS_SCORE;
+
       return {
         artwork,
         score: Math.round(clampScore(score)),
+        isEligible: hasStrongSignatureMatch || hasStrongVectorOnlyMatch,
       };
     })
+    .filter((item) => item.isEligible)
     .sort((left, right) => right.score - left.score);
+
+  if (!rankedResults.length) {
+    return [];
+  }
+
+  const topResult = rankedResults[0];
+  const secondResult = rankedResults[1];
+  const topGap = secondResult ? topResult.score - secondResult.score : topResult.score;
+
+  if (topResult.score < LOCAL_MATCH_MIN_SCORE) {
+    return [];
+  }
+
+  if (secondResult && topGap < LOCAL_MATCH_MIN_TOP_GAP && topResult.score < 84) {
+    return [];
+  }
+
+  return rankedResults.map(({ artwork, score }) => ({ artwork, score }));
 };
 
 export const getFeatureInsights = (

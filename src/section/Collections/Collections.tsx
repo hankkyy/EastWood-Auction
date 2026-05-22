@@ -242,15 +242,18 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     marginTop: remValue(16), // ✅ 减小上边距（从 18 改为 16）
     textAlign: "center",
     color: "#f3ead8",
-    fontSize: remValue(21),
-    fontWeight: 700,
-    letterSpacing: "0.02em",
-    lineHeight: 1.45,
+    fontSize: remValue(22),
+    fontWeight: 600,
+    letterSpacing: "0.035em",
+    lineHeight: 1.32,
+    fontFamily:
+      '"Cormorant Garamond", "Noto Serif SC", "STSong", "Songti SC", serif',
+    textShadow: "0 1px 0 rgba(0, 0, 0, 0.14)",
 
     [theme.fn.smallerThan("sm")]: {
       marginTop: remValue(12),
-      fontSize: remValue(17),
-      lineHeight: 1.45,
+      fontSize: remValue(19),
+      lineHeight: 1.35,
     },
   },
   itemMeta: {
@@ -569,8 +572,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                         {visibleItems.map((item) => {
                           // 获取原始 artwork 数据以检查 galleryImages
                           const artwork = knowledgeBaseItems.find(a => a.id === item.key);
-                          const photoCount = artwork?.galleryImages?.length || 0;
-                          
                           return (
                             <Box
                               key={item.key}
@@ -592,30 +593,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                   className={classes.image}
                                   sx={{ position: "relative", zIndex: 1 }}
                                 />
-                                
-                                {/* 照片数量提示 */}
-                                {photoCount > 1 && (
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      bottom: 12,
-                                      right: 12,
-                                      zIndex: 2,
-                                      background: "rgba(20, 18, 16, 0.72)",
-                                      color: "#efe3c6",
-                                      padding: "5px 10px",
-                                      borderRadius: 999,
-                                      fontSize: smallerThan ? 11 : 12,
-                                      fontWeight: 600,
-                                      letterSpacing: "0.08em",
-                                      border: "1px solid rgba(216, 183, 109, 0.26)",
-                                      backdropFilter: "blur(6px)",
-                                      boxShadow: "0 8px 18px rgba(0, 0, 0, 0.2)",
-                                    }}
-                                  >
-                                    {locale === "zh" ? `${photoCount} 图` : `${photoCount} Photos`}
-                                  </Box>
-                                )}
                               </Box>
                               <Box className={classes.itemBody}>
                                 <Text className={classes.itemTitle}>{item.title}</Text>

@@ -2,7 +2,6 @@ import {
   ActionIcon,
   ActionIconProps,
   Anchor,
-  Button,
   Container,
   createStyles,
   Divider,
@@ -12,7 +11,6 @@ import {
   Stack,
   StackProps,
   Text,
-  TextInput,
   Title,
   Tooltip,
 } from "@mantine/core";
@@ -128,12 +126,6 @@ const useStyles = createStyles((theme) => ({
   social: {
     [theme.fn.smallerThan("sm")]: {
       marginTop: theme.spacing.xs,
-    },
-  },
-  newsletterRow: {
-    [theme.fn.smallerThan("sm")]: {
-      flexDirection: "column",
-      alignItems: "stretch",
     },
   },
   legalRow: {
@@ -252,20 +244,6 @@ export default function AppFooter({ data }: FooterLinksProps) {
                   <IconBrandLinkedin />
                 </ActionIcon>
               </Tooltip>
-            </Flex>
-          </Stack>
-          <Stack spacing="sm" mt={smallerThan ? "md" : 0}>
-            <Text size={smallerThan ? "md" : "lg"}>
-              {t("footer.newsletter")}
-            </Text>
-            <Flex gap={smallerThan ? "sm" : "xs"} className={classes.newsletterRow}>
-              <TextInput
-                size="md"
-                sx={{ flexGrow: 1 }}
-                aria-label={t("footer.emailAria")}
-                placeholder={t("footer.emailPlaceholder")}
-              />
-              <Button size="md" fullWidth={smallerThan}>{t("footer.signup")}</Button>
             </Flex>
           </Stack>
         </Flex>

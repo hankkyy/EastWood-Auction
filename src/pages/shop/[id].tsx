@@ -312,31 +312,20 @@ export default function ShopDetailPage() {
                 }}
               >
                 <Box
-                  component="img"
-                  src={activeImage}
-                  alt={title}
+                  role="img"
+                  aria-label={title}
                   sx={{
                     width: "100%",
                     maxHeight: isMobile ? "46vh" : "70vh",
-                    objectFit: "contain",
+                    minHeight: isMobile ? 260 : 360,
+                    backgroundImage: `url("${activeImage}")`,
+                    backgroundSize: "contain",
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "center",
                     cursor: gallery.length > 1 ? "pointer" : "default",
                   }}
                   onClick={() => gallery.length > 1 && setLightboxOpened(true)}
                 />
-                <Badge
-                  variant="filled"
-                  color="dark"
-                  sx={{
-                    position: "absolute",
-                    right: 12,
-                    bottom: 12,
-                    backgroundColor: "rgba(0, 0, 0, 0.62)",
-                  }}
-                >
-                  {gallery.length > 1
-                    ? (locale === "zh" ? "点图查看大图" : "Tap image to enlarge")
-                    : (locale === "zh" ? "商品主图" : "Main image")}
-                </Badge>
               </Box>
 
               {/* 缩略图导航 */}
@@ -383,13 +372,15 @@ export default function ShopDetailPage() {
                           }}
                         >
                           <Box
-                            component="img"
-                            src={imageUrl}
-                            alt={`Photo ${index + 1}`}
+                            role="img"
+                            aria-label={`Photo ${index + 1}`}
                             sx={{ 
-                              width: isMobile ? 92 : "100%", 
+                              width: isMobile ? 92 : 120, 
                               height: isMobile ? 92 : 80, 
-                              objectFit: "contain",
+                              backgroundImage: `url("${imageUrl}")`,
+                              backgroundSize: "contain",
+                              backgroundRepeat: "no-repeat",
+                              backgroundPosition: "center",
                               backgroundColor: "rgba(34, 39, 47, 0.5)"
                             }}
                           />
@@ -521,25 +512,6 @@ export default function ShopDetailPage() {
         </Stack>
       </Modal>
 
-      {isMobile && showInquiryButton && (
-        <Box
-          sx={{
-            position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 5,
-            padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))",
-            background: "rgba(15, 18, 22, 0.96)",
-            borderTop: "1px solid rgba(216, 183, 109, 0.16)",
-            backdropFilter: "blur(14px)",
-          }}
-        >
-          <Button component={Link} href={inquiryHref} color="yellow" size="md" fullWidth>
-            {locale === "zh" ? "立即询价" : "Inquire now"}
-          </Button>
-        </Box>
-      )}
     </>
   );
 }

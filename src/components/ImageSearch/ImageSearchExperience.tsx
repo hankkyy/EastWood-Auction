@@ -248,6 +248,7 @@ export default function ImageSearchExperience() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [feature, setFeature] = useState<ImageFeature | null>(null);
   const [results, setResults] = useState<ImageSearchResult[]>([]);
+  const [hasAttemptedSearch, setHasAttemptedSearch] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [adminPreviewUrl, setAdminPreviewUrl] = useState<string | null>(null);
@@ -361,6 +362,8 @@ export default function ImageSearchExperience() {
   );
   const resultList = results.length
     ? results
+    : hasAttemptedSearch
+      ? []
     : productKnowledgeBase.map((artwork) => ({
         artwork,
         score: 0,
@@ -567,6 +570,7 @@ export default function ImageSearchExperience() {
 
     setError(null);
     setIsSearching(true);
+    setHasAttemptedSearch(true);
 
     try {
       const feature = await extractImageFeature(file);
@@ -610,6 +614,7 @@ export default function ImageSearchExperience() {
     setFileName(`${getArtworkTitle(artwork, locale)} ${t("image.sampleSuffix")}`);
     setPreviewUrl(demoFeature.previewUrl);
     setFeature(demoFeature);
+    setHasAttemptedSearch(true);
     setResults(searchSimilarArtworks(demoFeature, productKnowledgeBase));
   };
 
@@ -736,6 +741,7 @@ export default function ImageSearchExperience() {
     setFileName(null);
     setFeature(null);
     setResults([]);
+    setHasAttemptedSearch(false);
     setError(null);
   };
 
@@ -892,6 +898,8 @@ export default function ImageSearchExperience() {
               <Badge variant="filled" color="violet.9">
                 {results.length
                   ? t("image.ranked")
+                  : hasAttemptedSearch
+                    ? (locale === "zh" ? "无可靠匹配" : "No reliable match")
                   : `${productKnowledgeBase.length} ${t("image.indexed")}`}
               </Badge>
             </Group>
@@ -908,51 +916,64 @@ export default function ImageSearchExperience() {
               </Paper>
             ) : null}
 
-            {resultList.map(({ artwork, score }, index) => (
-              <Paper key={artwork.id} p="md" className={classes.resultCard}>
-                <SimpleGrid
-                  cols={2}
-                  spacing="md"
-                  breakpoints={[{ maxWidth: "sm", cols: 1, spacing: "sm" }]}
-                >
-                  <Box className={classes.resultImageFrame}>
-                  <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
-                  </Box>
-                  <Stack spacing="xs">
-                    <Group spacing="xs" position="apart">
-                      <Group spacing="xs">
-                        <Badge color="violet.7" variant="outline">
-                          {getArtworkCategory(artwork, locale)}
-                        </Badge>
-                        {score ? (
-                          <Badge color="violet.9">
-                            {t("image.rank")} #{index + 1}
-                          </Badge>
-                        ) : null}
-                      </Group>
-                      <Text size="sm" color="dark.1">
-                        {getArtworkPeriod(artwork, locale)}
-                      </Text>
-                    </Group>
-                    <Title order={3}>{getArtworkTitle(artwork, locale)}</Title>
-                    <Text size="sm" color="dark.1">
-                      {getArtworkDescription(artwork, locale)}
-                    </Text>
-                    <Box>
-                      <Group position="apart" mb={4}>
-                        <Text size="xs" weight={600}>
-                          {t("image.similarity")}
-                        </Text>
-                        <Text size="xs" color="violet.7" weight={700}>
-                          {score ? `${score}%` : t("image.waiting")}
-                        </Text>
-                      </Group>
-                      <Progress value={score} color="violet.7" />
+            {resultList.length ? (
+              resultList.map(({ artwork, score }, index) => (
+                <Paper key={artwork.id} p="md" className={classes.resultCard}>
+                  <SimpleGrid
+                    cols={2}
+                    spacing="md"
+                    breakpoints={[{ maxWidth: "sm", cols: 1, spacing: "sm" }]}
+                  >
+                    <Box className={classes.resultImageFrame}>
+                    <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
                     </Box>
-                  </Stack>
-                </SimpleGrid>
+                    <Stack spacing="xs">
+                      <Group spacing="xs" position="apart">
+                        <Group spacing="xs">
+                          <Badge color="violet.7" variant="outline">
+                            {getArtworkCategory(artwork, locale)}
+                          </Badge>
+                          {score ? (
+                            <Badge color="violet.9">
+                              {t("image.rank")} #{index + 1}
+                            </Badge>
+                          ) : null}
+                        </Group>
+                        <Text size="sm" color="dark.1">
+                          {getArtworkPeriod(artwork, locale)}
+                        </Text>
+                      </Group>
+                      <Title order={3}>{getArtworkTitle(artwork, locale)}</Title>
+                      <Text size="sm" color="dark.1">
+                        {getArtworkDescription(artwork, locale)}
+                      </Text>
+                      <Box>
+                        <Group position="apart" mb={4}>
+                          <Text size="xs" weight={600}>
+                            {t("image.similarity")}
+                          </Text>
+                          <Text size="xs" color="violet.7" weight={700}>
+                            {score ? `${score}%` : t("image.waiting")}
+                          </Text>
+                        </Group>
+                        <Progress value={score} color="violet.7" />
+                      </Box>
+                    </Stack>
+                  </SimpleGrid>
+                </Paper>
+              ))
+            ) : hasAttemptedSearch ? (
+              <Paper p="lg" className={classes.insightCard}>
+                <Text weight={700}>
+                  {locale === "zh" ? "没有找到可靠匹配" : "No reliable match found"}
+                </Text>
+                <Text size="sm" color="dark.1" mt="xs">
+                  {locale === "zh"
+                    ? "这张图片与当前知识库中的藏品差异较大，系统已主动拒绝低置信度结果，避免把不相关照片硬匹配成藏品。"
+                    : "This image appears too different from the current catalog. Low-confidence matches were intentionally rejected instead of forcing an unrelated result."}
+                </Text>
               </Paper>
-            ))}
+            ) : null}
           </Stack>
         </SimpleGrid>
       </Container>

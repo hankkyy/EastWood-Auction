@@ -864,33 +864,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       alt={itemTitle}
                       sx={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }}
                     />
-                    
-                    {/* 照片数量提示 */}
-                    {item.galleryImages && item.galleryImages.length > 1 && (
-                      <Badge 
-                        variant="filled"
-                        sx={{ 
-                          position: "absolute", 
-                          bottom: 12, 
-                          right: 12,
-                          zIndex: 2,
-                          fontSize: 12,
-                          padding: "5px 10px",
-                          background: "rgba(20, 18, 16, 0.72)",
-                          color: "#efe3c6",
-                          fontWeight: 600,
-                          letterSpacing: "0.08em",
-                          border: "1px solid rgba(216, 183, 109, 0.26)",
-                          backdropFilter: "blur(6px)",
-                          boxShadow: "0 8px 18px rgba(0, 0, 0, 0.2)",
-                          borderRadius: 999,
-                        }}
-                      >
-                        {locale === "zh"
-                          ? `${item.galleryImages.length} 图`
-                          : `${item.galleryImages.length} Photos`}
-                      </Badge>
-                    )}
                   </Box>
                   
                   <Stack
@@ -911,14 +884,17 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       align="center"
                       sx={{
                         color: "#f3ead8",
-                        letterSpacing: "0.02em",
-                        fontWeight: 700,
-                        lineHeight: 1.45,
-                        fontSize: 21,
+                        letterSpacing: "0.035em",
+                        fontWeight: 600,
+                        lineHeight: 1.32,
+                        fontSize: 22,
+                        fontFamily:
+                          '"Cormorant Garamond", "Noto Serif SC", "STSong", "Songti SC", serif',
+                        textShadow: "0 1px 0 rgba(0, 0, 0, 0.14)",
                         marginTop: 16,
                         "@media (max-width: 48em)": {
                           marginTop: 12,
-                          fontSize: 17,
+                          fontSize: 19,
                         },
                       }}
                     >

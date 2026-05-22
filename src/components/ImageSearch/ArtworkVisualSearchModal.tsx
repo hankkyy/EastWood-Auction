@@ -75,6 +75,53 @@ const readFileAsDataUrl = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+const loadImageElement = (src: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new window.Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Unable to decode the image."));
+    image.src = src;
+  });
+
+const compressImageDataUrl = async (
+  dataUrl: string,
+  maxEdge = 1280,
+  quality = 0.72
+) => {
+  const image = await loadImageElement(dataUrl);
+  const width = image.naturalWidth || image.width;
+  const height = image.naturalHeight || image.height;
+  const longestEdge = Math.max(width, height);
+
+  if (!longestEdge) {
+    return dataUrl;
+  }
+
+  const ratio = longestEdge > maxEdge ? maxEdge / longestEdge : 1;
+  const targetWidth = Math.max(1, Math.round(width * ratio));
+  const targetHeight = Math.max(1, Math.round(height * ratio));
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    return dataUrl;
+  }
+
+  ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
+  const candidates = [quality, 0.6, 0.5, 0.42];
+
+  for (const nextQuality of candidates) {
+    const encoded = canvas.toDataURL("image/jpeg", nextQuality);
+    if (encoded.length <= 1_600_000 || nextQuality === candidates[candidates.length - 1]) {
+      return encoded;
+    }
+  }
+
+  return canvas.toDataURL("image/jpeg", 0.42);
+};
+
 export default function ArtworkVisualSearchModal({
   opened,
   onClose,
@@ -121,7 +168,8 @@ export default function ArtworkVisualSearchModal({
 
     try {
       const dataUrl = await readFileAsDataUrl(file);
-      setPreviewUrl(dataUrl);
+      const preparedDataUrl = await compressImageDataUrl(dataUrl);
+      setPreviewUrl(preparedDataUrl);
       setSelectedFileName(file.name || "query-image");
       setResults([]);
     } catch (error) {
@@ -152,23 +200,6 @@ export default function ArtworkVisualSearchModal({
     }
 
     try {
-      setStatus("uploading");
-      const uploadResponse = await fetch("/api/image-search/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          imageDataUrl: previewUrl,
-          fileName: selectedFileName || "query-image",
-        }),
-      });
-
-      const uploadBody = await uploadResponse.json();
-      if (!uploadResponse.ok) {
-        throw new Error(uploadBody.error || "Upload failed.");
-      }
-
       setStatus("matching");
       const matchResponse = await fetch("/api/image-search/match", {
         method: "POST",
@@ -176,7 +207,7 @@ export default function ArtworkVisualSearchModal({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          imageUrl: uploadBody.imageUrl,
+          imageDataUrl: previewUrl,
           threshold,
           matchCount: 5,
         }),
