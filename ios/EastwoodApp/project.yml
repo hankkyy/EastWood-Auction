@@ -1,0 +1,24 @@
+name: EastwoodApp
+options:
+  minimumXcodeGenVersion: 2.38.0
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    PRODUCT_BUNDLE_IDENTIFIER: com.eastwood.app
+targets:
+  EastwoodApp:
+    type: application
+    platform: iOS
+    sources:
+      - EastwoodApp
+    settings:
+      base:
+        INFOPLIST_FILE: EastwoodApp/Info.plist
+        INFOPLIST_KEY_UILaunchStoryboardName: LaunchScreen
+        PRODUCT_NAME: Eastwood
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: 1
+    scheme:
+      testTargets: []
