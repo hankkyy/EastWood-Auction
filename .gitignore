@@ -127,3 +127,10 @@ fabric.properties
 !.idea/runConfigurations
 
 # End of https://www.toptal.com/developers/gitignore/api/phpstorm+all,nextjs
+
+# Xcode user-specific state
+*.xcuserstate
+xcuserdata/
+
+# Supabase local temp artifacts
+supabase/.temp/

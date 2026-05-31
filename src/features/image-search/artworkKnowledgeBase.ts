@@ -7,6 +7,39 @@ import { supabase } from "@/lib/supabase/client";
 
 let cloudKnowledgeBaseCache: Artwork[] | null = null;
 
+type ApiPayload = Record<string, unknown> & { error?: string };
+
+const parseApiResponse = async <T extends ApiPayload>(
+  response: Response,
+  fallbackMessage: string
+): Promise<T> => {
+  const rawText = await response.text();
+  let payload: T = {} as T;
+
+  if (rawText) {
+    try {
+      payload = JSON.parse(rawText) as T;
+    } catch {
+      if (!response.ok) {
+        const isPayloadTooLarge =
+          response.status === 413 ||
+          rawText.toLowerCase().includes("request entity too large");
+        const message = isPayloadTooLarge
+          ? "保存失败：图片数据过大，请减少图片数量或压缩后重试。"
+          : `请求失败（${response.status}）：${rawText.slice(0, 160)}`;
+        throw new Error(message);
+      }
+      throw new Error(fallbackMessage);
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(payload.error || fallbackMessage);
+  }
+
+  return payload;
+};
+
 export const getKnowledgeBase = (): Artwork[] => {
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase is required for persistent artwork storage.");
@@ -36,14 +69,10 @@ export const fetchKnowledgeBase = async (): Promise<Artwork[]> => {
 
   try {
     const response = await fetch("/api/artworks");
-    const payload = (await response.json()) as {
+    const payload = await parseApiResponse<{
       artworks?: Artwork[];
       error?: string;
-    };
-
-    if (!response.ok) {
-      throw new Error(payload.error || "Unable to load artworks.");
-    }
+    }>(response, "Unable to load artworks.");
 
     const nextArtworks = (payload.artworks ?? []).map(normalizeArtwork);
     cloudKnowledgeBaseCache = nextArtworks;
@@ -81,12 +110,12 @@ export const saveImportedArtwork = async (artwork: Artwork) => {
     body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
   });
 
-  const payload = (await response.json()) as {
+  const payload = await parseApiResponse<{
     artwork?: Artwork;
     error?: string;
-  };
+  }>(response, "Unable to save artwork.");
 
-  if (!response.ok || !payload.artwork) {
+  if (!payload.artwork) {
     throw new Error(payload.error || "Unable to save artwork.");
   }
 
@@ -119,12 +148,12 @@ export const updateImportedArtwork = async (artwork: Artwork) => {
     body: JSON.stringify({ artwork: normalizeArtwork(artwork) }),
   });
 
-  const payload = (await response.json()) as {
+  const payload = await parseApiResponse<{
     artwork?: Artwork;
     error?: string;
-  };
+  }>(response, "Unable to update artwork.");
 
-  if (!response.ok || !payload.artwork) {
+  if (!payload.artwork) {
     throw new Error(payload.error || "Unable to update artwork.");
   }
 
@@ -154,9 +183,12 @@ export const deleteImportedArtwork = async (artworkId: string) => {
     },
   });
 
-  const payload = (await response.json()) as { ok?: boolean; error?: string };
+  const payload = await parseApiResponse<{ ok?: boolean; error?: string }>(
+    response,
+    "Unable to delete artwork."
+  );
 
-  if (!response.ok || !payload.ok) {
+  if (!payload.ok) {
     throw new Error(payload.error || "Unable to delete artwork.");
   }
 
