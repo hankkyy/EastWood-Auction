@@ -8,6 +8,7 @@ final class WebViewModel: ObservableObject {
     @Published var pageTitle = "Eastwood"
     @Published var showLoadError = false
     @Published var currentURL: URL?
+    @Published var estimatedProgress: Double = 0
 
     weak var webView: WKWebView?
 
@@ -24,6 +25,7 @@ final class WebViewModel: ObservableObject {
         canGoBack = webView.canGoBack
         pageTitle = webView.title ?? "Eastwood"
         currentURL = webView.url
+        estimatedProgress = webView.estimatedProgress
     }
 
     func open(_ url: URL) {

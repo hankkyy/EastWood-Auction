@@ -1,12 +1,14 @@
 # Eastwood iOS (SwiftUI)
 
-This folder contains a SwiftUI iOS shell app that wraps the existing Eastwood web app with WKWebView, so the app behavior remains aligned with the website while reusing cloud persistence from the existing backend (Supabase and current APIs).
+This folder contains the SwiftUI native iOS app for Eastwood Auction.  
+The app is no longer a simple web shell: core user and admin flows are implemented as native SwiftUI modules and use the same cloud backend (Supabase + existing APIs) for persistence.
 
-## 1) Production URL
+## 1) Backend / Production URL
 
 Edit `EastwoodApp/AppConfig.swift`:
 
 ```swift
+static let apiBaseURLString = "https://eastwoodauction.vercel.app"
 static let webAppURLString = "https://eastwoodauction.vercel.app/"
 static let allowedHostSuffixes = ["eastwoodauction.vercel.app"]
 ```
@@ -29,19 +31,27 @@ Then open:
 open EastwoodApp.xcodeproj
 ```
 
-## 3) App Store readiness checklist
+## 3) Native coverage snapshot
+
+- Native tabs: Home / Collections / Shop / Cases / Image Search / More / Profile
+- Native details and search flows
+- Native inquiry form and inbox messaging
+- Native favorites synced to cloud
+- Native admin: artworks / inquiries / users
+- Shared design system: theme, buttons, motion, skeleton loading
+
+## 4) App Store readiness checklist
 
 - Set real bundle id and signing team in Xcode
-- Replace app icon set in `Assets.xcassets/AppIcon.appiconset`
-- Ensure production domain uses HTTPS and stable TLS
-- Verify website mobile UX for iPhone viewport
+- Verify app icon and launch assets
 - Add privacy labels in App Store Connect (data collected/tracking)
-- Provide review account if some pages require login
-- Fill `NSCameraUsageDescription` and `NSPhotoLibraryUsageDescription` text with final product wording
+- Provide review account if app content requires login
+- Finalize permission copy for camera/photo library usage
+- Run regression on target iOS versions and multiple iPhone sizes
 
 Detailed release steps: see `APP_STORE_RELEASE_GUIDE.md`.
 
-## 4) Push notification payload format
+## 5) Push notification payload format
 
 When sending APNs payloads from your backend, include a deep link URL in `url`:
 
@@ -58,7 +68,7 @@ When sending APNs payloads from your backend, include a deep link URL in `url`:
 }
 ```
 
-## 5) Device token auto-sync (Supabase)
+## 6) Device token auto-sync (Supabase)
 
 The app now auto-syncs APNs device token to your backend API after user login in WebView.
 
@@ -74,5 +84,5 @@ Optional production security:
 
 ## Notes
 
-- This approach preserves one source of truth for data and business logic.
-- For long-term native evolution (performance, offline, APNs, Apple Pay, biometric login), we can progressively replace specific web pages with native SwiftUI screens while keeping the same backend.
+- Data source of truth remains cloud-first (Supabase and existing APIs).
+- Ongoing work should focus on parity details (admin edge cases, fallback UX, and full multi-version regression).

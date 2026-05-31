@@ -24,6 +24,7 @@ struct EastwoodWebView: UIViewRepresentable {
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(context.coordinator, action: #selector(Coordinator.refreshPulled(_:)), for: .valueChanged)
         webView.scrollView.refreshControl = refreshControl
+        context.coordinator.observeProgress(on: webView)
 
         webView.load(URLRequest(url: url, cachePolicy: .reloadRevalidatingCacheData))
         viewModel.webView = webView
@@ -38,6 +39,7 @@ struct EastwoodWebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, UIDocumentPickerDelegate {
         var parent: EastwoodWebView
         private var fileSelectionCompletion: (([URL]?) -> Void)?
+        private var progressObservation: NSKeyValueObservation?
 
         init(_ parent: EastwoodWebView) {
             self.parent = parent
@@ -46,6 +48,14 @@ struct EastwoodWebView: UIViewRepresentable {
         @objc func refreshPulled(_ sender: UIRefreshControl) {
             parent.viewModel.webView?.reload()
             sender.endRefreshing()
+        }
+
+        func observeProgress(on webView: WKWebView) {
+            progressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] observed, _ in
+                Task { @MainActor in
+                    self?.parent.viewModel.estimatedProgress = observed.estimatedProgress
+                }
+            }
         }
 
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -122,6 +132,10 @@ struct EastwoodWebView: UIViewRepresentable {
         func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
             fileSelectionCompletion?(nil)
             fileSelectionCompletion = nil
+        }
+
+        deinit {
+            progressObservation?.invalidate()
         }
     }
 }

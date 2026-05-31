@@ -8,8 +8,9 @@ Eastwood Auction is a Next.js web application for presenting antique and auction
 - English and Chinese built-in localization
 - Dark visual theme for a gallery and auction-house feel
 - Unified keyword and image search for matching customer queries against sale products
-- Admin-only workflow for importing either sale products or display-only collection pieces into the local image-search knowledge base
-- Foundation for future ordering, inquiry, or checkout features
+- Admin workflows for importing and managing sale products and collection pieces
+- Cloud persistence with Supabase for auth, favorites, inquiries, inbox, and admin operations
+- Native iOS app parity with progressive SwiftUI-first modules
 
 ## Available Pages
 
@@ -35,13 +36,23 @@ The image search feature is designed like a lightweight “photo search” exper
 - Admins can import two listing types: `product` for public sale items and `collection` for display-only pieces that show Eastwood Auction's inventory strength but are not matched to customers as sellable products.
 - A Taobao-level production workflow should replace the browser-only matcher with a visual embedding model plus vector database search.
 
-Admin import is protected by a local demo login. The current implementation stores demo admin accounts and imported items in browser storage, so it is suitable for prototyping but should be replaced with a real backend before production use.
+Admin import and management integrate with backend APIs and Supabase persistence.
 
-Default demo admin account:
+## iOS Native App (SwiftUI)
 
-```text
-Username: admin
-Password: admin123
+The repository includes a native iOS app in `ios/EastwoodApp` with:
+
+- SwiftUI-based native tabs and content modules (Home, Collections, Shop, Cases, Image Search, More, Profile)
+- Native admin screens (artworks, inquiries, users) with role-aware behavior
+- Cloud-persisted login/session, favorites, inquiries, inbox messaging, and admin actions via Supabase-backed APIs
+- Unified design system (theme, panels, button styles, motion rhythm, skeleton loading)
+
+Build path:
+
+```bash
+cd ios/EastwoodApp
+xcodegen generate
+open EastwoodApp.xcodeproj
 ```
 
 ## Localization
