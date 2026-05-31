@@ -1,0 +1,349 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		107F9A508BF586BAE839F230 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 739C663DCC3F4C5C950CF13D /* ContentView.swift */; };
+		36DEC9BC092653A7DC7E3291 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613445C0A5A8703E6A006EC8 /* AppDelegate.swift */; };
+		67FF95DAF24D6D024ED604C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 792789BFB0CB66AF0046B189 /* Assets.xcassets */; };
+		681499603F162EAB8B198CCE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */; };
+		6BB7BE28A96C89E5D893876D /* EastwoodAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */; };
+		934C8BAEC58A618D9328D2A3 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEB8C7CFAB66CA2BD3ECF71 /* AppConfig.swift */; };
+		A14AA5B64D124FECCAC5F4E6 /* EastwoodWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CC09DB0BDB1D428BDBE1EA0 /* EastwoodWebView.swift */; };
+		B5FEBA108E00569A00A8F4C8 /* WebViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA7475D4468FFCDEB9F9F4B /* WebViewModel.swift */; };
+		C3046FEA50F276536C181E2F /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BC9A3F5510B0482846653A /* ShareSheet.swift */; };
+		D2D7AF0CECAA5FED19B277AE /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31B15C9730FEF34B4122350 /* NetworkMonitor.swift */; };
+		E613D5AA5C43CCCA75A18514 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E5F1C55254E8E7A9D3D2CA /* NotificationManager.swift */; };
+		F3D7ABD8D759FE5371514682 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3D8A940CC2182DC979CF04FC /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0BA7475D4468FFCDEB9F9F4B /* WebViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewModel.swift; sourceTree = "<group>"; };
+		23E5F1C55254E8E7A9D3D2CA /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		3D8A940CC2182DC979CF04FC /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5FEB8C7CFAB66CA2BD3ECF71 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		613445C0A5A8703E6A006EC8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		6CC09DB0BDB1D428BDBE1EA0 /* EastwoodWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodWebView.swift; sourceTree = "<group>"; };
+		739C663DCC3F4C5C950CF13D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		792789BFB0CB66AF0046B189 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		87BC9A3F5510B0482846653A /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		BC338EC7B6C446676C02C74D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D050E45E096FFAA0F18071CD /* Eastwood.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eastwood.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodAppApp.swift; sourceTree = "<group>"; };
+		F31B15C9730FEF34B4122350 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		35939F36A73BC02E55B422FE = {
+			isa = PBXGroup;
+			children = (
+				7555216CBED458C980BC7CAA /* EastwoodApp */,
+				68E5C804A09C7632AF2BD792 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		68E5C804A09C7632AF2BD792 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D050E45E096FFAA0F18071CD /* Eastwood.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7555216CBED458C980BC7CAA /* EastwoodApp */ = {
+			isa = PBXGroup;
+			children = (
+				5FEB8C7CFAB66CA2BD3ECF71 /* AppConfig.swift */,
+				613445C0A5A8703E6A006EC8 /* AppDelegate.swift */,
+				792789BFB0CB66AF0046B189 /* Assets.xcassets */,
+				739C663DCC3F4C5C950CF13D /* ContentView.swift */,
+				F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */,
+				6CC09DB0BDB1D428BDBE1EA0 /* EastwoodWebView.swift */,
+				BC338EC7B6C446676C02C74D /* Info.plist */,
+				3D8A940CC2182DC979CF04FC /* LaunchScreen.storyboard */,
+				F31B15C9730FEF34B4122350 /* NetworkMonitor.swift */,
+				23E5F1C55254E8E7A9D3D2CA /* NotificationManager.swift */,
+				EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */,
+				87BC9A3F5510B0482846653A /* ShareSheet.swift */,
+				0BA7475D4468FFCDEB9F9F4B /* WebViewModel.swift */,
+			);
+			path = EastwoodApp;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4017ED95E8D1B824F8EE561F /* EastwoodApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DCDCBC2E3774EFC0F92EDDDF /* Build configuration list for PBXNativeTarget "EastwoodApp" */;
+			buildPhases = (
+				4AB5BC2B596716812B749D05 /* Sources */,
+				251A8155A55D16F2CFB8CF0E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EastwoodApp;
+			packageProductDependencies = (
+			);
+			productName = EastwoodApp;
+			productReference = D050E45E096FFAA0F18071CD /* Eastwood.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5E25692A6454BA5FBAECC4B3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2650;
+			};
+			buildConfigurationList = 32CDBFBE210C487BF3435295 /* Build configuration list for PBXProject "EastwoodApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 35939F36A73BC02E55B422FE;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 68E5C804A09C7632AF2BD792 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4017ED95E8D1B824F8EE561F /* EastwoodApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		251A8155A55D16F2CFB8CF0E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				67FF95DAF24D6D024ED604C9 /* Assets.xcassets in Resources */,
+				F3D7ABD8D759FE5371514682 /* LaunchScreen.storyboard in Resources */,
+				681499603F162EAB8B198CCE /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4AB5BC2B596716812B749D05 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				934C8BAEC58A618D9328D2A3 /* AppConfig.swift in Sources */,
+				36DEC9BC092653A7DC7E3291 /* AppDelegate.swift in Sources */,
+				107F9A508BF586BAE839F230 /* ContentView.swift in Sources */,
+				6BB7BE28A96C89E5D893876D /* EastwoodAppApp.swift in Sources */,
+				A14AA5B64D124FECCAC5F4E6 /* EastwoodWebView.swift in Sources */,
+				D2D7AF0CECAA5FED19B277AE /* NetworkMonitor.swift in Sources */,
+				E613D5AA5C43CCCA75A18514 /* NotificationManager.swift in Sources */,
+				C3046FEA50F276536C181E2F /* ShareSheet.swift in Sources */,
+				B5FEBA108E00569A00A8F4C8 /* WebViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		52C137F7C023692AC5CEF024 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = UW3ZRXYRQ8;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eastwood.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		6C934C67A110C55CEA01BE71 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = UW3ZRXYRQ8;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.eastwood.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		C7A0412C8FA0C1DD577AE9BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = EastwoodApp/Info.plist;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_NAME = Eastwood;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E7436E327ACC08943933F0A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = EastwoodApp/Info.plist;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_NAME = Eastwood;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		32CDBFBE210C487BF3435295 /* Build configuration list for PBXProject "EastwoodApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				52C137F7C023692AC5CEF024 /* Debug */,
+				6C934C67A110C55CEA01BE71 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DCDCBC2E3774EFC0F92EDDDF /* Build configuration list for PBXNativeTarget "EastwoodApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E7436E327ACC08943933F0A1 /* Debug */,
+				C7A0412C8FA0C1DD577AE9BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5E25692A6454BA5FBAECC4B3 /* Project object */;
+}
