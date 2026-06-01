@@ -90,16 +90,33 @@ struct NativeAdminUsersView: View {
     @EnvironmentObject private var auth: AuthManager
     @StateObject private var manager = NativeAdminUsersManager()
     @State private var deletingProfile: NativeAdminProfile?
+    @State private var roleConfirmState: (id: String, nextRole: String)?
 
     var body: some View {
+        let pad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
         Group {
             if !auth.isAdmin {
-                Text("Admin access required")
-                    .foregroundStyle(.secondary)
+                EastwoodStateView(
+                    systemImage: "lock.shield",
+                    title: "Admin Access Required",
+                    message: "Only administrator accounts can access user management."
+                )
             } else {
-                List {
-                    if let error = manager.errorMessage {
-                        Section {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("User Management")
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
+                                .foregroundStyle(EastwoodTheme.goldSoft)
+                            Text("Manage account roles and moderation actions.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .eastwoodPanel()
+
+                        if let error = manager.errorMessage {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(error).foregroundStyle(.red)
                                 Button("Retry") {
@@ -108,43 +125,35 @@ struct NativeAdminUsersView: View {
                                 }
                                 .buttonStyle(EastwoodSecondaryButtonStyle())
                             }
+                            .padding(14)
+                            .eastwoodPanel()
                         }
-                    }
 
-                    if let action = manager.actionMessage, !action.isEmpty {
-                        Section {
+                        if let action = manager.actionMessage, !action.isEmpty {
                             Text(action)
                                 .font(.footnote)
                                 .foregroundStyle(action.lowercased().contains("error") ? .red : .secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .eastwoodPanel()
                         }
-                    }
 
-                    Section("Administrators") {
-                        let admins = manager.profiles.filter { $0.role == "admin" }
-                        if admins.isEmpty && !manager.isLoading {
-                            Text("No admin users").foregroundStyle(.secondary)
-                        }
-                        ForEach(admins) { profileRow($0) }
+                        adminSection("Administrators", items: manager.profiles.filter { $0.role == "admin" })
+                        adminSection("Users", items: manager.profiles.filter { $0.role == "user" })
                     }
-
-                    Section("Users") {
-                        let users = manager.profiles.filter { $0.role == "user" }
-                        if users.isEmpty && !manager.isLoading {
-                            Text("No users").foregroundStyle(.secondary)
-                        }
-                        ForEach(users) { profileRow($0) }
-                    }
-                }
-                .scrollContentBackground(.hidden)
-                .background(EastwoodBackground())
-                .overlay {
-                    if manager.isLoading {
-                        ProgressView()
-                    }
+                    .padding(.horizontal, pad)
+                    .padding(.vertical, 12)
                 }
             }
         }
+        .overlay {
+            if auth.isAdmin && manager.isLoading {
+                EastwoodSkeletonList(count: 3)
+                    .padding(.horizontal, pad)
+            }
+        }
         .navigationTitle("Admin Users")
+        .background(EastwoodBackground())
         .task {
             if auth.isAdmin {
                 await manager.load(token: auth.accessToken)
@@ -171,10 +180,34 @@ struct NativeAdminUsersView: View {
     }
 
     @ViewBuilder
+    private func adminSection(_ title: String, items: [NativeAdminProfile]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(EastwoodTheme.goldSoft)
+
+            if items.isEmpty && !manager.isLoading {
+                Text(title == "Users" ? "No users" : "No admin users")
+                    .foregroundStyle(.secondary)
+            }
+
+            ForEach(items) { profile in
+                profileRow(profile)
+                if profile.id != items.last?.id {
+                    Divider().overlay(EastwoodTheme.hairline)
+                }
+            }
+        }
+        .padding(14)
+        .eastwoodPanel()
+    }
+
+    @ViewBuilder
     private func profileRow(_ profile: NativeAdminProfile) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(displayName(profile))
                 .font(.headline)
+
             Text(profile.email ?? "No email")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -190,16 +223,30 @@ struct NativeAdminUsersView: View {
 
                 Button(profile.role == "admin" ? "Set User" : "Set Admin") {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    let targetRole = profile.role == "admin" ? "user" : "admin"
+                    if roleConfirmState?.id != profile.id || roleConfirmState?.nextRole != targetRole {
+                        roleConfirmState = (profile.id, targetRole)
+                        return
+                    }
                     Task {
-                        let targetRole = profile.role == "admin" ? "user" : "admin"
                         let ok = await manager.updateRole(profileId: profile.id, role: targetRole, token: auth.accessToken)
                         if ok { await manager.load(token: auth.accessToken) }
+                        roleConfirmState = nil
                     }
                 }
                 .buttonStyle(EastwoodSecondaryButtonStyle())
+                .overlay(alignment: .bottom) {
+                    if roleConfirmState?.id == profile.id {
+                        Text("Tap again to confirm")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .offset(y: 16)
+                    }
+                }
 
                 Button("Delete", role: .destructive) {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    roleConfirmState = nil
                     deletingProfile = profile
                 }
                 .buttonStyle(EastwoodSecondaryButtonStyle())

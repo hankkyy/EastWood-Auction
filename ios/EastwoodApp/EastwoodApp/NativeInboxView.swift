@@ -15,6 +15,7 @@ struct NativeInboxView: View {
     @State private var selectedInquiry: NativeInquiry?
     @State private var replyText = ""
     @State private var segment: InboxSegment = .pending
+    @State private var statusConfirmState: (id: String, isProcessed: Bool?, isArchived: Bool?, label: String)?
 
     private var unreadCount: Int {
         inquiryManager.inquiries.reduce(0) { partial, inquiry in
@@ -39,6 +40,8 @@ struct NativeInboxView: View {
                 if !auth.isAuthenticated {
                     Text("Please sign in first")
                         .foregroundStyle(.secondary)
+                        .padding(.top, 16)
+                        .eastwoodFillScreen(alignment: .top)
                 } else if inquiryManager.isLoading {
                     inboxLoadingView
                 } else {
@@ -115,9 +118,13 @@ struct NativeInboxView: View {
                                         if auth.isAdmin {
                                             HStack(spacing: 10) {
                                                 if !inquiry.is_processed && !inquiry.is_archived {
-                                                    Button("Mark Processed") {
+                                                    Button(actionTitle(for: inquiry, defaultText: "Mark Processed", isProcessed: true, isArchived: false, label: "Mark Processed")) {
                                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                                         Task {
+                                                            if !isConfirming(inquiry, isProcessed: true, isArchived: false, label: "Mark Processed") {
+                                                                statusConfirmState = (inquiry.id, true, false, "Mark Processed")
+                                                                return
+                                                            }
                                                             let ok = await inquiryManager.updateInquiryStatus(
                                                                 token: auth.accessToken,
                                                                 inquiryId: inquiry.id,
@@ -125,34 +132,45 @@ struct NativeInboxView: View {
                                                                 isArchived: false
                                                             )
                                                             if ok { await inquiryManager.load(token: auth.accessToken) }
+                                                            statusConfirmState = nil
                                                         }
                                                     }
                                                     .buttonStyle(EastwoodSecondaryButtonStyle())
                                                 }
 
                                                 if !inquiry.is_archived {
-                                                    Button("Archive") {
+                                                    Button(actionTitle(for: inquiry, defaultText: "Archive", isProcessed: nil, isArchived: true, label: "Archive")) {
                                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                                         Task {
+                                                            if !isConfirming(inquiry, isProcessed: nil, isArchived: true, label: "Archive") {
+                                                                statusConfirmState = (inquiry.id, nil, true, "Archive")
+                                                                return
+                                                            }
                                                             let ok = await inquiryManager.updateInquiryStatus(
                                                                 token: auth.accessToken,
                                                                 inquiryId: inquiry.id,
                                                                 isArchived: true
                                                             )
                                                             if ok { await inquiryManager.load(token: auth.accessToken) }
+                                                            statusConfirmState = nil
                                                         }
                                                     }
                                                     .buttonStyle(EastwoodSecondaryButtonStyle())
                                                 } else {
-                                                    Button("Restore") {
+                                                    Button(actionTitle(for: inquiry, defaultText: "Restore", isProcessed: nil, isArchived: false, label: "Restore")) {
                                                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                                         Task {
+                                                            if !isConfirming(inquiry, isProcessed: nil, isArchived: false, label: "Restore") {
+                                                                statusConfirmState = (inquiry.id, nil, false, "Restore")
+                                                                return
+                                                            }
                                                             let ok = await inquiryManager.updateInquiryStatus(
                                                                 token: auth.accessToken,
                                                                 inquiryId: inquiry.id,
                                                                 isArchived: false
                                                             )
                                                             if ok { await inquiryManager.load(token: auth.accessToken) }
+                                                            statusConfirmState = nil
                                                         }
                                                     }
                                                     .buttonStyle(EastwoodSecondaryButtonStyle())
@@ -196,6 +214,15 @@ struct NativeInboxView: View {
         }
     }
 
+    private func isConfirming(_ inquiry: NativeInquiry, isProcessed: Bool?, isArchived: Bool?, label: String) -> Bool {
+        guard let state = statusConfirmState else { return false }
+        return state.id == inquiry.id && state.isProcessed == isProcessed && state.isArchived == isArchived && state.label == label
+    }
+
+    private func actionTitle(for inquiry: NativeInquiry, defaultText: String, isProcessed: Bool?, isArchived: Bool?, label: String) -> String {
+        isConfirming(inquiry, isProcessed: isProcessed, isArchived: isArchived, label: label) ? "Tap Again" : defaultText
+    }
+
     private var inboxLoadingView: some View {
         VStack(spacing: 12) {
             Picker("Inbox", selection: .constant(InboxSegment.pending)) {
@@ -214,6 +241,7 @@ struct NativeInboxView: View {
             }
             .scrollIndicators(.hidden)
         }
+        .eastwoodFillScreen(alignment: .top)
     }
 
     private func statusBadge(for inquiry: NativeInquiry) -> some View {
@@ -257,6 +285,7 @@ struct NativeInboxView: View {
                 HStack {
                     TextField("Reply...", text: $replyText)
                         .textFieldStyle(.roundedBorder)
+                        .disabled(inquiry.is_archived)
                     Button("Send") {
                         let body = replyText.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !body.isEmpty else { return }
@@ -269,8 +298,16 @@ struct NativeInboxView: View {
                             }
                         }
                     }
+                    .disabled(inquiry.is_archived)
                 }
                 .padding()
+
+                if inquiry.is_archived {
+                    Text("Archived inquiries are read-only.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .padding(.bottom, 8)
+                }
             }
             .navigationTitle("Conversation")
             .navigationBarTitleDisplayMode(.inline)

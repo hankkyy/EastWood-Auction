@@ -25,7 +25,7 @@ final class NativeInquiryManager: ObservableObject {
         }
     }
 
-    func submitInquiry(token: String, inquiryCode: String?, details: String, phone: String, email: String) async -> Bool {
+    func submitInquiry(token: String, inquiryCode: String?, noInquiryCode: Bool, details: String, phone: String, email: String) async -> Bool {
         guard let api = NativeAPIClient() else { return false }
         actionErrorMessage = nil
         do {
@@ -35,7 +35,7 @@ final class NativeInquiryManager: ObservableObject {
                 token: token,
                 body: [
                     "inquiryCode": inquiryCode ?? "",
-                    "noInquiryCode": (inquiryCode ?? "").isEmpty,
+                    "noInquiryCode": noInquiryCode,
                     "details": details,
                     "contactPhone": phone,
                     "contactEmail": email,
