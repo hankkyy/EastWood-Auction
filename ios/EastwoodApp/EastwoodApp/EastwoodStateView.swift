@@ -32,6 +32,8 @@ struct EastwoodStateView: View {
         .padding(16)
         .frame(maxWidth: .infinity)
         .eastwoodPanel()
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .eastwoodFillScreen(alignment: .top)
     }
 }
-

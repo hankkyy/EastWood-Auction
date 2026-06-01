@@ -1,12 +1,30 @@
 import SwiftUI
 
+enum EastwoodLayout {
+    static func pagePadding(for width: CGFloat) -> CGFloat {
+        if width < 380 { return 12 }
+        if width < 430 { return 14 }
+        return 18
+    }
+
+    static func cardImageHeight(for width: CGFloat) -> CGFloat {
+        min(max(width * 0.48, 170), 260)
+    }
+
+    static func heroImageHeight(for width: CGFloat) -> CGFloat {
+        min(max(width * 0.72, 240), 420)
+    }
+}
+
 enum EastwoodTheme {
     static let gold = Color(red: 0.86, green: 0.72, blue: 0.44)
     static let goldSoft = Color(red: 0.95, green: 0.84, blue: 0.62)
-    static let ink = Color(red: 0.06, green: 0.07, blue: 0.09)
-    static let panel = Color(red: 0.11, green: 0.12, blue: 0.15)
-    static let panelSoft = Color(red: 0.15, green: 0.16, blue: 0.20)
-    static let hairline = Color.white.opacity(0.12)
+    static let ink = Color(red: 0.04, green: 0.05, blue: 0.08)
+    static let panel = Color(red: 0.11, green: 0.13, blue: 0.18)
+    static let panelSoft = Color(red: 0.16, green: 0.18, blue: 0.24)
+    static let hairline = Color.white.opacity(0.14)
+    static let groupedTop = Color(red: 0.09, green: 0.11, blue: 0.17)
+    static let groupedBottom = Color(red: 0.05, green: 0.06, blue: 0.10)
 }
 
 enum EastwoodMotion {
@@ -17,31 +35,45 @@ enum EastwoodMotion {
 
 struct EastwoodBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [EastwoodTheme.ink, Color(red: 0.09, green: 0.10, blue: 0.13)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        ZStack {
+            LinearGradient(
+                colors: [EastwoodTheme.groupedTop, EastwoodTheme.groupedBottom],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            RadialGradient(
+                colors: [
+                    EastwoodTheme.gold.opacity(0.14),
+                    Color.clear,
+                ],
+                center: .topTrailing,
+                startRadius: 10,
+                endRadius: 380
+            )
+            .ignoresSafeArea()
+        }
     }
 }
 
 struct EastwoodPanelModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             .background(
                 LinearGradient(
-                    colors: [EastwoodTheme.panel.opacity(0.95), EastwoodTheme.panelSoft.opacity(0.95)],
+                    colors: [EastwoodTheme.panel.opacity(0.72), EastwoodTheme.panelSoft.opacity(0.72)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ),
-                in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(EastwoodTheme.hairline, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.35), radius: 14, y: 6)
+            .shadow(color: Color.black.opacity(0.26), radius: 18, y: 8)
     }
 }
 
@@ -94,6 +126,9 @@ extension View {
     func eastwoodPanel() -> some View { modifier(EastwoodPanelModifier()) }
     func eastwoodInput() -> some View { modifier(EastwoodInputModifier()) }
     func eastwoodEnterMotion(id: String) -> some View { modifier(EastwoodEnterMotion(id: id)) }
+    func eastwoodFillScreen(alignment: Alignment = .top) -> some View {
+        frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
+    }
 }
 
 struct EastwoodEnterMotion: ViewModifier {

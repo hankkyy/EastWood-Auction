@@ -109,9 +109,21 @@ struct NativeSectionView: View {
     }
 
     var body: some View {
+        let pagePad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: 12) {
+                sectionHero
                 controls
+
+                HStack {
+                    Text("Curated List")
+                        .font(.title3.weight(.semibold))
+                    Spacer()
+                    Text("\(filtered.count) items")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, pagePad)
 
                 LazyVStack(spacing: 12) {
                     ForEach(filtered) { artwork in
@@ -122,7 +134,7 @@ struct NativeSectionView: View {
                         .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
                     }
                 }
-                .padding(12)
+                .padding(pagePad)
             }
         }
         .scrollIndicators(.hidden)
@@ -136,7 +148,8 @@ struct NativeSectionView: View {
     }
 
     private var controls: some View {
-        VStack(spacing: 8) {
+        let pagePad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
+        return VStack(spacing: 10) {
             HStack {
                 TextField("Search in \(kind.title)", text: $query)
                     .textInputAutocapitalization(.never)
@@ -188,9 +201,25 @@ struct NativeSectionView: View {
                 .tint(.white)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, pagePad)
         .padding(.top, 10)
+        .padding(.bottom, 10)
         .eastwoodPanel()
-        .padding(.horizontal, 12)
+        .padding(.horizontal, pagePad)
+    }
+
+    private var sectionHero: some View {
+        let pagePad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(kind.title)
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundStyle(EastwoodTheme.goldSoft)
+            Text("Discover carefully selected pieces with native filtering and smooth browsing.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .eastwoodPanel()
+        .padding(.horizontal, pagePad)
     }
 }

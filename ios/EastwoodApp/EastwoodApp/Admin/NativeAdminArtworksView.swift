@@ -35,11 +35,15 @@ struct AdminCaseInput {
 
 struct AdminArtworkInput {
     var title = ""
+    var titleZh = ""
     var category = ""
+    var categoryZh = ""
     var period = ""
+    var periodZh = ""
     var image = ""
     var galleryImagesText = ""
     var description = ""
+    var descriptionZh = ""
     var listingType = "product"
     var isForSale = false
     var price = ""
@@ -151,11 +155,15 @@ final class NativeAdminArtworksManager: ObservableObject {
             var artwork: [String: Any] = [
                 "id": UUID().uuidString,
                 "title": input.title,
+                "titleZh": input.titleZh.isEmpty ? NSNull() : input.titleZh,
                 "category": input.category,
+                "categoryZh": input.categoryZh.isEmpty ? NSNull() : input.categoryZh,
                 "period": input.period,
+                "periodZh": input.periodZh.isEmpty ? NSNull() : input.periodZh,
                 "image": input.image,
                 "galleryImages": input.galleryImages,
                 "description": input.description,
+                "descriptionZh": input.descriptionZh.isEmpty ? NSNull() : input.descriptionZh,
                 "listingType": input.listingType,
                 "featureVector": [0, 0, 0, 0, 0, 0, 0, 0],
                 "isForSale": input.isForSale,
@@ -202,11 +210,15 @@ final class NativeAdminArtworksManager: ObservableObject {
             var artworkBody: [String: Any] = [
                 "id": artwork.id,
                 "title": input.title,
+                "titleZh": input.titleZh.isEmpty ? NSNull() : input.titleZh,
                 "category": input.category,
+                "categoryZh": input.categoryZh.isEmpty ? NSNull() : input.categoryZh,
                 "period": input.period,
+                "periodZh": input.periodZh.isEmpty ? NSNull() : input.periodZh,
                 "image": input.image,
                 "galleryImages": input.galleryImages,
                 "description": input.description,
+                "descriptionZh": input.descriptionZh.isEmpty ? NSNull() : input.descriptionZh,
                 "listingType": input.listingType,
                 "featureVector": artwork.featureVector,
                 "isForSale": input.isForSale,
@@ -317,6 +329,9 @@ struct NativeAdminArtworksView: View {
     @State private var importReportDetails: [String] = []
     @State private var importSuccessCount = 0
     @State private var importTotalCount = 0
+    @State private var deletingArtwork: NativeArtwork?
+    @State private var confirmingBatchDelete = false
+    @State private var isOperating = false
 
     private var filteredArtworks: [NativeArtwork] {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -372,109 +387,185 @@ struct NativeAdminArtworksView: View {
         return searched
     }
 
+    private var exportCSV: String {
+        var rows = ["id,title,title_zh,category,category_zh,period,period_zh,listing_type,is_for_sale,price,currency,collection_id,has_case,uploaded_by,is_official"]
+        for item in filteredArtworks {
+            let title = item.title.replacingOccurrences(of: "\"", with: "\"\"")
+            let titleZh = (item.titleZh ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            let category = item.category.replacingOccurrences(of: "\"", with: "\"\"")
+            let categoryZh = (item.categoryZh ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            let period = item.period.replacingOccurrences(of: "\"", with: "\"\"")
+            let periodZh = (item.periodZh ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            let collectionId = (item.collectionId ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            let uploader = (item.uploadedBy ?? "").replacingOccurrences(of: "\"", with: "\"\"")
+            rows.append("\(item.id),\"\(title)\",\"\(titleZh)\",\"\(category)\",\"\(categoryZh)\",\"\(period)\",\"\(periodZh)\",\(item.listingType),\(item.isForSale == true),\(item.price ?? 0),\(item.currency ?? ""),\"\(collectionId)\",\(item.caseRecord != nil),\"\(uploader)\",\(item.isOfficial == true)")
+        }
+        return rows.joined(separator: "\n")
+    }
+
     var body: some View {
+        let pad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
         Group {
             if !auth.isAdmin {
-                VStack(spacing: 8) {
-                    Text("Admin access required")
-                        .font(.headline)
-                    Text("Current account does not have administrator permission.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-                .padding()
+                EastwoodStateView(
+                    systemImage: "lock.shield",
+                    title: "Admin Access Required",
+                    message: "Current account does not have administrator permission."
+                )
             } else {
-                List {
-                    Section {
-                        TextField("Search artworks", text: $query)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled(true)
-                            .eastwoodInput()
-
-                        Picker("Type", selection: $listingFilter) {
-                            Text("All").tag("all")
-                            Text("Product").tag("product")
-                            Text("Collection").tag("collection")
-                            Text("Case").tag("case")
-                        }
-                        .pickerStyle(.segmented)
-
-                        HStack {
-                            Picker("Sale", selection: $saleFilter) {
-                                Text("Sale: All").tag("all")
-                                Text("For Sale").tag("forSale")
-                                Text("Not For Sale").tag("notForSale")
-                            }
-                            .pickerStyle(.menu)
-
-                            Picker("Price", selection: $priceFilter) {
-                                Text("Price: All").tag("all")
-                                Text("< 1,000").tag("under1k")
-                                Text("1,000-5,000").tag("1kTo5k")
-                                Text("> 5,000").tag("above5k")
-                            }
-                            .pickerStyle(.menu)
-                        }
-
-                        Picker("Case", selection: $caseFilter) {
-                            Text("Case: All").tag("all")
-                            Text("Has Case").tag("hasCase")
-                            Text("No Case").tag("noCase")
-                        }
-                        .pickerStyle(.segmented)
-                    }
-
-                    if manager.isLoading { ProgressView() }
-                    if let error = manager.errorMessage {
+                ScrollView {
+                    VStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(error).foregroundStyle(.red)
-                            Button("Retry") { Task { await manager.load() } }
-                                .buttonStyle(EastwoodSecondaryButtonStyle())
+                            Text("Artwork Console")
+                                .font(.system(size: 30, weight: .bold, design: .rounded))
+                                .foregroundStyle(EastwoodTheme.goldSoft)
+                            Text("Manage catalog items, pricing, and listing states.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
                         }
-                    }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .eastwoodPanel()
 
-                    if !manager.isLoading && manager.errorMessage == nil && filteredArtworks.isEmpty {
-                        Text("No artworks found for current filter.")
-                            .foregroundStyle(.secondary)
-                    }
+                        VStack(spacing: 10) {
+                            TextField("Search artworks", text: $query)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .eastwoodInput()
 
-                    ForEach(filteredArtworks) { artwork in
-                        HStack {
-                            if selectionMode {
-                                Image(systemName: selectedIds.contains(artwork.id) ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(selectedIds.contains(artwork.id) ? .green : .secondary)
+                            Picker("Type", selection: $listingFilter) {
+                                Text("All").tag("all")
+                                Text("Product").tag("product")
+                                Text("Collection").tag("collection")
+                                Text("Case").tag("case")
                             }
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(artwork.localizedTitle).font(.headline)
-                                Text("\(artwork.category) · \(artwork.period)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            if !selectionMode {
-                                Button { editingArtwork = artwork } label: { Image(systemName: "pencil") }
-                                    .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+                            .pickerStyle(.segmented)
 
-                                Button(role: .destructive) {
-                                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                                    Task { _ = await manager.delete(artworkId: artwork.id, token: auth.accessToken) }
-                                } label: {
-                                    Image(systemName: "trash")
+                            HStack {
+                                Picker("Sale", selection: $saleFilter) {
+                                    Text("Sale: All").tag("all")
+                                    Text("For Sale").tag("forSale")
+                                    Text("Not For Sale").tag("notForSale")
                                 }
-                                .buttonStyle(EastwoodSecondaryButtonStyle())
+                                .pickerStyle(.menu)
+
+                                Picker("Price", selection: $priceFilter) {
+                                    Text("Price: All").tag("all")
+                                    Text("< 1,000").tag("under1k")
+                                    Text("1,000-5,000").tag("1kTo5k")
+                                    Text("> 5,000").tag("above5k")
+                                }
+                                .pickerStyle(.menu)
+                            }
+
+                            Picker("Case", selection: $caseFilter) {
+                                Text("Case: All").tag("all")
+                                Text("Has Case").tag("hasCase")
+                                Text("No Case").tag("noCase")
+                            }
+                            .pickerStyle(.segmented)
+
+                            HStack {
+                                Text("\(filteredArtworks.count) artworks")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
                             }
                         }
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            guard selectionMode else { return }
-                            if selectedIds.contains(artwork.id) {
-                                selectedIds.remove(artwork.id)
-                            } else {
-                                selectedIds.insert(artwork.id)
+                        .padding(14)
+                        .eastwoodPanel()
+
+                        if let error = manager.errorMessage {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(error).foregroundStyle(.red)
+                                Button("Retry") { Task { await manager.load() } }
+                                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                            }
+                            .padding(14)
+                            .eastwoodPanel()
+                        }
+
+                        if !manager.isLoading && manager.errorMessage == nil && filteredArtworks.isEmpty {
+                            Text("No artworks found for current filter.")
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(14)
+                                .eastwoodPanel()
+                        }
+
+                        ForEach(filteredArtworks) { artwork in
+                            HStack {
+                                if selectionMode {
+                                    Image(systemName: selectedIds.contains(artwork.id) ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(selectedIds.contains(artwork.id) ? .green : .secondary)
+                                }
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(artwork.localizedTitle).font(.headline)
+                                    Text("\(artwork.category) · \(artwork.period)")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    HStack(spacing: 6) {
+                                        adminChip((artwork.isOfficial ?? false) ? "Official" : "User", color: (artwork.isOfficial ?? false) ? .blue : .orange)
+                                        adminChip(artwork.listingType.capitalized, color: .purple)
+                                        if artwork.caseRecord != nil {
+                                            adminChip("Case", color: .green)
+                                        }
+                                        if artwork.isForSale == true {
+                                            let priceText = "\(artwork.currency ?? "CNY") \(Int(artwork.price ?? 0))"
+                                            adminChip(priceText, color: .teal)
+                                        }
+                                    }
+                                    .padding(.top, 2)
+                                    if let cid = artwork.collectionId, !cid.isEmpty {
+                                        Text("Collection ID: \(cid)")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if let uploader = artwork.uploadedBy, !uploader.isEmpty {
+                                        Text("Uploader: \(uploader)")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
+                                            .truncationMode(.middle)
+                                    }
+                                }
+                                Spacer()
+                                if !selectionMode {
+                                    Button { editingArtwork = artwork } label: { Image(systemName: "pencil") }
+                                        .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+
+                                    Button(role: .destructive) {
+                                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                                        deletingArtwork = artwork
+                                    } label: {
+                                        Image(systemName: "trash")
+                                    }
+                                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                                    .disabled(isOperating)
+                                }
+                            }
+                            .padding(14)
+                            .eastwoodPanel()
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                guard selectionMode else { return }
+                                if selectedIds.contains(artwork.id) {
+                                    selectedIds.remove(artwork.id)
+                                } else {
+                                    selectedIds.insert(artwork.id)
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, pad)
+                    .padding(.vertical, 12)
                 }
+            }
+        }
+        .overlay {
+            if auth.isAdmin && manager.isLoading {
+                EastwoodSkeletonList(count: 4)
+                    .padding(.horizontal, pad)
             }
         }
         .navigationTitle("Admin Artworks")
@@ -487,34 +578,33 @@ struct NativeAdminArtworksView: View {
                         selectedIds.removeAll()
                     }
                 }
-                .disabled(!auth.isAdmin || manager.isLoading || filteredArtworks.isEmpty)
+                .disabled(!auth.isAdmin || manager.isLoading || filteredArtworks.isEmpty || isOperating)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                ShareLink(item: exportCSV, subject: Text("Admin Artworks Export"), message: Text("Filtered artworks CSV")) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .disabled(filteredArtworks.isEmpty || selectionMode || isOperating)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { creating = true } label: { Image(systemName: "plus") }
                     .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
-                    .disabled(!auth.isAdmin || manager.isLoading || selectionMode)
+                    .disabled(!auth.isAdmin || manager.isLoading || selectionMode || isOperating)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { batchImporting = true } label: { Image(systemName: "square.and.arrow.down.on.square") }
                     .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
-                    .disabled(!auth.isAdmin || manager.isLoading || selectionMode)
+                    .disabled(!auth.isAdmin || manager.isLoading || selectionMode || isOperating)
             }
             ToolbarItem(placement: .bottomBar) {
                 if selectionMode {
                     Button(role: .destructive) {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        Task {
-                            let ids = selectedIds
-                            for id in ids {
-                                _ = await manager.delete(artworkId: id, token: auth.accessToken)
-                            }
-                            selectedIds.removeAll()
-                            selectionMode = false
-                        }
+                        confirmingBatchDelete = true
                     } label: {
                         Text("Delete Selected (\(selectedIds.count))")
                     }
-                    .disabled(selectedIds.isEmpty)
+                    .disabled(selectedIds.isEmpty || isOperating)
                 }
             }
         }
@@ -583,6 +673,46 @@ struct NativeAdminArtworksView: View {
                 failures: importReportDetails
             )
         }
+        .alert("Delete artwork?", isPresented: Binding(get: { deletingArtwork != nil }, set: { if !$0 { deletingArtwork = nil } })) {
+            Button("Cancel", role: .cancel) { deletingArtwork = nil }
+            Button("Delete", role: .destructive) {
+                guard let artwork = deletingArtwork else { return }
+                Task {
+                    isOperating = true
+                    _ = await manager.delete(artworkId: artwork.id, token: auth.accessToken)
+                    isOperating = false
+                    deletingArtwork = nil
+                }
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        .alert("Delete selected artworks?", isPresented: $confirmingBatchDelete) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task {
+                    isOperating = true
+                    let ids = selectedIds
+                    for id in ids {
+                        _ = await manager.delete(artworkId: id, token: auth.accessToken)
+                    }
+                    selectedIds.removeAll()
+                    selectionMode = false
+                    isOperating = false
+                }
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+    }
+
+    private func adminChip(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2.weight(.semibold))
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(color.opacity(0.18), in: Capsule())
+            .foregroundStyle(color)
     }
 }
 
@@ -654,7 +784,7 @@ private struct AdminBatchImportView: View {
         NavigationStack {
             Form {
                 Section("Input Format") {
-                    Text("One line per artwork: title|imageUrl|description|price(optional)|collectionId(optional)|currency(optional)")
+                    Text("One line per artwork: title|imageUrl|description|price(optional)|collectionId(optional)|currency(optional)|titleZh(optional)|categoryZh(optional)|periodZh(optional)|descriptionZh(optional)|caseId(optional)|salePrice(optional)|saleTime(optional)|salePlatform(optional)|clientRegion(optional)|logisticsCost(optional)|purchaseChannel(optional)|purchaseCost(optional)|riskAdvice(optional)")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     TextField("Example line...", text: $rowsText, axis: .vertical)
@@ -717,6 +847,7 @@ private struct AdminBatchImportView: View {
     private func parseRows() -> (items: [AdminArtworkInput], errors: [String]) {
         var items: [AdminArtworkInput] = []
         var errors: [String] = []
+        var seenCollectionIds: Set<String> = []
 
         let lines = rowsText
             .split(whereSeparator: \.isNewline)
@@ -726,7 +857,7 @@ private struct AdminBatchImportView: View {
         for (idx, line) in lines.enumerated() {
                 let parts = line.split(separator: "|").map(String.init)
                 guard parts.count >= 3 else {
-                    errors.append("Line \(idx + 1): expected title|imageUrl|description|price(optional)|collectionId(optional)|currency(optional)")
+                    errors.append("Line \(idx + 1): expected title|imageUrl|description + optional fields.")
                     continue
                 }
                 var input = AdminArtworkInput()
@@ -743,6 +874,14 @@ private struct AdminBatchImportView: View {
                 }
                 if parts.count > 4 {
                     input.collectionId = parts[4].trimmingCharacters(in: .whitespacesAndNewlines)
+                    let normalized = input.collectionId.lowercased()
+                    if !normalized.isEmpty {
+                        if seenCollectionIds.contains(normalized) {
+                            errors.append("Line \(idx + 1): duplicate Collection ID in import batch.")
+                            continue
+                        }
+                        seenCollectionIds.insert(normalized)
+                    }
                 }
                 if parts.count > 5 {
                     let c = parts[5].trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -753,6 +892,27 @@ private struct AdminBatchImportView: View {
                         continue
                     }
                 }
+                if parts.count > 6 {
+                    input.titleZh = parts[6].trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                if parts.count > 7 {
+                    input.categoryZh = parts[7].trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                if parts.count > 8 {
+                    input.periodZh = parts[8].trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                if parts.count > 9 {
+                    input.descriptionZh = parts[9].trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                if parts.count > 10 { input.caseData.caseId = parts[10].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 11 { input.caseData.salePrice = parts[11].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 12 { input.caseData.saleTime = parts[12].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 13 { input.caseData.salePlatform = parts[13].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 14 { input.caseData.clientRegion = parts[14].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 15 { input.caseData.logisticsCost = parts[15].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 16 { input.caseData.purchaseChannel = parts[16].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 17 { input.caseData.purchaseCost = parts[17].trimmingCharacters(in: .whitespacesAndNewlines) }
+                if parts.count > 18 { input.caseData.riskAdvice = parts[18].trimmingCharacters(in: .whitespacesAndNewlines) }
                 if let v = input.validate() {
                     errors.append("Line \(idx + 1): \(v)")
                     continue
@@ -782,10 +942,14 @@ private struct AdminArtworkEditor: View {
             Form {
                 Section("Basic") {
                     TextField("Title", text: $input.title)
+                    TextField("Title (Chinese)", text: $input.titleZh)
                     TextField("Category", text: $input.category)
+                    TextField("Category (Chinese)", text: $input.categoryZh)
                     TextField("Period", text: $input.period)
+                    TextField("Period (Chinese)", text: $input.periodZh)
                     TextField("Cover Image URL", text: $input.image)
                     TextField("Description", text: $input.description, axis: .vertical)
+                    TextField("Description (Chinese)", text: $input.descriptionZh, axis: .vertical)
 
                     PhotosPicker(selection: $coverPickerItem, matching: .images) {
                         Label("Upload Cover", systemImage: "photo")
@@ -904,11 +1068,15 @@ private struct AdminArtworkEditor: View {
             .onAppear {
                 guard let seed else { return }
                 input.title = seed.title
+                input.titleZh = seed.titleZh ?? ""
                 input.category = seed.category
+                input.categoryZh = seed.categoryZh ?? ""
                 input.period = seed.period
+                input.periodZh = seed.periodZh ?? ""
                 input.image = seed.image
                 input.galleryImagesText = seed.galleryImages?.joined(separator: "\n") ?? seed.image
                 input.description = seed.description
+                input.descriptionZh = seed.descriptionZh ?? ""
                 input.listingType = seed.listingType
                 input.isForSale = seed.isForSale ?? false
                 if let price = seed.price { input.price = String(format: "%.0f", price) }

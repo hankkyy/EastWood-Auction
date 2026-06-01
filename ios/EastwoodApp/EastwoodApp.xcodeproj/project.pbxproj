@@ -81,9 +81,9 @@
 		B47B7462067A0696E57D613A /* NativeAdminArtworksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAdminArtworksView.swift; sourceTree = "<group>"; };
 		BC338EC7B6C446676C02C74D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CC066C871A492D4D7B2C7674 /* NativeAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAPIClient.swift; sourceTree = "<group>"; };
-		D050E45E096FFAA0F18071CD /* EastwoodApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = EastwoodApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D050E45E096FFAA0F18071CD /* Eastwood.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Eastwood.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE31BD61129E662307614D99 /* NativeInquiryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeInquiryManager.swift; sourceTree = "<group>"; };
-		EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodAppApp.swift; sourceTree = "<group>"; };
 		F258A7A99BEC179A10835347 /* NativeArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeArtwork.swift; sourceTree = "<group>"; };
 		F31B15C9730FEF34B4122350 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
@@ -121,7 +121,7 @@
 		68E5C804A09C7632AF2BD792 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D050E45E096FFAA0F18071CD /* EastwoodApp.app */,
+				D050E45E096FFAA0F18071CD /* Eastwood.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,13 +177,6 @@
 			path = Admin;
 			sourceTree = "<group>";
 		};
-		"TEMP_0F6F54D8-EDA4-4A5F-8394-C3CCF9EDB5CD" /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Preview Content";
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -202,7 +195,7 @@
 			packageProductDependencies = (
 			);
 			productName = EastwoodApp;
-			productReference = D050E45E096FFAA0F18071CD /* EastwoodApp.app */;
+			productReference = D050E45E096FFAA0F18071CD /* Eastwood.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -213,8 +206,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 32CDBFBE210C487BF3435295 /* Build configuration list for PBXProject "EastwoodApp" */;
 			developmentRegion = en;
@@ -421,6 +412,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UW3ZRXYRQ8;
 				INFOPLIST_FILE = EastwoodApp/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -440,6 +432,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UW3ZRXYRQ8;
 				INFOPLIST_FILE = EastwoodApp/Info.plist;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				LD_RUNPATH_SEARCH_PATHS = (

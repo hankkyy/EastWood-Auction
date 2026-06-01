@@ -18,9 +18,23 @@ struct NativeImageSearchView: View {
     @State private var diagnostics: ImageDiagnostics?
 
     var body: some View {
+        let pageWidth = UIScreen.main.bounds.width
+        let pagePad = EastwoodLayout.pagePadding(for: pageWidth)
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Visual Search")
+                            .font(.system(size: 30, weight: .bold, design: .rounded))
+                            .foregroundStyle(EastwoodTheme.goldSoft)
+                        Text("Upload a photo and discover similar antiques from the Eastwood catalog.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .eastwoodPanel()
+
                     if let selectedImage {
                         Image(uiImage: selectedImage)
                             .resizable()
@@ -30,30 +44,32 @@ struct NativeImageSearchView: View {
                     } else {
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color.white.opacity(0.08))
-                            .frame(height: 220)
+                            .frame(height: EastwoodLayout.cardImageHeight(for: pageWidth) + 20)
                             .overlay(Text("Select an image to search").foregroundStyle(.secondary))
                     }
 
-                    PhotosPicker(selection: $pickerItem, matching: .images) {
-                        Label("Choose Image", systemImage: "photo")
-                    }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
-
-                    Button {
-                        guard let selectedImage else { return }
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        Task {
-                            await service.runSearch(
-                                image: selectedImage,
-                                threshold: threshold,
-                                matchCount: Int(matchCount.rounded())
-                            )
+                    HStack(spacing: 10) {
+                        PhotosPicker(selection: $pickerItem, matching: .images) {
+                            Label("Choose Image", systemImage: "photo")
                         }
-                    } label: {
-                        if service.isSearching { ProgressView() } else { Text("Search Similar Items") }
+                        .buttonStyle(EastwoodSecondaryButtonStyle())
+
+                        Button {
+                            guard let selectedImage else { return }
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            Task {
+                                await service.runSearch(
+                                    image: selectedImage,
+                                    threshold: threshold,
+                                    matchCount: Int(matchCount.rounded())
+                                )
+                            }
+                        } label: {
+                            if service.isSearching { ProgressView() } else { Text("Search") }
+                        }
+                        .buttonStyle(EastwoodPrimaryButtonStyle())
+                        .disabled(selectedImage == nil || service.isSearching)
                     }
-                    .buttonStyle(EastwoodPrimaryButtonStyle())
-                    .disabled(selectedImage == nil || service.isSearching)
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Match Threshold: \(String(format: "%.2f", threshold))")
@@ -177,7 +193,7 @@ struct NativeImageSearchView: View {
                         }
                     }
                 }
-                .padding(14)
+                .padding(pagePad)
             }
             .navigationTitle("Image Search")
             .sheet(item: $selectedArtwork) { artwork in
@@ -313,8 +329,11 @@ struct NativeImageSearchView: View {
             id: match.artwork.id,
             title: match.artwork.title,
             titleZh: match.artwork.titleZh,
+            descriptionZh: nil,
             category: match.artwork.category,
+            categoryZh: nil,
             period: match.artwork.period,
+            periodZh: nil,
             image: match.artwork.image,
             galleryImages: match.artwork.galleryImages ?? [match.artwork.image],
             description: match.artwork.description,
@@ -324,7 +343,9 @@ struct NativeImageSearchView: View {
             price: match.artwork.price,
             currency: match.artwork.currency,
             caseRecord: match.artwork.caseRecord,
-            collectionId: match.artwork.collectionId
+            collectionId: match.artwork.collectionId,
+            uploadedBy: nil,
+            isOfficial: nil
         )
     }
 }

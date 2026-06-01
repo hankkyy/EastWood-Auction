@@ -8,6 +8,7 @@ struct NativeExhibitionsView: View {
     }
 
     var body: some View {
+        let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 pageHeader(
@@ -43,7 +44,7 @@ struct NativeExhibitionsView: View {
                 }
                 .buttonStyle(EastwoodSecondaryButtonStyle())
             }
-            .padding(14)
+            .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
         .navigationTitle("Exhibitions")
         .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
@@ -55,6 +56,7 @@ struct NativeVisitView: View {
     let artworks: [NativeArtwork]
 
     var body: some View {
+        let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 pageHeader(
@@ -78,7 +80,7 @@ struct NativeVisitView: View {
                 NavigationLink("Open Image Search") { NativeImageSearchView() }
                     .buttonStyle(EastwoodSecondaryButtonStyle())
             }
-            .padding(14)
+            .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
         .navigationTitle("Visit")
         .background(EastwoodBackground())
@@ -89,6 +91,7 @@ struct NativeSupportView: View {
     let artworks: [NativeArtwork]
 
     var body: some View {
+        let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 pageHeader(
@@ -111,7 +114,7 @@ struct NativeSupportView: View {
                 NavigationLink("Submit Inquiry") { NativeInquiryFormView() }
                     .buttonStyle(EastwoodSecondaryButtonStyle())
             }
-            .padding(14)
+            .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
         .navigationTitle("Support")
         .background(EastwoodBackground())
@@ -122,6 +125,7 @@ struct NativeDonationView: View {
     let artworks: [NativeArtwork]
 
     var body: some View {
+        let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 pageHeader(
@@ -143,7 +147,7 @@ struct NativeDonationView: View {
                 NavigationLink("Open Return Cases") { NativeSectionView(kind: .cases, artworks: artworks) }
                     .buttonStyle(EastwoodSecondaryButtonStyle())
             }
-            .padding(14)
+            .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
         .navigationTitle("Donation")
         .background(EastwoodBackground())

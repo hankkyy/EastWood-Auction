@@ -4,8 +4,11 @@ struct NativeArtwork: Identifiable, Decodable, Hashable {
     let id: String
     let title: String
     let titleZh: String?
+    let descriptionZh: String?
     let category: String
+    let categoryZh: String?
     let period: String
+    let periodZh: String?
     let image: String
     let galleryImages: [String]?
     let description: String
@@ -16,6 +19,8 @@ struct NativeArtwork: Identifiable, Decodable, Hashable {
     let currency: String?
     let caseRecord: NativeCaseRecord?
     let collectionId: String?
+    let uploadedBy: String?
+    let isOfficial: Bool?
 
     var localizedTitle: String {
         let zh = titleZh?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
