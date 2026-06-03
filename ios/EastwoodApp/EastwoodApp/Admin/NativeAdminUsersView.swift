@@ -37,7 +37,7 @@ private final class NativeAdminUsersManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorPresenter.message(for: error)
         }
     }
 
@@ -52,13 +52,13 @@ private final class NativeAdminUsersManager: ObservableObject {
                 body: ["id": profileId, "role": role],
                 retries: 1
             )
-            actionMessage = "Role updated"
+            actionMessage = "role_updated"
             return true
         } catch {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionMessage = error.localizedDescription
+            actionMessage = AppErrorPresenter.message(for: error)
             return false
         }
     }
@@ -74,19 +74,20 @@ private final class NativeAdminUsersManager: ObservableObject {
                 body: ["id": profileId],
                 retries: 1
             )
-            actionMessage = "User deleted"
+            actionMessage = "user_deleted"
             return true
         } catch {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionMessage = error.localizedDescription
+            actionMessage = AppErrorPresenter.message(for: error)
             return false
         }
     }
 }
 
 struct NativeAdminUsersView: View {
+    @EnvironmentObject private var language: LanguageManager
     @EnvironmentObject private var auth: AuthManager
     @StateObject private var manager = NativeAdminUsersManager()
     @State private var deletingProfile: NativeAdminProfile?
@@ -98,17 +99,17 @@ struct NativeAdminUsersView: View {
             if !auth.isAdmin {
                 EastwoodStateView(
                     systemImage: "lock.shield",
-                    title: "Admin Access Required",
-                    message: "Only administrator accounts can access user management."
+                    title: language.text("admin.accessRequired"),
+                    message: language.text("admin.users.subtitle")
                 )
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("User Management")
+                            Text(language.text("admin.users.header"))
                                 .font(.system(size: 30, weight: .bold, design: .rounded))
-                                .foregroundStyle(EastwoodTheme.goldSoft)
-                            Text("Manage account roles and moderation actions.")
+                                .foregroundStyle(EastwoodTheme.ink)
+                            Text(language.text("admin.users.subtitle"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -119,7 +120,7 @@ struct NativeAdminUsersView: View {
                         if let error = manager.errorMessage {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(error).foregroundStyle(.red)
-                                Button("Retry") {
+                                Button(language.text("admin.retry")) {
                                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                     Task { await manager.load(token: auth.accessToken) }
                                 }
@@ -130,16 +131,16 @@ struct NativeAdminUsersView: View {
                         }
 
                         if let action = manager.actionMessage, !action.isEmpty {
-                            Text(action)
+                            Text(localizedActionMessage(action))
                                 .font(.footnote)
-                                .foregroundStyle(action.lowercased().contains("error") ? .red : .secondary)
+                                .foregroundStyle(isErrorActionMessage(action) ? .red : .secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(12)
                                 .eastwoodPanel()
                         }
 
-                        adminSection("Administrators", items: manager.profiles.filter { $0.role == "admin" })
-                        adminSection("Users", items: manager.profiles.filter { $0.role == "user" })
+                        adminSection(language.text("admin.users.admins"), items: manager.profiles.filter { $0.role == "admin" })
+                        adminSection(language.text("admin.users.users"), items: manager.profiles.filter { $0.role == "user" })
                     }
                     .padding(.horizontal, pad)
                     .padding(.vertical, 12)
@@ -152,7 +153,7 @@ struct NativeAdminUsersView: View {
                     .padding(.horizontal, pad)
             }
         }
-        .navigationTitle("Admin Users")
+        .navigationTitle(language.text("admin.users.title"))
         .background(EastwoodBackground())
         .task {
             if auth.isAdmin {
@@ -164,9 +165,9 @@ struct NativeAdminUsersView: View {
                 await manager.load(token: auth.accessToken)
             }
         }
-        .alert("Delete user?", isPresented: Binding(get: { deletingProfile != nil }, set: { if !$0 { deletingProfile = nil } })) {
-            Button("Cancel", role: .cancel) { deletingProfile = nil }
-            Button("Delete", role: .destructive) {
+        .alert(language.text("admin.users.deleteTitle"), isPresented: Binding(get: { deletingProfile != nil }, set: { if !$0 { deletingProfile = nil } })) {
+            Button(language.text("common.cancel"), role: .cancel) { deletingProfile = nil }
+            Button(language.text("admin.users.delete"), role: .destructive) {
                 guard let profile = deletingProfile else { return }
                 Task {
                     let ok = await manager.deleteProfile(profileId: profile.id, token: auth.accessToken)
@@ -175,7 +176,7 @@ struct NativeAdminUsersView: View {
                 }
             }
         } message: {
-            Text("This action cannot be undone.")
+            Text(language.text("admin.delete.message"))
         }
     }
 
@@ -184,10 +185,10 @@ struct NativeAdminUsersView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.headline)
-                .foregroundStyle(EastwoodTheme.goldSoft)
+                .foregroundStyle(EastwoodTheme.ink)
 
             if items.isEmpty && !manager.isLoading {
-                Text(title == "Users" ? "No users" : "No admin users")
+                Text(title == language.text("admin.users.users") ? language.text("admin.users.none") : language.text("admin.users.noneAdmins"))
                     .foregroundStyle(.secondary)
             }
 
@@ -208,12 +209,12 @@ struct NativeAdminUsersView: View {
             Text(displayName(profile))
                 .font(.headline)
 
-            Text(profile.email ?? "No email")
+            Text(profile.email ?? language.text("admin.users.noEmail"))
                 .font(.footnote)
                 .foregroundStyle(.secondary)
 
             HStack(spacing: 8) {
-                Text(profile.role == "admin" ? "Admin" : "User")
+                Text(profile.role == "admin" ? language.text("admin.users.admin") : language.text("admin.users.user"))
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -221,7 +222,7 @@ struct NativeAdminUsersView: View {
 
                 Spacer()
 
-                Button(profile.role == "admin" ? "Set User" : "Set Admin") {
+                Button(profile.role == "admin" ? language.text("admin.users.setUser") : language.text("admin.users.setAdmin")) {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     let targetRole = profile.role == "admin" ? "user" : "admin"
                     if roleConfirmState?.id != profile.id || roleConfirmState?.nextRole != targetRole {
@@ -237,14 +238,14 @@ struct NativeAdminUsersView: View {
                 .buttonStyle(EastwoodSecondaryButtonStyle())
                 .overlay(alignment: .bottom) {
                     if roleConfirmState?.id == profile.id {
-                        Text("Tap again to confirm")
+                        Text(language.text("admin.users.confirmTap"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .offset(y: 16)
                     }
                 }
 
-                Button("Delete", role: .destructive) {
+                Button(language.text("admin.users.delete"), role: .destructive) {
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     roleConfirmState = nil
                     deletingProfile = profile
@@ -261,6 +262,21 @@ struct NativeAdminUsersView: View {
         let full = "\(first) \(last)".trimmingCharacters(in: .whitespacesAndNewlines)
         if !full.isEmpty { return full }
         if let uid = profile.user_id, !uid.isEmpty { return uid }
-        return "Unnamed user"
+        return language.text("admin.users.unnamed")
+    }
+
+    private func localizedActionMessage(_ action: String) -> String {
+        switch action {
+        case "role_updated":
+            return language.text("admin.roleUpdated")
+        case "user_deleted":
+            return language.text("admin.deleteUserResult")
+        default:
+            return action
+        }
+    }
+
+    private func isErrorActionMessage(_ action: String) -> Bool {
+        action != "role_updated" && action != "user_deleted"
     }
 }

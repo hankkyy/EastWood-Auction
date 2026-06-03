@@ -11,9 +11,9 @@ struct EastwoodStateView: View {
         VStack(spacing: 10) {
             Image(systemName: systemImage)
                 .font(.title2.weight(.semibold))
-                .foregroundStyle(EastwoodTheme.goldSoft)
+                .foregroundStyle(EastwoodTheme.gold)
                 .padding(10)
-                .background(EastwoodTheme.panelSoft.opacity(0.85), in: Circle())
+                .background(EastwoodTheme.panelSoft, in: Circle())
 
             Text(title)
                 .font(.headline)

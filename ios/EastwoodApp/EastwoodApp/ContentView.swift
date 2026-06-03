@@ -2,8 +2,10 @@ import SwiftUI
 import UIKit
 
 struct ContentView: View {
+    @EnvironmentObject private var language: LanguageManager
+
     private enum MainTab: Hashable {
-        case home, collections, shop, cases, image, more, profile
+        case home, collections, shop, cases, more
     }
 
     @StateObject private var vm = NativeHomeViewModel()
@@ -11,47 +13,41 @@ struct ContentView: View {
     @StateObject private var favorites = FavoritesManager()
     @State private var showSessionExpiredAlert = false
     @State private var selectedTab: MainTab = .home
-    #if DEBUG
-    @State private var showDevQuickJump = false
-    #endif
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            homeTab
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .home))
-                .tag(MainTab.home)
-                .tabItem { Label("Home", systemImage: "house.fill") }
+        ZStack(alignment: .bottom) {
+            NavigationStack {
+                ZStack {
+                    selectedTabContent
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .background(EastwoodBackground())
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    Color.clear.frame(height: 54)
+                }
+                .navigationTitle(tabTitle(for: selectedTab))
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
+                .toolbar {
+                    if selectedTab == .home {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            NavigationLink {
+                                NativeSearchView(artworks: vm.artworks)
+                            } label: {
+                                Image(systemName: "magnifyingglass")
+                            }
+                        }
+                    }
+                }
+            }
 
-            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks) }
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .collections))
-                .tag(MainTab.collections)
-                .tabItem { Label("Collections", systemImage: "square.grid.2x2.fill") }
-
-            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks) }
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .shop))
-                .tag(MainTab.shop)
-                .tabItem { Label("Shop", systemImage: "bag.fill") }
-
-            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks) }
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .cases))
-                .tag(MainTab.cases)
-                .tabItem { Label("Cases", systemImage: "arrow.triangle.2.circlepath") }
-
-            NativeImageSearchView()
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .image))
-                .tag(MainTab.image)
-                .tabItem { Label("Image", systemImage: "camera.viewfinder") }
-
-            NativeMoreView(artworks: vm.artworks)
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .more))
-                .tag(MainTab.more)
-                .tabItem { Label("More", systemImage: "ellipsis.circle.fill") }
-
-            profileTab
-                .modifier(EastwoodTabMotion(isActive: selectedTab == .profile))
-                .tag(MainTab.profile)
-                .tabItem { Label("Profile", systemImage: "person.fill") }
+            bottomTabBar
+                .padding(.horizontal, 10)
+                .padding(.bottom, -6)
+                .ignoresSafeArea(edges: .bottom)
         }
+        .background(EastwoodBackground())
         .environmentObject(auth)
         .environmentObject(favorites)
         .tint(EastwoodTheme.gold)
@@ -74,117 +70,152 @@ struct ContentView: View {
         .onChange(of: selectedTab) { _ in
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
-        .alert("Session expired", isPresented: $showSessionExpiredAlert) {
-            Button("OK", role: .cancel) {}
+        .alert(language.text("alert.sessionExpired.title"), isPresented: $showSessionExpiredAlert) {
+            Button(language.text("common.ok"), role: .cancel) {}
         } message: {
-            Text("Please sign in again.")
+            Text(language.text("alert.sessionExpired.message"))
         }
-        #if DEBUG
-        .overlay(alignment: .bottomTrailing) {
-            Button {
-                showDevQuickJump = true
-            } label: {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(Color.black.opacity(0.85))
-                    .frame(width: 46, height: 46)
-                    .background(EastwoodTheme.goldSoft, in: Circle())
-                    .shadow(color: EastwoodTheme.gold.opacity(0.28), radius: 12, y: 5)
+    }
+
+    @ViewBuilder
+    private var selectedTabContent: some View {
+        switch selectedTab {
+        case .home:
+            homeTab
+        case .collections:
+            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        case .shop:
+            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        case .cases:
+            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        case .more:
+            NativeMoreView(artworks: vm.artworks)
+        }
+    }
+
+    private var bottomTabBar: some View {
+        HStack(spacing: 0) {
+            tabButton(.home, language.text("tab.home"), "house.fill")
+            tabButton(.collections, language.text("tab.collections"), "square.grid.2x2.fill")
+            tabButton(.shop, language.text("tab.shop"), "bag.fill")
+            tabButton(.cases, language.text("tab.cases"), "arrow.triangle.2.circlepath")
+            tabButton(.more, language.text("tab.more"), "ellipsis.circle.fill")
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(EastwoodTheme.hairline, lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 8, y: 2)
+    }
+
+    private func tabButton(_ tab: MainTab, _ title: String, _ systemImage: String) -> some View {
+        Button {
+            guard selectedTab != tab else { return }
+            selectedTab = tab
+        } label: {
+            VStack(spacing: 2) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .semibold))
+                Text(title)
+                    .font(.caption2.weight(.semibold))
             }
-            .padding(.trailing, 16)
-            .padding(.bottom, 22)
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(selectedTab == tab ? EastwoodTheme.gold : EastwoodTheme.mutedText)
+            .padding(.vertical, 3)
+            .background {
+                if selectedTab == tab {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.white.opacity(0.92))
+                }
+            }
         }
-        .sheet(isPresented: $showDevQuickJump) {
-            devQuickJumpSheet
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
-        #endif
+        .buttonStyle(.plain)
     }
 
     private var homeTab: some View {
         let pagePad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
-        return NavigationStack {
-            Group {
-                if vm.isLoading && vm.artworks.isEmpty {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 12) {
-                            homeHero
-                                .padding(.horizontal, pagePad)
-                            EastwoodSkeletonList(count: 4)
-                                .padding(.horizontal, pagePad)
-                        }
-                        .padding(.vertical, 12)
-                    }
-                } else if let error = vm.errorMessage, vm.artworks.isEmpty {
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                homeHero
+                    .padding(.horizontal, pagePad)
+
+                homeStats
+                    .padding(.horizontal, pagePad)
+
+                if let error = vm.errorMessage, vm.artworks.isEmpty {
                     EastwoodStateView(
                         systemImage: "wifi.exclamationmark",
-                        title: "Unable to Load",
+                        title: language.text("state.unableToLoad"),
                         message: error,
-                        buttonTitle: "Retry",
+                        buttonTitle: language.text("common.retry"),
                         onTap: { Task { await vm.load() } }
                     )
+                } else if vm.isLoading && vm.artworks.isEmpty {
+                    EastwoodSkeletonList(count: 4)
+                        .padding(.horizontal, pagePad)
                 } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 18) {
-                            homeHero
-                                .padding(.horizontal, pagePad)
+                    Text(language.text("home.latestHighlights"))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .padding(.horizontal, pagePad)
 
-                            Text("Latest Highlights")
-                                .font(.title3.weight(.semibold))
-                                .padding(.horizontal, pagePad)
-
-                            LazyVStack(spacing: 12) {
-                                ForEach(vm.artworks.prefix(8)) { artwork in
-                                    NavigationLink(value: artwork) {
-                                        NativeArtworkCard(artwork: artwork)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
-                                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-                                }
+                    LazyVStack(spacing: 12) {
+                        ForEach(vm.artworks.prefix(8)) { artwork in
+                            NavigationLink(value: artwork) {
+                                NativeArtworkListRow(artwork: artwork)
                             }
-                            .padding(.horizontal, pagePad)
+                            .buttonStyle(.plain)
+                            .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
                         }
-                        .padding(.vertical, 12)
                     }
-                    .animation(EastwoodMotion.listUpdate, value: vm.artworks.count)
-                    .refreshable { await vm.load() }
+                    .padding(.horizontal, pagePad)
                 }
             }
-            .navigationTitle("Eastwood")
-            .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        NativeSearchView(artworks: vm.artworks)
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
-            }
-            .background(Color.black.ignoresSafeArea())
-            .background(EastwoodBackground())
-            .eastwoodEnterMotion(id: "home-tab")
+            .padding(.vertical, 12)
         }
+        .scrollIndicators(.hidden)
+        .animation(EastwoodMotion.listUpdate, value: vm.artworks.count)
+        .refreshable { await vm.load() }
+        .background(EastwoodBackground())
+        .eastwoodEnterMotion(id: "home-tab")
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var homeHero: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Featured")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-            Text("Eastwood Auction")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(EastwoodTheme.goldSoft)
-            Text("Curated Chinese antiques with premium collector workflows.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(language.text("home.featured"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text(language.text("common.brand"))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.ink)
+                    Text(language.text("home.hero.subtitle"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer()
+                Circle()
+                    .fill(EastwoodTheme.panelSoft)
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(EastwoodTheme.gold)
+                    )
+            }
+
             HStack(spacing: 8) {
-                pill("Curated")
-                pill("Cloud")
-                pill("Native")
+                pill(language.text("home.pill.curated"))
+                pill(language.text("home.pill.cloud"))
+                pill(language.text("home.pill.native"))
             }
         }
         .padding(16)
@@ -194,123 +225,154 @@ struct ContentView: View {
     private func pill(_ text: String) -> some View {
         Text(text)
             .font(.caption.weight(.semibold))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(EastwoodTheme.panelSoft.opacity(0.9), in: Capsule())
-            .overlay(Capsule().stroke(EastwoodTheme.gold.opacity(0.28), lineWidth: 1))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(EastwoodTheme.panelSoft, in: Capsule())
+            .overlay(Capsule().stroke(EastwoodTheme.hairline, lineWidth: 1))
     }
 
-    private var profileTab: some View {
-        let pad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
-        return NavigationStack {
-            ScrollView {
-                VStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Account")
-                            .font(.headline)
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                    if auth.isAuthenticated {
-                            Text(auth.userEmail.isEmpty ? "Logged in" : auth.userEmail)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            Button("Sign out") { auth.signOut() }
-                                .buttonStyle(EastwoodSecondaryButtonStyle())
-                    } else {
-                        NativeLoginView()
-                    }
-                    }
-                    .padding(14)
-                    .eastwoodPanel()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Cloud Data")
-                            .font(.headline)
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                        profileNav("My Saved", "heart.fill") {
-                            SavedCloudView(artworks: vm.artworks)
-                        }
-                        profileNav("Inquiries", "square.and.pencil") {
-                            NativeInquiryFormView()
-                        }
-                        profileNav("Inbox", "bubble.left.and.bubble.right.fill") {
-                            NativeInboxView()
-                        }
-                    }
-                    .padding(14)
-                    .eastwoodPanel()
-
-                    if auth.isAdmin {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Admin")
-                                .font(.headline)
-                                .foregroundStyle(EastwoodTheme.goldSoft)
-                            profileNav("Admin Artworks", "shippingbox.fill") { NativeAdminArtworksView() }
-                            profileNav("Admin Inquiries", "tray.full.fill") { NativeAdminInquiriesView() }
-                            profileNav("Admin Users", "person.3.fill") { NativeAdminUsersView() }
-                        }
-                        .padding(14)
-                        .eastwoodPanel()
-                    }
-                }
-                .padding(.horizontal, pad)
-                .padding(.vertical, 12)
-            }
-            .background(EastwoodBackground())
-            .navigationTitle("Profile")
-            .eastwoodEnterMotion(id: "profile-tab")
+    private var homeStats: some View {
+        HStack(spacing: 10) {
+            statCard(title: language.text("home.artworks"), value: "\(vm.artworks.count)", icon: "square.grid.2x2")
+            statCard(title: language.text("home.shop"), value: "\(vm.artworks.filter { $0.listingType == "product" || $0.isForSale == true }.count)", icon: "bag")
+            statCard(title: language.text("home.cases"), value: "\(vm.artworks.filter { $0.caseRecord != nil }.count)", icon: "arrow.triangle.2.circlepath")
         }
     }
 
-    private func profileNav<Destination: View>(_ title: String, _ icon: String, @ViewBuilder destination: () -> Destination) -> some View {
+    private func tabTitle(for tab: MainTab) -> String {
+        switch tab {
+        case .home: return language.text("nav.eastwood")
+        case .collections: return language.text("nav.collections")
+        case .shop: return language.text("nav.shop")
+        case .cases: return language.text("nav.cases")
+        case .more: return language.text("nav.more")
+        }
+    }
+
+    private func statCard(title: String, value: String, icon: String) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(EastwoodTheme.gold)
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(EastwoodTheme.ink)
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .eastwoodPanel()
+    }
+
+}
+
+struct NativeProfileRootView: View {
+    @EnvironmentObject private var language: LanguageManager
+    @EnvironmentObject private var auth: AuthManager
+    @EnvironmentObject private var favorites: FavoritesManager
+    let artworks: [NativeArtwork]
+
+    var body: some View {
+        let pad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
+        ScrollView {
+            VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(language.text("profile.title"))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.ink)
+                    Text(language.text("profile.subtitle"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(language.text("profile.account"))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.ink)
+                    if auth.isAuthenticated {
+                        Text(auth.userEmail.isEmpty ? language.text("profile.loggedIn") : auth.userEmail)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Button(language.text("profile.signOut")) { auth.signOut() }
+                            .buttonStyle(EastwoodSecondaryButtonStyle())
+                    } else {
+                        NativeLoginView()
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(language.text("profile.cloudData"))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.ink)
+                    profileNav(language.text("profile.mySaved"), "heart.fill", subtitle: language.text("profile.mySaved.subtitle")) {
+                        SavedCloudView(artworks: artworks)
+                    }
+                    profileNav(language.text("profile.inquiries"), "square.and.pencil", subtitle: language.text("profile.inquiries.subtitle")) {
+                        NativeInquiryFormView()
+                    }
+                    profileNav(language.text("profile.inbox"), "bubble.left.and.bubble.right.fill", subtitle: language.text("profile.inbox.subtitle")) {
+                        NativeInboxView()
+                    }
+                }
+
+                if auth.isAdmin {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(language.text("profile.admin"))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                            .foregroundStyle(EastwoodTheme.ink)
+                        profileNav(language.text("profile.adminArtworks"), "shippingbox.fill", subtitle: language.text("profile.adminArtworks.subtitle")) { NativeAdminArtworksView() }
+                        profileNav(language.text("profile.adminInquiries"), "tray.full.fill", subtitle: language.text("profile.adminInquiries.subtitle")) { NativeAdminInquiriesView() }
+                        profileNav(language.text("profile.adminUsers"), "person.3.fill", subtitle: language.text("profile.adminUsers.subtitle")) { NativeAdminUsersView() }
+                    }
+                }
+            }
+            .padding(.horizontal, pad)
+            .padding(.vertical, 12)
+        }
+        .eastwoodScreen()
+        .navigationTitle(language.text("profile.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .eastwoodEnterMotion(id: "profile-tab")
+    }
+
+    private func profileNav<Destination: View>(_ title: String, _ icon: String, subtitle: String, @ViewBuilder destination: () -> Destination) -> some View {
         NavigationLink(destination: destination()) {
-            HStack(spacing: 10) {
-                Image(systemName: icon)
-                    .foregroundStyle(EastwoodTheme.goldSoft)
-                    .frame(width: 22)
-                Text(title)
+            HStack(spacing: 14) {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(EastwoodTheme.panelSoft)
+                    .frame(width: 52, height: 52)
+                    .overlay(
+                        Image(systemName: icon)
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundStyle(EastwoodTheme.gold)
+                    )
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(EastwoodTheme.ink)
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            .padding(.vertical, 6)
+            .padding(14)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .eastwoodPanel()
     }
 }
-
-#if DEBUG
-extension ContentView {
-    @ViewBuilder
-    private var devQuickJumpSheet: some View {
-        NavigationStack {
-            List {
-                Section("Tabs") {
-                    Button("Home") { selectedTab = .home; showDevQuickJump = false }
-                    Button("Collections") { selectedTab = .collections; showDevQuickJump = false }
-                    Button("Shop") { selectedTab = .shop; showDevQuickJump = false }
-                    Button("Cases") { selectedTab = .cases; showDevQuickJump = false }
-                    Button("Image Search") { selectedTab = .image; showDevQuickJump = false }
-                    Button("More") { selectedTab = .more; showDevQuickJump = false }
-                    Button("Profile") { selectedTab = .profile; showDevQuickJump = false }
-                }
-
-                Section("Direct Pages") {
-                    NavigationLink("Inquiries Form") { NativeInquiryFormView() }
-                    NavigationLink("Inbox") { NativeInboxView() }
-                    NavigationLink("Admin Artworks") { NativeAdminArtworksView() }
-                    NavigationLink("Admin Inquiries") { NativeAdminInquiriesView() }
-                    NavigationLink("Admin Users") { NativeAdminUsersView() }
-                }
-            }
-            .navigationTitle("Dev Quick Jump")
-        }
-    }
-}
-#endif
 
 struct SavedCloudView: View {
+    @EnvironmentObject private var language: LanguageManager
     @EnvironmentObject private var auth: AuthManager
     @EnvironmentObject private var favorites: FavoritesManager
     let artworks: [NativeArtwork]
@@ -322,20 +384,20 @@ struct SavedCloudView: View {
             if !auth.isAuthenticated {
                 EastwoodStateView(
                     systemImage: "person.crop.circle.badge.exclamationmark",
-                    title: "Sign In Required",
-                    message: "Please sign in to view cloud favorites."
+                    title: language.text("saved.signInRequired"),
+                    message: language.text("saved.signInRequired.message")
                 )
             } else if saved.isEmpty {
                 EastwoodStateView(
                     systemImage: "heart.slash",
-                    title: "No Favorites Yet",
-                    message: "Save artworks to build your personal shortlist."
+                    title: language.text("saved.empty"),
+                    message: language.text("saved.empty.message")
                 )
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(saved) { artwork in
-                            NavigationLink(value: artwork) { NativeArtworkCard(artwork: artwork) }
+                            NavigationLink(value: artwork) { NativeArtworkListRow(artwork: artwork) }
                                 .buttonStyle(.plain)
                         }
                     }
@@ -344,24 +406,27 @@ struct SavedCloudView: View {
                 .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
             }
         }
-        .navigationTitle("My Saved")
-        .background(EastwoodBackground())
+        .navigationTitle(language.text("profile.mySaved"))
+        .navigationBarTitleDisplayMode(.inline)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .eastwoodScreen()
     }
 }
 
 struct NativeLoginView: View {
+    @EnvironmentObject private var language: LanguageManager
     @EnvironmentObject private var auth: AuthManager
     @State private var email = ""
     @State private var password = ""
 
     var body: some View {
         VStack(spacing: 14) {
-            TextField("Email", text: $email)
+            TextField(language.text("common.email"), text: $email)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled(true)
                 .eastwoodInput()
 
-            SecureField("Password", text: $password)
+            SecureField(language.text("common.password"), text: $password)
                 .eastwoodInput()
 
             if let error = auth.errorMessage {
@@ -375,7 +440,7 @@ struct NativeLoginView: View {
                     ProgressView()
                         .tint(.black.opacity(0.75))
                 } else {
-                    Text("Sign in")
+                    Text(language.text("login.signIn"))
                 }
             }
             .buttonStyle(EastwoodPrimaryButtonStyle())
@@ -384,17 +449,6 @@ struct NativeLoginView: View {
         .padding(10)
         .eastwoodPanel()
         .padding(.top, 6)
-    }
-}
-
-private struct EastwoodTabMotion: ViewModifier {
-    let isActive: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(isActive ? 1 : 0.985)
-            .scaleEffect(isActive ? 1 : 0.995)
-            .animation(EastwoodMotion.tabSwitch, value: isActive)
     }
 }
 

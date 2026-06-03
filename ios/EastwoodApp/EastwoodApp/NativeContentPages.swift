@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct NativeExhibitionsView: View {
+    @EnvironmentObject private var language: LanguageManager
     let artworks: [NativeArtwork]
 
     private var highlighted: [NativeArtwork] {
@@ -11,170 +12,200 @@ struct NativeExhibitionsView: View {
         let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                pageHeader(
-                    title: "Exhibitions",
-                    subtitle: "Special and online exhibition highlights from Eastwood Auction."
+                pageHero(
+                    title: language.text("content.exhibitions.title"),
+                    subtitle: language.text("content.exhibitions.subtitle")
                 )
 
-                sectionTitle("Special Exhibitions")
-                infoCard("On-site Highlights", "Explore rotating curation themes and specialist-led showcase selections.")
-                infoCard("Online Viewing", "Browse selected catalog lots and exhibition previews online.")
+                contentSection(language.text("content.exhibitions.special")) {
+                    infoCard(language.text("content.exhibitions.onSite.title"), language.text("content.exhibitions.onSite.desc"))
+                    infoCard(language.text("content.exhibitions.online.title"), language.text("content.exhibitions.online.desc"))
+                }
 
-                sectionTitle("Featured Works")
-                LazyVStack(spacing: 10) {
-                    ForEach(highlighted) { artwork in
-                        NavigationLink(value: artwork) {
-                            NativeArtworkCard(artwork: artwork)
+                contentSection(language.text("content.exhibitions.featuredWorks")) {
+                    LazyVStack(spacing: 10) {
+                        ForEach(highlighted) { artwork in
+                            NavigationLink(value: artwork) {
+                                NativeArtworkListRow(artwork: artwork)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
 
-                sectionTitle("Browse More")
-                infoCard("Event Feed", "Exhibition cards and featured lots are updated from cloud inventory.")
-                infoCard("Collector Support", "Create an account to save items and track inquiry progress.")
+                contentSection(language.text("content.exhibitions.browseMore")) {
+                    infoCard(language.text("content.exhibitions.eventFeed.title"), language.text("content.exhibitions.eventFeed.desc"))
+                    infoCard(language.text("content.exhibitions.collectorSupport.title"), language.text("content.exhibitions.collectorSupport.desc"))
+                }
 
-                sectionTitle("Quick Actions")
-                NavigationLink("Open Antique Shop") {
-                    NativeSectionView(kind: .shop, artworks: artworks)
+                contentSection(language.text("content.quickActions")) {
+                    actionLink(language.text("content.openShop")) { NativeSectionView(kind: .shop, artworks: artworks) }
+                    actionLink(language.text("content.openCollections")) { NativeSectionView(kind: .collections, artworks: artworks) }
                 }
-                .buttonStyle(EastwoodSecondaryButtonStyle())
-                NavigationLink("Open Collections") {
-                    NativeSectionView(kind: .collections, artworks: artworks)
-                }
-                .buttonStyle(EastwoodSecondaryButtonStyle())
             }
             .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
-        .navigationTitle("Exhibitions")
+        .navigationTitle(language.text("content.exhibitions.title"))
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
-        .background(EastwoodBackground())
+        .eastwoodScreen()
     }
 }
 
 struct NativeVisitView: View {
+    @EnvironmentObject private var language: LanguageManager
     let artworks: [NativeArtwork]
 
     var body: some View {
         let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                pageHeader(
-                    title: "Visit",
-                    subtitle: "Plan your consultation and auction viewing experience."
+                pageHero(
+                    title: language.text("content.visit.title"),
+                    subtitle: language.text("content.visit.subtitle")
                 )
 
-                sectionTitle("Before Your Visit")
-                infoCard("Appointment Recommended", "Send an inquiry in advance to confirm availability, condition, and pricing.")
-                infoCard("Preparation", "Bring provenance photos, invoices, and condition notes for faster review.")
-                infoCard("Image Search", "Use image search first if you want to find similar antiques from catalog.")
+                contentSection(language.text("content.visit.before")) {
+                    infoCard(language.text("content.visit.appointment.title"), language.text("content.visit.appointment.desc"))
+                    infoCard(language.text("content.visit.preparation.title"), language.text("content.visit.preparation.desc"))
+                    infoCard(language.text("content.visit.imageSearch.title"), language.text("content.visit.imageSearch.desc"))
+                }
 
-                sectionTitle("On-site Support")
-                infoCard("Consultation", "Specialists provide valuation references and consignment suggestions.")
-                infoCard("Consignment Guidance", "We explain listing strategy, reserve pricing, and risk notes clearly.")
-                infoCard("Policy Notes", "Shipping, pickup, and payment details are finalized after inquiry confirmation.")
+                contentSection(language.text("content.visit.onSite")) {
+                    infoCard(language.text("content.visit.consultation.title"), language.text("content.visit.consultation.desc"))
+                    infoCard(language.text("content.visit.consignment.title"), language.text("content.visit.consignment.desc"))
+                    infoCard(language.text("content.visit.policy.title"), language.text("content.visit.policy.desc"))
+                }
 
-                sectionTitle("Quick Actions")
-                NavigationLink("Open Inquiries") { NativeInquiryFormView() }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
-                NavigationLink("Open Image Search") { NativeImageSearchView() }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                contentSection(language.text("content.quickActions")) {
+                    actionLink(language.text("content.openInquiries")) { NativeInquiryFormView() }
+                    actionLink(language.text("content.openImageSearch")) { NativeImageSearchView() }
+                }
             }
             .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
-        .navigationTitle("Visit")
-        .background(EastwoodBackground())
+        .navigationTitle(language.text("content.visit.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .eastwoodScreen()
     }
 }
 
 struct NativeSupportView: View {
+    @EnvironmentObject private var language: LanguageManager
     let artworks: [NativeArtwork]
 
     var body: some View {
         let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                pageHeader(
-                    title: "Support",
-                    subtitle: "Browse, consign, inquire, and purchase with confidence."
+                pageHero(
+                    title: language.text("content.support.title"),
+                    subtitle: language.text("content.support.subtitle")
                 )
 
-                sectionTitle("Service Areas")
-                infoCard("Collector Account", "Create an account to save favorites and follow inquiry updates.")
-                infoCard("Consign", "Submit antique items for review and let our team prepare buyer-facing presentation.")
-                infoCard("Shop Antiques", "Browse available antiques, decorative objects, and collectible works online.")
+                contentSection(language.text("content.support.serviceAreas")) {
+                    infoCard(language.text("content.support.collector.title"), language.text("content.support.collector.desc"))
+                    infoCard(language.text("content.support.consign.title"), language.text("content.support.consign.desc"))
+                    infoCard(language.text("content.support.shop.title"), language.text("content.support.shop.desc"))
+                }
 
-                sectionTitle("Inquiry Workflow")
-                infoCard("Status Sync", "Pending -> Processed -> Archived states remain synced with cloud status.")
-                infoCard("Inbox Tracking", "View replies, unread updates, and historical messages in one thread.")
+                contentSection(language.text("content.support.workflow")) {
+                    infoCard(language.text("content.support.statusSync.title"), language.text("content.support.statusSync.desc"))
+                    infoCard(language.text("content.support.inboxTracking.title"), language.text("content.support.inboxTracking.desc"))
+                }
 
-                sectionTitle("Quick Actions")
-                NavigationLink("Open Inbox") { NativeInboxView() }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
-                NavigationLink("Submit Inquiry") { NativeInquiryFormView() }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                contentSection(language.text("content.quickActions")) {
+                    actionLink(language.text("content.openInbox")) { NativeInboxView() }
+                    actionLink(language.text("content.submitInquiry")) { NativeInquiryFormView() }
+                }
             }
             .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
-        .navigationTitle("Support")
-        .background(EastwoodBackground())
+        .navigationTitle(language.text("content.support.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .eastwoodScreen()
     }
 }
 
 struct NativeDonationView: View {
+    @EnvironmentObject private var language: LanguageManager
     let artworks: [NativeArtwork]
 
     var body: some View {
         let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                pageHeader(
-                    title: "Donation",
-                    subtitle: "Consign with Eastwood Auction and bring antiques to market."
+                pageHero(
+                    title: language.text("content.donation.title"),
+                    subtitle: language.text("content.donation.subtitle")
                 )
 
-                sectionTitle("Consignment Path")
-                infoCard("Cataloging Support", "We assist with cataloging, presentation, and buyer matching.")
-                infoCard("Appraisal Request", "Share item details and photos for preliminary evaluation.")
+                contentSection(language.text("content.donation.path")) {
+                    infoCard(language.text("content.donation.cataloging.title"), language.text("content.donation.cataloging.desc"))
+                    infoCard(language.text("content.donation.appraisal.title"), language.text("content.donation.appraisal.desc"))
+                }
 
-                sectionTitle("What to Prepare")
-                infoCard("Item Information", "Provide item background, condition notes, and provenance records when available.")
-                infoCard("Communication", "Our team follows up in inbox to confirm next steps.")
+                contentSection(language.text("content.donation.prepare")) {
+                    infoCard(language.text("content.donation.itemInfo.title"), language.text("content.donation.itemInfo.desc"))
+                    infoCard(language.text("content.donation.communication.title"), language.text("content.donation.communication.desc"))
+                }
 
-                sectionTitle("Quick Actions")
-                NavigationLink("Start a Consignment") { NativeInquiryFormView() }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
-                NavigationLink("Open Return Cases") { NativeSectionView(kind: .cases, artworks: artworks) }
-                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                contentSection(language.text("content.quickActions")) {
+                    actionLink(language.text("content.startConsignment")) { NativeInquiryFormView() }
+                    actionLink(language.text("content.openCases")) { NativeSectionView(kind: .cases, artworks: artworks) }
+                }
             }
             .padding(EastwoodLayout.pagePadding(for: pageWidth))
         }
-        .navigationTitle("Donation")
-        .background(EastwoodBackground())
+        .navigationTitle(language.text("content.donation.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .eastwoodScreen()
     }
 }
 
-private func pageHeader(title: String, subtitle: String) -> some View {
-    VStack(alignment: .leading, spacing: 6) {
+private func pageHero(title: String, subtitle: String) -> some View {
+    VStack(alignment: .leading, spacing: 10) {
         Text(title)
-            .font(.largeTitle.weight(.bold))
+            .font(.system(size: 30, weight: .bold, design: .rounded))
+            .foregroundStyle(EastwoodTheme.ink)
         Text(subtitle)
             .font(.subheadline)
             .foregroundStyle(.secondary)
     }
+    .padding(16)
+    .eastwoodPanel()
 }
 
 private func sectionTitle(_ text: String) -> some View {
     Text(text)
-        .font(.headline)
-        .padding(.top, 4)
+        .font(.headline.weight(.semibold))
+        .padding(.top, 2)
 }
 
 private func infoCard(_ title: String, _ desc: String) -> some View {
     VStack(alignment: .leading, spacing: 6) {
-        Text(title).font(.headline)
+        Text(title).font(.subheadline.weight(.semibold))
         Text(desc).font(.subheadline).foregroundStyle(.secondary)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
     .padding(12)
     .eastwoodPanel()
+}
+
+private func contentSection<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    VStack(alignment: .leading, spacing: 10) {
+        sectionTitle(title)
+        content()
+    }
+}
+
+private func actionLink<Destination: View>(_ title: String, @ViewBuilder destination: () -> Destination) -> some View {
+    NavigationLink(destination: destination()) {
+        HStack {
+            Text(title)
+            Spacer()
+            Image(systemName: "arrow.right")
+        }
+    }
+    .buttonStyle(EastwoodSecondaryButtonStyle())
 }

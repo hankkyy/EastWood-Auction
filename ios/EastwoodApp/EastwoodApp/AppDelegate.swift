@@ -4,8 +4,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         NotificationManager.shared.configure()
-        NotificationManager.shared.requestAuthorizationAndRegister()
+        applyWindowAppearance()
         return true
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        applyWindowAppearance()
     }
 
     func application(_ application: UIApplication,
@@ -23,5 +27,18 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
                      fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         NotificationManager.shared.handleRemoteNotification(userInfo: userInfo)
         completionHandler(.newData)
+    }
+
+    private func applyWindowAppearance() {
+        let bg = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        DispatchQueue.main.async {
+            UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .forEach { window in
+                    window.backgroundColor = bg
+                    window.isOpaque = true
+                }
+        }
     }
 }

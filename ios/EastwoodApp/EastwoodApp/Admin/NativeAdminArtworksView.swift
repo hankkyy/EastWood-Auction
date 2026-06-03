@@ -2,6 +2,15 @@ import PhotosUI
 import SwiftUI
 import UIKit
 
+private func adminArtworkText(_ key: String) -> String {
+    LanguageManager().text(key)
+}
+
+private func adminArtworkFormat(_ key: String, _ args: CVarArg...) -> String {
+    let manager = LanguageManager()
+    return String(format: manager.text(key), locale: manager.language.locale, arguments: args)
+}
+
 struct AdminCaseInput {
     var caseId = ""
     var salePrice = ""
@@ -61,52 +70,52 @@ struct AdminArtworkInput {
 
     func validate(existingCollectionIDs: Set<String> = [], currentArtworkId: String? = nil) -> String? {
         if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Title is required."
+            return adminArtworkText("admin.validation.titleRequired")
         }
         if category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Category is required."
+            return adminArtworkText("admin.validation.categoryRequired")
         }
         if period.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Period is required."
+            return adminArtworkText("admin.validation.periodRequired")
         }
         if !image.lowercased().hasPrefix("http") {
-            return "Cover image must be a valid URL."
+            return adminArtworkText("admin.validation.coverUrlInvalid")
         }
         if description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Description is required."
+            return adminArtworkText("admin.validation.descriptionRequired")
         }
         if listingType == "collection" && collectionId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Collection listing requires Collection ID."
+            return adminArtworkText("admin.validation.collectionRequired")
         }
         let normalizedCollectionId = collectionId.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         if !normalizedCollectionId.isEmpty {
             let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789-_")
             if normalizedCollectionId.rangeOfCharacter(from: allowed.inverted) != nil {
-                return "Collection ID can use only a-z, 0-9, hyphen, underscore."
+                return adminArtworkText("admin.validation.collectionFormat")
             }
             let conflict = existingCollectionIDs.contains(normalizedCollectionId)
             if conflict {
-                return "Collection ID already exists. Please use a unique value."
+                return adminArtworkText("admin.validation.collectionExists")
             }
         }
         if isForSale {
             guard let p = Double(price), p > 0 else {
-                return "Price must be a positive number when item is for sale."
+                return adminArtworkText("admin.validation.pricePositive")
             }
         }
         if caseData.isEnabled {
             if caseData.salePrice.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Case record requires Sale Price."
+                return adminArtworkText("admin.validation.caseSalePrice")
             }
             if caseData.saleTime.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Case record requires Sale Time."
+                return adminArtworkText("admin.validation.caseSaleTime")
             }
             if caseData.salePlatform.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Case record requires Sale Platform."
+                return adminArtworkText("admin.validation.caseSalePlatform")
             }
         }
         for url in galleryImages where !url.lowercased().hasPrefix("http") {
-            return "All gallery image entries must be valid URLs."
+            return adminArtworkText("admin.validation.galleryUrlInvalid")
         }
         return nil
     }
@@ -137,7 +146,7 @@ final class NativeAdminArtworksManager: ObservableObject {
             let decoded = try JSONDecoder().decode(NativeArtworkResponse.self, from: data)
             artworks = decoded.artworks
         } catch {
-            errorMessage = "Failed to load artworks"
+            errorMessage = adminArtworkText("admin.error.loadArtworks")
         }
     }
 
@@ -148,7 +157,7 @@ final class NativeAdminArtworksManager: ObservableObject {
 
     func createWithResult(input: AdminArtworkInput, token: String) async -> ImportResult {
         guard let base = AppConfig.webAppURL else {
-            return ImportResult(success: false, message: "Invalid app base URL.")
+            return ImportResult(success: false, message: adminArtworkText("admin.error.invalidBaseUrl"))
         }
         do {
             let priceValue = Double(input.price)
@@ -182,11 +191,11 @@ final class NativeAdminArtworksManager: ObservableObject {
 
             let (data, response) = try await URLSession.shared.data(for: req)
             guard let http = response as? HTTPURLResponse else {
-                return ImportResult(success: false, message: "Invalid server response.")
+                return ImportResult(success: false, message: adminArtworkText("admin.error.invalidServerResponse"))
             }
             if http.statusCode == 401 || http.statusCode == 403 {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
-                return ImportResult(success: false, message: "Unauthorized.")
+                return ImportResult(success: false, message: adminArtworkText("admin.error.unauthorized"))
             }
             guard (200...299).contains(http.statusCode) else {
                 if let payload = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -194,7 +203,7 @@ final class NativeAdminArtworksManager: ObservableObject {
                    !error.isEmpty {
                     return ImportResult(success: false, message: error)
                 }
-                return ImportResult(success: false, message: "Request failed: \(http.statusCode)")
+                return ImportResult(success: false, message: adminArtworkFormat("admin.error.requestFailed", http.statusCode))
             }
             await load()
             return ImportResult(success: true, message: nil)
@@ -279,7 +288,7 @@ private final class AdminImageUploader: ObservableObject {
         guard let base = AppConfig.webAppURL else { return nil }
         guard let uiImage = UIImage(data: imageData),
               let jpeg = uiImage.jpegData(compressionQuality: 0.88) else {
-            uploadError = "Invalid image"
+            uploadError = adminArtworkText("admin.error.invalidImage")
             return nil
         }
 
@@ -304,13 +313,14 @@ private final class AdminImageUploader: ObservableObject {
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             return json?["imageUrl"] as? String
         } catch {
-            uploadError = "Upload failed"
+            uploadError = adminArtworkText("admin.error.uploadFailed")
             return nil
         }
     }
 }
 
 struct NativeAdminArtworksView: View {
+    @EnvironmentObject private var language: LanguageManager
     @EnvironmentObject private var auth: AuthManager
     @StateObject private var manager = NativeAdminArtworksManager()
 
@@ -409,17 +419,17 @@ struct NativeAdminArtworksView: View {
             if !auth.isAdmin {
                 EastwoodStateView(
                     systemImage: "lock.shield",
-                    title: "Admin Access Required",
-                    message: "Current account does not have administrator permission."
+                    title: language.text("admin.accessRequired"),
+                    message: language.text("admin.artworks.subtitle")
                 )
             } else {
                 ScrollView {
                     VStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Artwork Console")
+                            Text(language.text("admin.artworks.header"))
                                 .font(.system(size: 30, weight: .bold, design: .rounded))
-                                .foregroundStyle(EastwoodTheme.goldSoft)
-                            Text("Manage catalog items, pricing, and listing states.")
+                                .foregroundStyle(EastwoodTheme.ink)
+                            Text(language.text("admin.artworks.subtitle"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -428,45 +438,45 @@ struct NativeAdminArtworksView: View {
                         .eastwoodPanel()
 
                         VStack(spacing: 10) {
-                            TextField("Search artworks", text: $query)
+                            TextField(language.text("admin.artworks.search"), text: $query)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled(true)
                                 .eastwoodInput()
 
-                            Picker("Type", selection: $listingFilter) {
-                                Text("All").tag("all")
-                                Text("Product").tag("product")
-                                Text("Collection").tag("collection")
-                                Text("Case").tag("case")
+                            Picker(language.text("admin.artworks.type"), selection: $listingFilter) {
+                                Text(language.text("admin.artworks.all")).tag("all")
+                                Text(language.text("admin.artworks.product")).tag("product")
+                                Text(language.text("admin.artworks.collection")).tag("collection")
+                                Text(language.text("admin.artworks.case")).tag("case")
                             }
                             .pickerStyle(.segmented)
 
                             HStack {
-                                Picker("Sale", selection: $saleFilter) {
-                                    Text("Sale: All").tag("all")
-                                    Text("For Sale").tag("forSale")
-                                    Text("Not For Sale").tag("notForSale")
+                                Picker(language.text("admin.artworks.sale"), selection: $saleFilter) {
+                                    Text(language.text("admin.artworks.saleAll")).tag("all")
+                                    Text(language.text("admin.artworks.forSale")).tag("forSale")
+                                    Text(language.text("admin.artworks.notForSale")).tag("notForSale")
                                 }
                                 .pickerStyle(.menu)
 
-                                Picker("Price", selection: $priceFilter) {
-                                    Text("Price: All").tag("all")
-                                    Text("< 1,000").tag("under1k")
-                                    Text("1,000-5,000").tag("1kTo5k")
-                                    Text("> 5,000").tag("above5k")
+                                Picker(language.text("admin.artworks.price"), selection: $priceFilter) {
+                                    Text(language.text("admin.artworks.priceAll")).tag("all")
+                                    Text(language.text("admin.artworks.priceUnder1k")).tag("under1k")
+                                    Text(language.text("admin.artworks.price1kTo5k")).tag("1kTo5k")
+                                    Text(language.text("admin.artworks.priceAbove5k")).tag("above5k")
                                 }
                                 .pickerStyle(.menu)
                             }
 
-                            Picker("Case", selection: $caseFilter) {
-                                Text("Case: All").tag("all")
-                                Text("Has Case").tag("hasCase")
-                                Text("No Case").tag("noCase")
+                            Picker(language.text("admin.artworks.case"), selection: $caseFilter) {
+                                Text(language.text("admin.artworks.caseAll")).tag("all")
+                                Text(language.text("admin.artworks.hasCase")).tag("hasCase")
+                                Text(language.text("admin.artworks.noCase")).tag("noCase")
                             }
                             .pickerStyle(.segmented)
 
                             HStack {
-                                Text("\(filteredArtworks.count) artworks")
+                                Text(language.format("admin.artworks.count", String(filteredArtworks.count)))
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                                 Spacer()
@@ -478,7 +488,7 @@ struct NativeAdminArtworksView: View {
                         if let error = manager.errorMessage {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(error).foregroundStyle(.red)
-                                Button("Retry") { Task { await manager.load() } }
+                                Button(language.text("admin.retry")) { Task { await manager.load() } }
                                     .buttonStyle(EastwoodSecondaryButtonStyle())
                             }
                             .padding(14)
@@ -486,7 +496,7 @@ struct NativeAdminArtworksView: View {
                         }
 
                         if !manager.isLoading && manager.errorMessage == nil && filteredArtworks.isEmpty {
-                            Text("No artworks found for current filter.")
+                            Text(language.text("admin.artworks.none"))
                                 .foregroundStyle(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(14)
@@ -500,15 +510,15 @@ struct NativeAdminArtworksView: View {
                                         .foregroundStyle(selectedIds.contains(artwork.id) ? .green : .secondary)
                                 }
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(artwork.localizedTitle).font(.headline)
-                                    Text("\(artwork.category) · \(artwork.period)")
+                                    Text(artwork.displayTitle(in: language.language)).font(.headline)
+                                    Text("\(artwork.displayCategory(in: language.language)) · \(artwork.displayPeriod(in: language.language))")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                     HStack(spacing: 6) {
-                                        adminChip((artwork.isOfficial ?? false) ? "Official" : "User", color: (artwork.isOfficial ?? false) ? .blue : .orange)
-                                        adminChip(artwork.listingType.capitalized, color: .purple)
+                                        adminChip((artwork.isOfficial ?? false) ? language.text("admin.artworks.official") : language.text("admin.artworks.user"), color: (artwork.isOfficial ?? false) ? .blue : .orange)
+                                        adminChip(listingText(for: artwork.listingType), color: .purple)
                                         if artwork.caseRecord != nil {
-                                            adminChip("Case", color: .green)
+                                            adminChip(language.text("admin.artworks.case"), color: .green)
                                         }
                                         if artwork.isForSale == true {
                                             let priceText = "\(artwork.currency ?? "CNY") \(Int(artwork.price ?? 0))"
@@ -517,12 +527,12 @@ struct NativeAdminArtworksView: View {
                                     }
                                     .padding(.top, 2)
                                     if let cid = artwork.collectionId, !cid.isEmpty {
-                                        Text("Collection ID: \(cid)")
+                                        Text("\(language.text("admin.artworks.collectionId")): \(cid)")
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                     }
                                     if let uploader = artwork.uploadedBy, !uploader.isEmpty {
-                                        Text("Uploader: \(uploader)")
+                                        Text("\(language.text("admin.artworks.uploader")): \(uploader)")
                                             .font(.caption2)
                                             .foregroundStyle(.secondary)
                                             .lineLimit(1)
@@ -568,10 +578,10 @@ struct NativeAdminArtworksView: View {
                     .padding(.horizontal, pad)
             }
         }
-        .navigationTitle("Admin Artworks")
+        .navigationTitle(language.text("admin.artworks.title"))
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(selectionMode ? "Done" : "Select") {
+                Button(selectionMode ? language.text("admin.done") : language.text("admin.select")) {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     selectionMode.toggle()
                     if !selectionMode {
@@ -581,7 +591,7 @@ struct NativeAdminArtworksView: View {
                 .disabled(!auth.isAdmin || manager.isLoading || filteredArtworks.isEmpty || isOperating)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                ShareLink(item: exportCSV, subject: Text("Admin Artworks Export"), message: Text("Filtered artworks CSV")) {
+                ShareLink(item: exportCSV, subject: Text(language.text("admin.artworks.exportSubject")), message: Text(language.text("admin.artworks.exportMessage"))) {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .disabled(filteredArtworks.isEmpty || selectionMode || isOperating)
@@ -602,7 +612,7 @@ struct NativeAdminArtworksView: View {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         confirmingBatchDelete = true
                     } label: {
-                        Text("Delete Selected (\(selectedIds.count))")
+                        Text(language.format("admin.artworks.deleteSelected", String(selectedIds.count)))
                     }
                     .disabled(selectedIds.isEmpty || isOperating)
                 }
@@ -614,7 +624,7 @@ struct NativeAdminArtworksView: View {
         .refreshable { await manager.load() }
         .sheet(isPresented: $creating) {
             AdminArtworkEditor(
-                title: "Create Artwork",
+                title: language.text("admin.artworks.create"),
                 existingCollectionIDs: Set(
                     manager.artworks
                         .compactMap { $0.collectionId?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
@@ -627,7 +637,7 @@ struct NativeAdminArtworksView: View {
         }
         .sheet(item: $editingArtwork) { artwork in
             AdminArtworkEditor(
-                title: "Edit Artwork",
+                title: language.text("admin.artworks.edit"),
                 seed: artwork,
                 existingCollectionIDs: Set(
                     manager.artworks
@@ -651,12 +661,12 @@ struct NativeAdminArtworksView: View {
                         if result.success {
                             successCount += 1
                         } else {
-                            let reason = result.message ?? "Unknown error"
+                            let reason = result.message ?? language.text("admin.artworks.unknownError")
                             failures.append("\(item.title): \(reason)")
                         }
                     }
 
-                    importReportTitle = "Imported \(successCount) / \(items.count)"
+                    importReportTitle = language.format("admin.artworks.imported", String(successCount), String(items.count))
                     importSuccessCount = successCount
                     importTotalCount = items.count
                     importReportDetails = failures
@@ -673,9 +683,9 @@ struct NativeAdminArtworksView: View {
                 failures: importReportDetails
             )
         }
-        .alert("Delete artwork?", isPresented: Binding(get: { deletingArtwork != nil }, set: { if !$0 { deletingArtwork = nil } })) {
-            Button("Cancel", role: .cancel) { deletingArtwork = nil }
-            Button("Delete", role: .destructive) {
+        .alert(language.text("admin.artworks.deleteTitle"), isPresented: Binding(get: { deletingArtwork != nil }, set: { if !$0 { deletingArtwork = nil } })) {
+            Button(language.text("common.cancel"), role: .cancel) { deletingArtwork = nil }
+            Button(language.text("common.delete"), role: .destructive) {
                 guard let artwork = deletingArtwork else { return }
                 Task {
                     isOperating = true
@@ -685,11 +695,11 @@ struct NativeAdminArtworksView: View {
                 }
             }
         } message: {
-            Text("This action cannot be undone.")
+            Text(language.text("admin.artworks.deleteMessage"))
         }
-        .alert("Delete selected artworks?", isPresented: $confirmingBatchDelete) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) {
+        .alert(language.text("admin.artworks.deleteSelectedTitle"), isPresented: $confirmingBatchDelete) {
+            Button(language.text("common.cancel"), role: .cancel) {}
+            Button(language.text("common.delete"), role: .destructive) {
                 Task {
                     isOperating = true
                     let ids = selectedIds
@@ -702,7 +712,7 @@ struct NativeAdminArtworksView: View {
                 }
             }
         } message: {
-            Text("This action cannot be undone.")
+            Text(language.text("admin.artworks.deleteMessage"))
         }
     }
 
@@ -714,9 +724,23 @@ struct NativeAdminArtworksView: View {
             .background(color.opacity(0.18), in: Capsule())
             .foregroundStyle(color)
     }
+
+    private func listingText(for listingType: String) -> String {
+        switch listingType {
+        case "product":
+            return language.text("admin.artworks.product")
+        case "collection":
+            return language.text("admin.artworks.collection")
+        case "case":
+            return language.text("admin.artworks.case")
+        default:
+            return listingType.capitalized
+        }
+    }
 }
 
 private struct ImportReportView: View {
+    @EnvironmentObject private var language: LanguageManager
     let title: String
     let successCount: Int
     let totalCount: Int
@@ -726,24 +750,24 @@ private struct ImportReportView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Summary") {
+                Section(language.text("admin.summary")) {
                     HStack {
-                        Text("Imported")
+                        Text(language.text("admin.imported"))
                         Spacer()
                         Text("\(successCount) / \(totalCount)")
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        Text("Failed")
+                        Text(language.text("admin.failed"))
                         Spacer()
                         Text("\(failures.count)")
                             .foregroundColor(failures.isEmpty ? .secondary : .red)
                     }
                 }
 
-                Section("Failure Details") {
+                Section(language.text("admin.failureDetails")) {
                     if failures.isEmpty {
-                        Text("All rows imported successfully.")
+                        Text(language.text("admin.importSuccess"))
                             .foregroundStyle(.secondary)
                     } else {
                         ForEach(Array(failures.enumerated()), id: \.offset) { _, item in
@@ -754,10 +778,10 @@ private struct ImportReportView: View {
                     }
                 }
             }
-            .navigationTitle("Import Report")
+            .navigationTitle(language.text("admin.importReport"))
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(language.text("common.done")) { dismiss() }
                 }
             }
         }
@@ -765,6 +789,7 @@ private struct ImportReportView: View {
 }
 
 private struct AdminBatchImportView: View {
+    @EnvironmentObject private var language: LanguageManager
     let onImport: ([AdminArtworkInput]) -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -783,28 +808,28 @@ private struct AdminBatchImportView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Input Format") {
-                    Text("One line per artwork: title|imageUrl|description|price(optional)|collectionId(optional)|currency(optional)|titleZh(optional)|categoryZh(optional)|periodZh(optional)|descriptionZh(optional)|caseId(optional)|salePrice(optional)|saleTime(optional)|salePlatform(optional)|clientRegion(optional)|logisticsCost(optional)|purchaseChannel(optional)|purchaseCost(optional)|riskAdvice(optional)")
+                Section(language.text("admin.inputFormat")) {
+                    Text(language.text("admin.inputFormat.desc"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    TextField("Example line...", text: $rowsText, axis: .vertical)
+                    TextField(language.text("admin.exampleLine"), text: $rowsText, axis: .vertical)
                         .lineLimit(8...14)
                 }
 
-                Section("Shared Fields") {
-                    Picker("Listing Type", selection: $listingType) {
-                        Text("product").tag("product")
-                        Text("collection").tag("collection")
+                Section(language.text("admin.sharedFields")) {
+                    Picker(language.text("admin.listingType"), selection: $listingType) {
+                        Text(language.text("admin.artworks.product")).tag("product")
+                        Text(language.text("admin.artworks.collection")).tag("collection")
                     }
-                    TextField("Category", text: $category)
-                    TextField("Period", text: $period)
+                    TextField(language.text("admin.category"), text: $category)
+                    TextField(language.text("admin.period"), text: $period)
                 }
 
-                Section("Validation") {
-                    Text("Valid rows: \(parsedPreview.count)")
+                Section(language.text("admin.validation")) {
+                    Text(language.format("admin.validRows", String(parsedPreview.count)))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    Toggle("Import valid rows only (skip invalid)", isOn: $importValidOnly)
+                    Toggle(language.text("admin.importValidOnly"), isOn: $importValidOnly)
                     if let parseError {
                         Text(parseError)
                             .font(.footnote)
@@ -821,13 +846,13 @@ private struct AdminBatchImportView: View {
                     }
                 }
             }
-            .navigationTitle("Batch Import")
+            .navigationTitle(language.text("admin.batchImport"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(language.text("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Import") {
+                    Button(language.text("admin.import")) {
                         let result = parseRows()
                         parseError = result.errors.isEmpty ? nil : result.errors.prefix(3).joined(separator: "\n")
                         parseErrors = Array(result.errors.prefix(20))
@@ -857,7 +882,7 @@ private struct AdminBatchImportView: View {
         for (idx, line) in lines.enumerated() {
                 let parts = line.split(separator: "|").map(String.init)
                 guard parts.count >= 3 else {
-                    errors.append("Line \(idx + 1): expected title|imageUrl|description + optional fields.")
+                    errors.append(adminArtworkFormat("admin.import.lineFormat", idx + 1))
                     continue
                 }
                 var input = AdminArtworkInput()
@@ -877,7 +902,7 @@ private struct AdminBatchImportView: View {
                     let normalized = input.collectionId.lowercased()
                     if !normalized.isEmpty {
                         if seenCollectionIds.contains(normalized) {
-                            errors.append("Line \(idx + 1): duplicate Collection ID in import batch.")
+                            errors.append(adminArtworkFormat("admin.import.duplicateCollection", idx + 1))
                             continue
                         }
                         seenCollectionIds.insert(normalized)
@@ -888,7 +913,7 @@ private struct AdminBatchImportView: View {
                     if c == "USD" || c == "CNY" {
                         input.currency = c
                     } else if !c.isEmpty {
-                        errors.append("Line \(idx + 1): currency must be USD or CNY.")
+                        errors.append(adminArtworkFormat("admin.import.invalidCurrency", idx + 1))
                         continue
                     }
                 }
@@ -924,6 +949,7 @@ private struct AdminBatchImportView: View {
 }
 
 private struct AdminArtworkEditor: View {
+    @EnvironmentObject private var language: LanguageManager
     let title: String
     var seed: NativeArtwork? = nil
     var existingCollectionIDs: Set<String> = []
@@ -940,64 +966,64 @@ private struct AdminArtworkEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Basic") {
-                    TextField("Title", text: $input.title)
-                    TextField("Title (Chinese)", text: $input.titleZh)
-                    TextField("Category", text: $input.category)
-                    TextField("Category (Chinese)", text: $input.categoryZh)
-                    TextField("Period", text: $input.period)
-                    TextField("Period (Chinese)", text: $input.periodZh)
-                    TextField("Cover Image URL", text: $input.image)
-                    TextField("Description", text: $input.description, axis: .vertical)
-                    TextField("Description (Chinese)", text: $input.descriptionZh, axis: .vertical)
+                Section(language.text("admin.basic")) {
+                    TextField(language.text("admin.title"), text: $input.title)
+                    TextField(language.text("admin.titleZh"), text: $input.titleZh)
+                    TextField(language.text("admin.category"), text: $input.category)
+                    TextField(language.text("admin.categoryZh"), text: $input.categoryZh)
+                    TextField(language.text("admin.period"), text: $input.period)
+                    TextField(language.text("admin.periodZh"), text: $input.periodZh)
+                    TextField(language.text("admin.coverUrl"), text: $input.image)
+                    TextField(language.text("admin.description"), text: $input.description, axis: .vertical)
+                    TextField(language.text("admin.descriptionZh"), text: $input.descriptionZh, axis: .vertical)
 
                     PhotosPicker(selection: $coverPickerItem, matching: .images) {
-                        Label("Upload Cover", systemImage: "photo")
+                        Label(language.text("admin.uploadCover"), systemImage: "photo")
                     }
                 }
 
-                Section("Listing") {
-                    Picker("Listing Type", selection: $input.listingType) {
-                        Text("product").tag("product")
-                        Text("collection").tag("collection")
+                Section(language.text("admin.listing")) {
+                    Picker(language.text("admin.listingType"), selection: $input.listingType) {
+                        Text(language.text("admin.artworks.product")).tag("product")
+                        Text(language.text("admin.artworks.collection")).tag("collection")
                     }
-                    Toggle("For Sale", isOn: $input.isForSale)
-                    TextField("Price", text: $input.price)
+                    Toggle(language.text("admin.artworks.forSale"), isOn: $input.isForSale)
+                    TextField(language.text("admin.priceField"), text: $input.price)
                         .keyboardType(.decimalPad)
-                    Picker("Currency", selection: $input.currency) {
+                    Picker(language.text("admin.currency"), selection: $input.currency) {
                         Text("CNY").tag("CNY")
                         Text("USD").tag("USD")
                     }
-                    TextField("Collection ID", text: $input.collectionId)
-                    Button("Auto Generate Collection ID") {
+                    TextField(language.text("admin.collectionIdField"), text: $input.collectionId)
+                    Button(language.text("admin.autoCollectionId")) {
                         input.collectionId = generateCollectionID()
                     }
                     .buttonStyle(.bordered)
                 }
 
-                Section("Gallery URLs (one per line)") {
+                Section(language.text("admin.galleryUrls")) {
                     TextField("https://...", text: $input.galleryImagesText, axis: .vertical)
                         .lineLimit(4...8)
 
                     PhotosPicker(selection: $galleryPickerItems, matching: .images) {
-                        Label("Upload Gallery Images", systemImage: "photo.stack")
+                        Label(language.text("admin.uploadGallery"), systemImage: "photo.stack")
                     }
                 }
 
-                Section("Case Record (optional)") {
-                    TextField("Case ID", text: $input.caseData.caseId)
-                    TextField("Sale Price", text: $input.caseData.salePrice)
-                    TextField("Sale Time", text: $input.caseData.saleTime)
-                    TextField("Sale Platform", text: $input.caseData.salePlatform)
-                    TextField("Client Region", text: $input.caseData.clientRegion)
-                    TextField("Logistics Cost", text: $input.caseData.logisticsCost)
-                    TextField("Purchase Channel", text: $input.caseData.purchaseChannel)
-                    TextField("Purchase Cost", text: $input.caseData.purchaseCost)
-                    TextField("Risk Advice", text: $input.caseData.riskAdvice, axis: .vertical)
+                Section(language.text("admin.caseRecord")) {
+                    TextField(language.text("admin.caseId"), text: $input.caseData.caseId)
+                    TextField(language.text("admin.salePrice"), text: $input.caseData.salePrice)
+                    TextField(language.text("admin.saleTime"), text: $input.caseData.saleTime)
+                    TextField(language.text("admin.salePlatform"), text: $input.caseData.salePlatform)
+                    TextField(language.text("admin.clientRegion"), text: $input.caseData.clientRegion)
+                    TextField(language.text("admin.logisticsCost"), text: $input.caseData.logisticsCost)
+                    TextField(language.text("admin.purchaseChannel"), text: $input.caseData.purchaseChannel)
+                    TextField(language.text("admin.purchaseCost"), text: $input.caseData.purchaseCost)
+                    TextField(language.text("admin.riskAdvice"), text: $input.caseData.riskAdvice, axis: .vertical)
                 }
 
                 if uploader.isUploading {
-                    ProgressView("Uploading images...")
+                    ProgressView(language.text("admin.uploadingImages"))
                 }
                 if let uploadError = uploader.uploadError {
                     Text(uploadError).foregroundStyle(.red)
@@ -1009,7 +1035,7 @@ private struct AdminArtworkEditor: View {
             .navigationTitle(title)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(language.text("common.cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
@@ -1025,9 +1051,10 @@ private struct AdminArtworkEditor: View {
                             validationError = nil
                             await onSave(input)
                             saving = false
+                            dismiss()
                         }
                     } label: {
-                        if saving { ProgressView() } else { Text("Save") }
+                        if saving { ProgressView() } else { Text(language.text("admin.save")) }
                     }
                     .disabled(saving || uploader.isUploading)
                 }

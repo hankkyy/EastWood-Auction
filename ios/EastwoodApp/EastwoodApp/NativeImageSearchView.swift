@@ -9,6 +9,7 @@ private struct ImageDiagnostics {
 }
 
 struct NativeImageSearchView: View {
+    @EnvironmentObject private var language: LanguageManager
     @StateObject private var service = NativeImageSearchService()
     @State private var pickerItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
@@ -23,11 +24,11 @@ struct NativeImageSearchView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Visual Search")
-                            .font(.system(size: 30, weight: .bold, design: .rounded))
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                        Text("Upload a photo and discover similar antiques from the Eastwood catalog.")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(language.text("imageSearch.visualSearch"))
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Text(language.text("imageSearch.subtitle"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -35,22 +36,42 @@ struct NativeImageSearchView: View {
                     .padding(14)
                     .eastwoodPanel()
 
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(language.text("imageSearch.scopeTitle"))
+                            .font(.headline)
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Text(language.text("imageSearch.scopeBody"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Divider()
+                        Text(language.text("imageSearch.tipTitle"))
+                            .font(.headline)
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Text(language.text("imageSearch.tipBody"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(14)
+                    .eastwoodPanel()
+
                     if let selectedImage {
                         Image(uiImage: selectedImage)
                             .resizable()
                             .scaledToFit()
-                            .frame(maxHeight: 260)
+                            .frame(maxHeight: 200)
                             .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .eastwoodPanel()
                     } else {
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white.opacity(0.08))
-                            .frame(height: EastwoodLayout.cardImageHeight(for: pageWidth) + 20)
-                            .overlay(Text("Select an image to search").foregroundStyle(.secondary))
+                            .fill(EastwoodTheme.panelSoft)
+                            .frame(height: 160)
+                            .overlay(Text(language.text("imageSearch.selectImage")).foregroundStyle(.secondary))
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(EastwoodTheme.hairline, lineWidth: 1))
                     }
 
                     HStack(spacing: 10) {
                         PhotosPicker(selection: $pickerItem, matching: .images) {
-                            Label("Choose Image", systemImage: "photo")
+                            Label(language.text("imageSearch.chooseImage"), systemImage: "photo")
                         }
                         .buttonStyle(EastwoodSecondaryButtonStyle())
 
@@ -65,19 +86,19 @@ struct NativeImageSearchView: View {
                                 )
                             }
                         } label: {
-                            if service.isSearching { ProgressView() } else { Text("Search") }
+                            if service.isSearching { ProgressView() } else { Text(language.text("common.search")) }
                         }
                         .buttonStyle(EastwoodPrimaryButtonStyle())
                         .disabled(selectedImage == nil || service.isSearching)
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Match Threshold: \(String(format: "%.2f", threshold))")
+                        Text(language.format("imageSearch.threshold", String(format: "%.2f", threshold)))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                         Slider(value: $threshold, in: 0.2...0.95, step: 0.05)
 
-                        Text("Result Count: \(Int(matchCount.rounded()))")
+                        Text(language.format("imageSearch.resultCount", String(Int(matchCount.rounded()))))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                         Slider(value: $matchCount, in: 5...30, step: 1)
@@ -89,7 +110,7 @@ struct NativeImageSearchView: View {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(error).font(.footnote).foregroundStyle(.red)
                             if let selectedImage {
-                                Button("Retry") {
+                                Button(language.text("common.retry")) {
                                     Task {
                                         await service.runSearch(
                                             image: selectedImage,
@@ -105,8 +126,8 @@ struct NativeImageSearchView: View {
 
                     if !service.isSearching && service.errorMessage == nil && selectedImage != nil && service.matches.isEmpty {
                         VStack(spacing: 6) {
-                            Text("No matches found").font(.subheadline.weight(.semibold))
-                            Text("Try lowering threshold or selecting a clearer image.")
+                            Text(language.text("imageSearch.noMatches")).font(.subheadline.weight(.semibold))
+                            Text(language.text("imageSearch.noMatches.message"))
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
@@ -116,14 +137,14 @@ struct NativeImageSearchView: View {
 
                     if !service.matches.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Effective threshold: \(String(format: "%.2f", service.lastThreshold))")
+                            Text(language.format("imageSearch.effectiveThreshold", String(format: "%.2f", service.lastThreshold)))
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
-                            Text("Returned results: \(service.totalCandidates)")
+                            Text(language.format("imageSearch.returnedResults", String(service.totalCandidates)))
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                             if let url = service.uploadedImageURL, !url.isEmpty {
-                                Text("Cloud query image uploaded")
+                                Text(language.text("imageSearch.cloudUploaded"))
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
@@ -133,11 +154,11 @@ struct NativeImageSearchView: View {
 
                     if let diagnostics {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Image Analysis")
+                            Text(language.text("imageSearch.analysis"))
                                 .font(.headline)
-                            metricRow("Brightness", diagnostics.brightness)
-                            metricRow("Contrast", diagnostics.contrast)
-                            metricRow("Sharpness", diagnostics.sharpness)
+                            metricRow(language.text("imageSearch.brightness"), diagnostics.brightness)
+                            metricRow(language.text("imageSearch.contrast"), diagnostics.contrast)
+                            metricRow(language.text("imageSearch.sharpness"), diagnostics.sharpness)
                             Text(recommendation(for: diagnostics))
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
@@ -147,62 +168,37 @@ struct NativeImageSearchView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Knowledge Base Snapshot")
+                        Text(language.text("imageSearch.knowledge"))
                             .font(.headline)
-                        statRow("Total Items", service.knowledgeTotal)
-                        statRow("Product Items", service.knowledgeProducts)
-                        statRow("Collection Items", service.knowledgeCollections)
-                        statRow("Case Records", service.knowledgeCases)
+                        Text(language.text("imageSearch.snapshotNote"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                        statRow(language.text("imageSearch.totalItems"), service.knowledgeTotal)
+                        statRow(language.text("imageSearch.productItems"), service.knowledgeProducts)
+                        statRow(language.text("imageSearch.collectionItems"), service.knowledgeCollections)
+                        statRow(language.text("imageSearch.caseRecords"), service.knowledgeCases)
                     }
                     .padding(10)
                     .eastwoodPanel()
 
                     LazyVStack(spacing: 12) {
                         ForEach(service.matches) { match in
-                            HStack(spacing: 10) {
-                                AsyncImage(url: URL(string: match.artwork.image)) { phase in
-                                    switch phase {
-                                    case .success(let image): image.resizable().scaledToFill()
-                                    default: Color.white.opacity(0.08)
-                                    }
-                                }
-                                .frame(width: 72, height: 72)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(match.artwork.titleZh?.isEmpty == false ? match.artwork.titleZh! : match.artwork.title)
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                    Text(match.artwork.category)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                    Text(String(format: "Similarity %.1f%%", match.similarity * 100))
-                                        .font(.caption)
-                                        .foregroundStyle(Color(red: 0.93, green: 0.78, blue: 0.38))
-                                }
-
-                                Spacer()
-                            }
-                            .padding(10)
-                            .eastwoodPanel()
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                selectedArtwork = toNativeArtwork(match)
-                            }
+                            matchRow(match)
                         }
                     }
                 }
                 .padding(pagePad)
             }
-            .navigationTitle("Image Search")
+            .navigationTitle(language.text("imageSearch.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)
             .sheet(item: $selectedArtwork) { artwork in
                 NativeArtworkDetailView(artwork: artwork)
             }
             .task {
                 await service.refreshKnowledgeStats()
             }
-            .background(EastwoodBackground())
+            .eastwoodScreen()
             .eastwoodEnterMotion(id: "image-search-page")
             .onChange(of: pickerItem) { newValue in
                 guard let newValue else { return }
@@ -250,17 +246,71 @@ struct NativeImageSearchView: View {
         }
     }
 
+    private func matchRow(_ match: NativeImageMatch) -> some View {
+        let title = match.artwork.displayTitle(in: language.language)
+        let category = match.artwork.displayCategory(in: language.language)
+        let period = match.artwork.displayPeriod(in: language.language)
+        let similarity = String(format: "%.1f%%", match.similarity * 100)
+
+        return HStack(spacing: 10) {
+            AsyncImage(url: URL(string: match.artwork.image)) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    EastwoodTheme.panelSoft
+                }
+            }
+            .frame(width: 68, height: 68)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(EastwoodTheme.ink)
+                    .lineLimit(2)
+
+                Text(category)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                Text(period)
+                    .font(.caption2)
+                    .foregroundStyle(EastwoodTheme.mutedText)
+                    .lineLimit(1)
+            }
+
+            Spacer(minLength: 6)
+
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(similarity)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(EastwoodTheme.goldSoft)
+                Text(language.text("imageSearch.match"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(10)
+        .eastwoodPanel()
+        .contentShape(Rectangle())
+        .onTapGesture {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            selectedArtwork = toNativeArtwork(match)
+        }
+    }
+
     private func recommendation(for d: ImageDiagnostics) -> String {
         if d.sharpness < 0.15 {
-            return "Photo appears blurry. Move closer and keep the camera steady for better matches."
+            return language.text("imageSearch.recommend.blur")
         }
         if d.contrast < 0.18 {
-            return "Photo contrast is low. Improve lighting or avoid strong glare."
+            return language.text("imageSearch.recommend.contrast")
         }
         if d.brightness < 0.22 {
-            return "Image is dark. Increase lighting or exposure for stronger matching."
+            return language.text("imageSearch.recommend.dark")
         }
-        return "Image quality looks good for visual matching."
+        return language.text("imageSearch.recommend.good")
     }
 
     private func analyze(image: UIImage) -> ImageDiagnostics {

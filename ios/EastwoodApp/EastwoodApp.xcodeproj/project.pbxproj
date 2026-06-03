@@ -22,6 +22,7 @@
 		4BB3B0D91AC55A5245D29ACE /* NativeInquiryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE31BD61129E662307614D99 /* NativeInquiryManager.swift */; };
 		5E09A435E15FE0F918970853 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E67748E4C8757BEAE30053 /* KeychainStore.swift */; };
 		5FEFDFFF0A1E986866C2ACB2 /* NativeAdminInquiriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1464466764DC09B2B65803 /* NativeAdminInquiriesView.swift */; };
+		615C5D0E66E14B54B337247C /* EastwoodLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3BDDF5B0AF4A1B8218304F /* EastwoodLocalization.swift */; };
 		67FF95DAF24D6D024ED604C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 792789BFB0CB66AF0046B189 /* Assets.xcassets */; };
 		681499603F162EAB8B198CCE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EEF0505D9A2B49C4AB500F13 /* PrivacyInfo.xcprivacy */; };
 		6BB7BE28A96C89E5D893876D /* EastwoodAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */; };
@@ -66,6 +67,7 @@
 		5C20F2FBF86CF02CEB5F1BDC /* AuthEvents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthEvents.swift; sourceTree = "<group>"; };
 		5FEB8C7CFAB66CA2BD3ECF71 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		613445C0A5A8703E6A006EC8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7A3BDDF5B0AF4A1B8218304F /* EastwoodLocalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodLocalization.swift; sourceTree = "<group>"; };
 		6C46443032C60397DEE20BA7 /* EastwoodDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodDesignSystem.swift; sourceTree = "<group>"; };
 		6CC09DB0BDB1D428BDBE1EA0 /* EastwoodWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EastwoodWebView.swift; sourceTree = "<group>"; };
 		739C663DCC3F4C5C950CF13D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 				739C663DCC3F4C5C950CF13D /* ContentView.swift */,
 				F1D48EFF697C79B9B4272EBE /* EastwoodAppApp.swift */,
 				6C46443032C60397DEE20BA7 /* EastwoodDesignSystem.swift */,
+				7A3BDDF5B0AF4A1B8218304F /* EastwoodLocalization.swift */,
 				A4C24EE1181D289547DD56F9 /* EastwoodStateView.swift */,
 				6CC09DB0BDB1D428BDBE1EA0 /* EastwoodWebView.swift */,
 				BC338EC7B6C446676C02C74D /* Info.plist */,
@@ -252,6 +255,7 @@
 				107F9A508BF586BAE839F230 /* ContentView.swift in Sources */,
 				6BB7BE28A96C89E5D893876D /* EastwoodAppApp.swift in Sources */,
 				E314E628374DFC9530803A85 /* EastwoodDesignSystem.swift in Sources */,
+				615C5D0E66E14B54B337247C /* EastwoodLocalization.swift in Sources */,
 				0012951DCDF1BA1D6291B715 /* EastwoodStateView.swift in Sources */,
 				A14AA5B64D124FECCAC5F4E6 /* EastwoodWebView.swift in Sources */,
 				3E3B8755CCBAF49B6EBF9939 /* FavoritesManager.swift in Sources */,

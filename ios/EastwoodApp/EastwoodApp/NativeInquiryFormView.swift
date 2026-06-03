@@ -3,6 +3,7 @@ import UIKit
 
 struct NativeInquiryFormView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var language: LanguageManager
     @EnvironmentObject private var auth: AuthManager
     @StateObject private var inquiryManager = NativeInquiryManager()
 
@@ -32,64 +33,76 @@ struct NativeInquiryFormView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(language.text("inquiry.title"))
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.ink)
+                    Text(language.text("inquiry.pageDescription"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14)
+                .eastwoodPanel()
+
                 if !auth.isAuthenticated {
                     EastwoodStateView(
                         systemImage: "person.crop.circle.badge.exclamationmark",
-                        title: "Sign In Required",
-                        message: "Please sign in before submitting inquiries."
+                        title: language.text("inquiry.signInRequired"),
+                        message: language.text("inquiry.signInRequired.message")
                     )
                 } else if auth.isAdmin {
                     EastwoodStateView(
                         systemImage: "lock.shield",
-                        title: "Personal Users Only",
-                        message: "Administrator accounts should handle inquiries from inbox/admin modules."
+                        title: language.text("inquiry.personalUsersOnly"),
+                        message: language.text("inquiry.personalUsersOnly.message")
                     )
                 } else {
-                    Toggle("No inquiry code", isOn: $noInquiryCode)
+                    Toggle(language.text("inquiry.noCode"), isOn: $noInquiryCode)
                         .toggleStyle(.switch)
                         .font(.footnote)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Inquiry Code")
+                        Text(language.text("inquiry.code"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                        TextField("Enter inquiry code", text: $code)
+                        TextField(language.text("inquiry.code.placeholder"), text: $code)
                             .eastwoodInput()
                             .disabled(noInquiryCode)
                             .opacity(noInquiryCode ? 0.6 : 1.0)
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Phone")
+                        Text(language.text("common.phone"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                        TextField("Enter phone number", text: $phone)
+                        TextField(language.text("inquiry.phone.placeholder"), text: $phone)
                             .keyboardType(.phonePad)
                             .eastwoodInput()
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Email")
+                        Text(language.text("common.email"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
-                        TextField("Enter email", text: $email)
+                        TextField(language.text("inquiry.email.placeholder"), text: $email)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled(true)
                             .eastwoodInput()
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Details")
+                        Text(language.text("inquiry.details"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                         ZStack(alignment: .topLeading) {
                             TextEditor(text: $details)
                                 .frame(height: 160)
                                 .padding(8)
-                                .background(EastwoodTheme.panelSoft.opacity(0.85), in: RoundedRectangle(cornerRadius: 10))
+                                .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
                                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(EastwoodTheme.hairline, lineWidth: 1))
                             if details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text("Describe your inquiry details")
+                                Text(language.text("inquiry.details.placeholder"))
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary.opacity(0.8))
                                     .padding(.horizontal, 14)
@@ -109,12 +122,12 @@ struct NativeInquiryFormView: View {
                     if !statusText.isEmpty {
                         Text(statusText)
                             .font(.footnote)
-                            .foregroundStyle(statusText == "Submitted" ? .green : .red)
+                            .foregroundStyle(statusText == language.text("inquiry.submitted") ? .green : .red)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
 
                     HStack(spacing: 10) {
-                        Button("Cancel") {
+                        Button(language.text("common.cancel")) {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             dismiss()
                         }
@@ -133,7 +146,7 @@ struct NativeInquiryFormView: View {
                                     phone: phone.trimmingCharacters(in: .whitespacesAndNewlines),
                                     email: email.trimmingCharacters(in: .whitespacesAndNewlines)
                                 )
-                                statusText = ok ? "Submitted" : "Submit failed"
+                                statusText = ok ? language.text("inquiry.submitted") : language.text("inquiry.submitFailed")
                                 if ok {
                                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                                 } else {
@@ -153,7 +166,7 @@ struct NativeInquiryFormView: View {
                             if isSubmitting {
                                 ProgressView()
                             } else {
-                                Text("Submit Inquiry")
+                                Text(language.text("inquiry.submit"))
                             }
                         }
                         .buttonStyle(EastwoodPrimaryButtonStyle())
@@ -172,8 +185,10 @@ struct NativeInquiryFormView: View {
                     noInquiryCode = false
                 }
             }
-            .navigationTitle("Inquiries")
-            .background(EastwoodBackground())
+            .navigationTitle(language.text("inquiry.title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .eastwoodScreen()
             .eastwoodEnterMotion(id: "inquiry-form-page")
             .navigationDestination(isPresented: $showInbox) {
                 NativeInboxView()

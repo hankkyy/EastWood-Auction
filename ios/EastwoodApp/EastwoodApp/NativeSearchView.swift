@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct NativeSearchView: View {
+    @EnvironmentObject private var language: LanguageManager
     let artworks: [NativeArtwork]
     @State private var query = ""
 
@@ -21,7 +22,7 @@ struct NativeSearchView: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(filtered) { artwork in
-                        NavigationLink(value: artwork) { NativeArtworkCard(artwork: artwork) }
+                        NavigationLink(value: artwork) { NativeArtworkListRow(artwork: artwork) }
                             .buttonStyle(.plain)
                             .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
                     }
@@ -30,10 +31,12 @@ struct NativeSearchView: View {
             }
             .scrollIndicators(.hidden)
             .animation(EastwoodMotion.listUpdate, value: filtered.count)
-            .navigationTitle("Search")
+            .navigationTitle(language.text("search.title"))
+            .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: NativeArtwork.self) { NativeArtworkDetailView(artwork: $0) }
-            .searchable(text: $query, prompt: "Search artworks")
-            .background(EastwoodBackground())
+            .searchable(text: $query, prompt: language.text("search.prompt"))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .eastwoodScreen()
             .eastwoodEnterMotion(id: "search-page")
         }
     }
