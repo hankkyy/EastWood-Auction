@@ -89,7 +89,7 @@ struct NativeArtworkDetailView: View {
                         HStack(spacing: 8) {
                             chip(localizedCategory)
                             chip(localizedPeriod)
-                            chip(listingLabel)
+                            chip(artwork.listingType.capitalized)
                         }
                         HStack(spacing: 8) {
                             chip((artwork.isOfficial ?? false) ? language.text("detail.platformUpload") : language.text("detail.personalUpload"))
@@ -124,14 +124,13 @@ struct NativeArtworkDetailView: View {
 
                 HStack(spacing: 10) {
                     detailStatCard(title: language.text("detail.status"), value: artwork.isForSale == true ? language.text("artwork.forSale") : language.text("detail.archive"), accent: artwork.isForSale == true ? .green : EastwoodTheme.gold)
-                    detailStatCard(title: language.text("detail.type"), value: listingLabel, accent: EastwoodTheme.gold)
+                    detailStatCard(title: language.text("detail.type"), value: artwork.listingType.capitalized, accent: EastwoodTheme.gold)
                     detailStatCard(title: language.text("detail.price"), value: artwork.isForSale == true ? "\(artwork.currency ?? "USD") \(String(format: "%.0f", artwork.price ?? 0))" : "--", accent: EastwoodTheme.goldSoft)
                 }
 
-                detailSection(
-                    title: language.text("detail.itemInfo"),
-                    subtitle: itemInfoSubtitle
-                ) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(language.text("detail.itemInfo"))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                     infoRow(language.text("detail.source"), (artwork.isOfficial ?? false) ? language.text("detail.platformUpload") : language.text("detail.personalUpload"))
                     if let code = inquiryCode, !code.isEmpty {
                         infoRow(language.text("detail.inquiryCode"), code)
@@ -143,6 +142,8 @@ struct NativeArtworkDetailView: View {
                         infoRow(language.text("detail.uploaderId"), uploader)
                     }
                 }
+                .padding(12)
+                .eastwoodPanel()
 
                 if let inquiryCode, !inquiryCode.isEmpty {
                     Button(language.text("detail.askAbout")) {
@@ -152,10 +153,9 @@ struct NativeArtworkDetailView: View {
                 }
 
                 if let caseRecord = artwork.caseRecord {
-                    detailSection(
-                        title: language.text("detail.caseDetails"),
-                        subtitle: caseDetailsSubtitle
-                    ) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(language.text("detail.caseDetails"))
+                            .font(.system(size: 22, weight: .bold, design: .rounded))
                         infoRow(language.text("detail.caseId"), caseRecord.caseId)
                         infoRow(language.text("detail.salePrice"), caseRecord.salePrice)
                         infoRow(language.text("detail.saleTime"), caseRecord.saleTime)
@@ -166,16 +166,18 @@ struct NativeArtworkDetailView: View {
                         optionalInfoRow(language.text("detail.purchaseCost"), caseRecord.purchaseCost)
                         optionalInfoRow(language.text("detail.riskAdvice"), caseRecord.riskAdvice)
                     }
+                    .padding(12)
+                    .eastwoodPanel()
                 }
 
-                detailSection(
-                    title: language.text("detail.description"),
-                    subtitle: descriptionSubtitle
-                ) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(language.text("detail.description"))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                     Text(localizedDescription)
                         .font(.body)
-                        .foregroundStyle(EastwoodTheme.ink)
                 }
+                .padding(12)
+                .eastwoodPanel()
             }
         .padding(.horizontal, EastwoodLayout.pagePadding(for: pageWidth))
         .padding(.top, 8)
@@ -226,20 +228,6 @@ struct NativeArtworkDetailView: View {
         return artwork.description
     }
 
-    private var listingLabel: String {
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        switch artwork.listingType {
-        case "product":
-            return language.text("artwork.product")
-        case "collection":
-            return language.text("artwork.collection")
-        default:
-            return artwork.listingType.capitalized
-        }
-    }
-
     private var inquiryCode: String? {
         if let cid = artwork.collectionId?.trimmingCharacters(in: .whitespacesAndNewlines), !cid.isEmpty {
             return cid
@@ -280,35 +268,11 @@ struct NativeArtworkDetailView: View {
         .eastwoodPanel()
     }
 
-    private func detailSection<Content: View>(title: String, subtitle: String? = nil, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(EastwoodTheme.ink)
-                if let subtitle, !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 10) {
-                content()
-            }
-        }
-        .padding(12)
-        .eastwoodPanel()
-    }
-
     private func infoRow(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(label)
-                .foregroundStyle(.secondary)
-                .frame(width: 108, alignment: .leading)
+        HStack {
+            Text(label).foregroundStyle(.secondary)
+            Spacer()
             Text(value)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .font(.subheadline)
     }
@@ -319,26 +283,5 @@ struct NativeArtworkDetailView: View {
         if !trimmed.isEmpty {
             infoRow(label, trimmed)
         }
-    }
-
-    private var itemInfoSubtitle: String {
-        if artwork.caseRecord != nil {
-            return language.language == .chinese ? "用于核对编号、来源和上传者信息，和管理页保持一致。" : "Use this section to verify code, source, and uploader information in the same structure as the management view."
-        }
-        if artwork.isForSale == true {
-            return language.language == .chinese ? "这里汇总前台商品识别信息，方便咨询与后台管理同时核对。" : "This section summarizes the public-facing product identifiers so inquiry and admin flows reference the same details."
-        }
-        return language.language == .chinese ? "这里汇总展示项的识别信息，方便列表、详情和后台统一引用。" : "This section gathers the showcase identifiers so list, detail, and admin views all reference the same metadata."
-    }
-
-    private var caseDetailsSubtitle: String {
-        language.language == .chinese ? "成交、地区、物流和避坑信息会统一展示在这里，方便案例复盘。" : "Sale facts, region, logistics, and advisory notes are grouped here so the case can be reviewed quickly."
-    }
-
-    private var descriptionSubtitle: String {
-        if artwork.caseRecord != nil {
-            return language.language == .chinese ? "这里适合放案例背景、藏品说明或后续咨询时需要引用的文字。" : "Use this section for case background, object notes, or the narrative buyers may reference during inquiry."
-        }
-        return language.language == .chinese ? "这里展示更完整的藏品或商品说明，和网页详情页的说明区保持一致。" : "This section presents the fuller object or product narrative, aligned with the descriptive area on the web detail pages."
     }
 }

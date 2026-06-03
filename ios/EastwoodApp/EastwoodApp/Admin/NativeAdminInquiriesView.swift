@@ -167,7 +167,7 @@ struct NativeAdminInquiriesView: View {
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                             Spacer()
-                            Text(language.format("admin.inquiries.stats", String(pendingCount), String(processedCount), String(archivedCount)))
+                            Text("P \(pendingCount) · R \(processedCount) · A \(archivedCount)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             Button(selectionMode ? language.text("admin.done") : language.text("admin.select")) {

@@ -33,18 +33,6 @@ struct NativeInquiryFormView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(language.text("inquiry.title"))
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundStyle(EastwoodTheme.ink)
-                    Text(language.text("inquiry.pageDescription"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-                .eastwoodPanel()
-
                 if !auth.isAuthenticated {
                     EastwoodStateView(
                         systemImage: "person.crop.circle.badge.exclamationmark",

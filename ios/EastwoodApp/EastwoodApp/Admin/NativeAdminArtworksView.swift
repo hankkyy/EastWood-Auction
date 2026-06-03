@@ -461,9 +461,9 @@ struct NativeAdminArtworksView: View {
 
                                 Picker(language.text("admin.artworks.price"), selection: $priceFilter) {
                                     Text(language.text("admin.artworks.priceAll")).tag("all")
-                                    Text(language.text("admin.artworks.priceUnder1k")).tag("under1k")
-                                    Text(language.text("admin.artworks.price1kTo5k")).tag("1kTo5k")
-                                    Text(language.text("admin.artworks.priceAbove5k")).tag("above5k")
+                                    Text("< 1,000").tag("under1k")
+                                    Text("1,000-5,000").tag("1kTo5k")
+                                    Text("> 5,000").tag("above5k")
                                 }
                                 .pickerStyle(.menu)
                             }

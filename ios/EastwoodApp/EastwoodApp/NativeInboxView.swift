@@ -24,17 +24,9 @@ struct NativeInboxView: View {
     @State private var segment: InboxSegment = .pending
     @State private var statusConfirmState: (id: String, isProcessed: Bool?, isArchived: Bool?, label: String)?
 
-    private var currentUserRole: String {
-        auth.isAdmin ? "admin" : "user"
-    }
-
-    private var incomingSenderRole: String {
-        auth.isAdmin ? "user" : "admin"
-    }
-
     private var unreadCount: Int {
         inquiryManager.inquiries.reduce(0) { partial, inquiry in
-            partial + inquiry.messages.filter { $0.sender_role == incomingSenderRole && !$0.is_read }.count
+            partial + inquiry.messages.filter { $0.sender_role == "admin" && !$0.is_read }.count
         }
     }
 
@@ -61,17 +53,6 @@ struct NativeInboxView: View {
                     inboxLoadingView
                 } else {
                     VStack(spacing: 10) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(language.text("inbox.title"))
-                                .font(.system(size: 30, weight: .bold, design: .rounded))
-                                .foregroundStyle(EastwoodTheme.ink)
-                            Text(auth.isAdmin ? language.text("inbox.adminDescription") : language.text("inbox.pageDescription"))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 14)
-
                         Picker(language.text("inbox.title"), selection: $segment) {
                             Text(language.text("inbox.pending")).tag(InboxSegment.pending)
                             Text(language.text("inbox.processed")).tag(InboxSegment.processed)
@@ -112,19 +93,11 @@ struct NativeInboxView: View {
                         }
 
                         if segmentedInquiries.isEmpty {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(language.text("inbox.emptyTitle"))
-                                    .font(.headline)
-                                    .foregroundStyle(EastwoodTheme.ink)
-                                Text(language.text("inbox.empty"))
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .eastwoodPanel()
-                            .padding(.horizontal, 14)
+                            Text(language.text("inbox.empty"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 14)
                         }
 
                         List {
@@ -303,54 +276,16 @@ struct NativeInboxView: View {
     private func conversationSheet(_ inquiry: NativeInquiry) -> some View {
         NavigationStack {
             VStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(inquiry.no_inquiry_code ? language.text("inbox.noCodeInquiry") : (inquiry.inquiry_code ?? language.text("inbox.inquiry")))
-                        .font(.headline)
-                        .foregroundStyle(EastwoodTheme.ink)
-                    Text(language.text("inbox.details"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text(inquiry.details)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    HStack(spacing: 12) {
-                        if !inquiry.contact_phone.isEmpty {
-                            detailPill(label: language.text("inbox.contactPhone"), value: inquiry.contact_phone)
-                        }
-                        if !inquiry.contact_email.isEmpty {
-                            detailPill(label: language.text("inbox.contactEmail"), value: inquiry.contact_email)
-                        }
-                    }
-
-                    detailPill(label: language.text("inbox.submittedAt"), value: shortDate(inquiry.created_at))
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 14)
-                .padding(.top, 12)
-
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(inquiry.messages) { msg in
-                            let isOwnMessage = msg.sender_role == currentUserRole
                             HStack {
-                                if isOwnMessage { Spacer(minLength: 36) }
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(msg.body)
-                                        .font(.subheadline)
-                                        .foregroundStyle(EastwoodTheme.ink)
-                                    Text(shortDate(msg.created_at))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                }
-                                .padding(10)
-                                .frame(maxWidth: 280, alignment: .leading)
-                                .background(isOwnMessage ? Color(red: 0.93, green: 0.78, blue: 0.38).opacity(0.22) : Color.white.opacity(0.78), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(EastwoodTheme.hairline, lineWidth: 1)
-                                )
-                                if !isOwnMessage { Spacer(minLength: 36) }
+                                if msg.sender_role == "admin" { Spacer(minLength: 36) }
+                                Text(msg.body)
+                                    .padding(10)
+                                    .frame(maxWidth: .infinity, alignment: msg.sender_role == "admin" ? .leading : .trailing)
+                                    .background(msg.sender_role == "admin" ? Color.white.opacity(0.08) : Color(red: 0.93, green: 0.78, blue: 0.38).opacity(0.22), in: RoundedRectangle(cornerRadius: 10))
+                                if msg.sender_role != "admin" { Spacer(minLength: 36) }
                             }
                         }
                     }
@@ -377,13 +312,6 @@ struct NativeInboxView: View {
                 }
                 .padding()
 
-                Text(auth.isAdmin ? language.text("inbox.replyBoxAdmin") : language.text("inbox.replyBoxUser"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, -6)
-
                 if inquiry.is_archived {
                     Text(language.text("inbox.readOnly"))
                         .font(.footnote)
@@ -395,30 +323,5 @@ struct NativeInboxView: View {
             .navigationBarTitleDisplayMode(.inline)
             .background(EastwoodBackground())
         }
-    }
-
-    private func detailPill(label: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.caption)
-                .foregroundStyle(EastwoodTheme.ink)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(EastwoodTheme.hairline, lineWidth: 1)
-        )
-    }
-
-    private func shortDate(_ raw: String) -> String {
-        raw.replacingOccurrences(of: "T", with: " ")
-            .replacingOccurrences(of: "Z", with: "")
-            .prefix(16)
-            .description
     }
 }

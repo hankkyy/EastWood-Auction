@@ -37,7 +37,7 @@ private final class NativeAdminUsersManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            errorMessage = AppErrorPresenter.message(for: error)
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -58,7 +58,7 @@ private final class NativeAdminUsersManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionMessage = AppErrorPresenter.message(for: error)
+            actionMessage = error.localizedDescription
             return false
         }
     }
@@ -80,7 +80,7 @@ private final class NativeAdminUsersManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionMessage = AppErrorPresenter.message(for: error)
+            actionMessage = error.localizedDescription
             return false
         }
     }

@@ -83,13 +83,13 @@ struct ContentView: View {
         case .home:
             homeTab
         case .collections:
-            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .shop:
-            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .cases:
-            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
+            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .more:
             NativeMoreView(artworks: vm.artworks)
@@ -193,7 +193,7 @@ struct ContentView: View {
                     Text(language.text("home.featured"))
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    Text(language.text("common.brand"))
+                    Text("Eastwood Auction")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundStyle(EastwoodTheme.ink)
                     Text(language.text("home.hero.subtitle"))

@@ -39,9 +39,9 @@ struct NativeArtworkCard: View {
 
             HStack(spacing: 6) {
                 metaChip((artwork.isOfficial ?? false) ? language.text("artwork.official") : language.text("artwork.user"), color: (artwork.isOfficial ?? false) ? .blue : .orange)
-                metaChip(listingLabel(for: artwork), color: .purple)
+                metaChip(artwork.listingType.capitalized, color: .purple)
                 if artwork.caseRecord != nil {
-                    metaChip(language.text("artwork.returnCase"), color: .green)
+                    metaChip(language.text("artwork.case"), color: .green)
                 }
                 if artwork.isForSale == true {
                     metaChip(language.text("artwork.forSale"), color: .teal)
@@ -84,30 +84,15 @@ struct NativeArtworkCard: View {
             .background(color.opacity(0.18), in: Capsule())
             .foregroundStyle(color)
     }
-
-    private func listingLabel(for artwork: NativeArtwork) -> String {
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        switch artwork.listingType {
-        case "product":
-            return language.text("artwork.product")
-        case "collection":
-            return language.text("artwork.collection")
-        default:
-            return artwork.listingType.capitalized
-        }
-    }
 }
 
 struct NativeArtworkListRow: View {
     @EnvironmentObject private var language: LanguageManager
     let artwork: NativeArtwork
-    var embedded: Bool = false
 
     var body: some View {
         let thumb = EastwoodLayout.listThumbSize(for: UIScreen.main.bounds.width)
-        let row = HStack(spacing: 10) {
+        HStack(spacing: 10) {
             AsyncImage(url: artwork.imageURL) { phase in
                 switch phase {
                 case .success(let image):
@@ -161,15 +146,8 @@ struct NativeArtworkListRow: View {
                     .foregroundStyle(.secondary)
             }
         }
-
-        if embedded {
-            row
-                .padding(.bottom, 2)
-        } else {
-            row
-                .padding(10)
-                .eastwoodPanel()
-        }
+        .padding(10)
+        .eastwoodPanel()
     }
 
     private var detailLine: String {
@@ -196,22 +174,8 @@ struct NativeArtworkListRow: View {
             return language.text("artwork.forSale")
         }
         if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
+            return language.text("artwork.case")
         }
-        return listingLabel(for: artwork)
-    }
-
-    private func listingLabel(for artwork: NativeArtwork) -> String {
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        switch artwork.listingType {
-        case "product":
-            return language.text("artwork.product")
-        case "collection":
-            return language.text("artwork.collection")
-        default:
-            return artwork.listingType.capitalized
-        }
+        return artwork.listingType.capitalized
     }
 }
