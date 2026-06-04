@@ -21,7 +21,7 @@ final class NativeInquiryManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            errorMessage = error.localizedDescription
+            errorMessage = AppErrorPresenter.message(for: error)
         }
     }
 
@@ -47,7 +47,7 @@ final class NativeInquiryManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionErrorMessage = error.localizedDescription
+            actionErrorMessage = AppErrorPresenter.message(for: error)
             return false
         }
     }
@@ -68,7 +68,7 @@ final class NativeInquiryManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionErrorMessage = error.localizedDescription
+            actionErrorMessage = AppErrorPresenter.message(for: error)
             return false
         }
     }
@@ -136,7 +136,7 @@ final class NativeInquiryManager: ObservableObject {
             if case APIClientError.unauthorized = error {
                 NotificationCenter.default.post(name: .eastwoodAuthExpired, object: nil)
             }
-            actionErrorMessage = error.localizedDescription
+            actionErrorMessage = AppErrorPresenter.message(for: error)
             return false
         }
     }

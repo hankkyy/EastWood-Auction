@@ -35,51 +35,14 @@ struct NativeArtworkDetailView: View {
     @EnvironmentObject private var favorites: FavoritesManager
     @StateObject private var uploaderLookup = NativeUploaderLookupManager()
     @State private var showInquiryForm = false
+    @State private var showManageFlow = false
     @State private var selectedImageIndex = 0
 
     var body: some View {
         let pageWidth = UIScreen.main.bounds.width
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                TabView(selection: $selectedImageIndex) {
-                    ForEach(Array(galleryUrls.enumerated()), id: \.offset) { index, url in
-                        AsyncImage(url: URL(string: url)) { phase in
-                            switch phase {
-                            case .success(let image): image.resizable().scaledToFill()
-                            case .empty: ZStack { Color.gray.opacity(0.2); ProgressView() }
-                            case .failure: ZStack { Color.gray.opacity(0.2); Image(systemName: "photo") }
-                            @unknown default: Color.gray.opacity(0.2)
-                            }
-                        }
-                        .tag(index)
-                    }
-                }
-                .frame(height: EastwoodLayout.heroImageHeight(for: pageWidth))
-                .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .tabViewStyle(.page(indexDisplayMode: .automatic))
-
-                if galleryUrls.count > 1 {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 6) {
-                            ForEach(Array(galleryUrls.enumerated()), id: \.offset) { index, url in
-                                AsyncImage(url: URL(string: url)) { phase in
-                                    switch phase {
-                                    case .success(let image): image.resizable().scaledToFill()
-                                    default: EastwoodTheme.panelSoft
-                                    }
-                                }
-                                .frame(width: 44, height: 44)
-                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .stroke(selectedImageIndex == index ? EastwoodTheme.gold : EastwoodTheme.hairline, lineWidth: selectedImageIndex == index ? 2 : 1)
-                                )
-                                .onTapGesture { selectedImageIndex = index }
-                            }
-                        }
-                    }
-                }
+                gallerySection(pageWidth: pageWidth)
 
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -89,7 +52,7 @@ struct NativeArtworkDetailView: View {
                         HStack(spacing: 8) {
                             chip(localizedCategory)
                             chip(localizedPeriod)
-                            chip(artwork.listingType.capitalized)
+                            chip(listingLabel)
                         }
                         HStack(spacing: 8) {
                             chip((artwork.isOfficial ?? false) ? language.text("detail.platformUpload") : language.text("detail.personalUpload"))
@@ -124,13 +87,30 @@ struct NativeArtworkDetailView: View {
 
                 HStack(spacing: 10) {
                     detailStatCard(title: language.text("detail.status"), value: artwork.isForSale == true ? language.text("artwork.forSale") : language.text("detail.archive"), accent: artwork.isForSale == true ? .green : EastwoodTheme.gold)
-                    detailStatCard(title: language.text("detail.type"), value: artwork.listingType.capitalized, accent: EastwoodTheme.gold)
-                    detailStatCard(title: language.text("detail.price"), value: artwork.isForSale == true ? "\(artwork.currency ?? "USD") \(String(format: "%.0f", artwork.price ?? 0))" : "--", accent: EastwoodTheme.goldSoft)
+                    detailStatCard(title: language.text("detail.type"), value: listingLabel, accent: EastwoodTheme.gold)
+                    detailStatCard(title: language.text("detail.price"), value: formattedPriceSummary, accent: artwork.isForSale == true ? EastwoodTheme.goldSoft : .secondary)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(language.text("detail.itemInfo"))
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                detailSection(
+                    title: language.text("detail.availability"),
+                    subtitle: availabilitySubtitle
+                ) {
+                    infoRow(language.text("detail.saleState"), artwork.isForSale == true ? language.text("artwork.forSale") : language.text("artwork.notForSale"))
+                    infoRow(language.text("detail.listingType"), listingLabel)
+                    if let collectionId = artwork.collectionId?.trimmingCharacters(in: .whitespacesAndNewlines), !collectionId.isEmpty {
+                        infoRow(language.text("detail.collectionId"), collectionId)
+                    }
+                    if artwork.isForSale == true {
+                        infoRow(language.text("detail.price"), formattedPrice)
+                    }
+                }
+
+                detailSection(
+                    title: language.text("detail.itemInfo"),
+                    subtitle: itemInfoSubtitle
+                ) {
+                    infoRow(language.text("detail.category"), localizedCategory)
+                    infoRow(language.text("detail.period"), localizedPeriod)
                     infoRow(language.text("detail.source"), (artwork.isOfficial ?? false) ? language.text("detail.platformUpload") : language.text("detail.personalUpload"))
                     if let code = inquiryCode, !code.isEmpty {
                         infoRow(language.text("detail.inquiryCode"), code)
@@ -142,20 +122,21 @@ struct NativeArtworkDetailView: View {
                         infoRow(language.text("detail.uploaderId"), uploader)
                     }
                 }
-                .padding(12)
-                .eastwoodPanel()
 
                 if let inquiryCode, !inquiryCode.isEmpty {
-                    Button(language.text("detail.askAbout")) {
-                        showInquiryForm = true
+                    detailActionSection(inquiryCode: inquiryCode)
+                } else if canManageArtwork {
+                    Button(language.text("detail.manageItem")) {
+                        showManageFlow = true
                     }
-                    .buttonStyle(EastwoodPrimaryButtonStyle())
+                    .buttonStyle(EastwoodSecondaryButtonStyle())
                 }
 
                 if let caseRecord = artwork.caseRecord {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(language.text("detail.caseDetails"))
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
+                    detailSection(
+                        title: language.text("detail.caseDetails"),
+                        subtitle: caseDetailsSubtitle
+                    ) {
                         infoRow(language.text("detail.caseId"), caseRecord.caseId)
                         infoRow(language.text("detail.salePrice"), caseRecord.salePrice)
                         infoRow(language.text("detail.saleTime"), caseRecord.saleTime)
@@ -166,18 +147,16 @@ struct NativeArtworkDetailView: View {
                         optionalInfoRow(language.text("detail.purchaseCost"), caseRecord.purchaseCost)
                         optionalInfoRow(language.text("detail.riskAdvice"), caseRecord.riskAdvice)
                     }
-                    .padding(12)
-                    .eastwoodPanel()
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(language.text("detail.description"))
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                detailSection(
+                    title: language.text("detail.description"),
+                    subtitle: descriptionSubtitle
+                ) {
                     Text(localizedDescription)
                         .font(.body)
+                        .foregroundStyle(EastwoodTheme.ink)
                 }
-                .padding(12)
-                .eastwoodPanel()
             }
         .padding(.horizontal, EastwoodLayout.pagePadding(for: pageWidth))
         .padding(.top, 8)
@@ -210,6 +189,17 @@ struct NativeArtworkDetailView: View {
         .navigationDestination(isPresented: $showInquiryForm) {
             NativeInquiryFormView(prefilledCode: inquiryCode)
         }
+        .sheet(isPresented: $showManageFlow) {
+            NavigationStack {
+                NativeArtworkManagementView(
+                    kind: managementKind,
+                    mode: .manage,
+                    initialEditingArtwork: artwork
+                )
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
     }
 
     private var localizedCategory: String {
@@ -228,6 +218,38 @@ struct NativeArtworkDetailView: View {
         return artwork.description
     }
 
+    private var listingLabel: String {
+        if artwork.caseRecord != nil {
+            return language.text("artwork.returnCase")
+        }
+        switch artwork.listingType {
+        case "product":
+            return language.text("artwork.product")
+        case "collection":
+            return language.text("artwork.collection")
+        default:
+            return artwork.listingType.capitalized
+        }
+    }
+
+    private var managementKind: NativeSectionKind {
+        if artwork.caseRecord != nil {
+            return .cases
+        }
+        if artwork.listingType == "product" || artwork.isForSale == true {
+            return .shop
+        }
+        return .collections
+    }
+
+    private var canManageArtwork: Bool {
+        if auth.isAdmin {
+            return true
+        }
+        guard auth.isAuthenticated, !auth.currentUserId.isEmpty else { return false }
+        return artwork.uploadedBy == auth.currentUserId
+    }
+
     private var inquiryCode: String? {
         if let cid = artwork.collectionId?.trimmingCharacters(in: .whitespacesAndNewlines), !cid.isEmpty {
             return cid
@@ -241,6 +263,25 @@ struct NativeArtworkDetailView: View {
     private var galleryUrls: [String] {
         let items = artwork.galleryImages?.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? []
         return items.isEmpty ? [artwork.image] : items
+    }
+
+    private var formattedPrice: String {
+        let trimmedCurrency = artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let currencyCode = trimmedCurrency.isEmpty ? "USD" : trimmedCurrency
+        let amount = Int((artwork.price ?? 0).rounded())
+
+        switch currencyCode {
+        case "CNY":
+            return "¥\(amount.formatted())"
+        case "USD":
+            return "$\(amount.formatted())"
+        default:
+            return "\(currencyCode) \(amount.formatted())"
+        }
+    }
+
+    private var formattedPriceSummary: String {
+        artwork.isForSale == true ? formattedPrice : language.text("artwork.notForSale")
     }
 
     private func chip(_ text: String) -> some View {
@@ -268,11 +309,150 @@ struct NativeArtworkDetailView: View {
         .eastwoodPanel()
     }
 
+    private func gallerySection(pageWidth: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            ZStack(alignment: .bottomTrailing) {
+                TabView(selection: $selectedImageIndex) {
+                    ForEach(Array(galleryUrls.enumerated()), id: \.offset) { index, url in
+                        AsyncImage(url: URL(string: url)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().scaledToFill()
+                            case .empty:
+                                ZStack { Color.gray.opacity(0.2); ProgressView() }
+                            case .failure:
+                                ZStack { Color.gray.opacity(0.2); Image(systemName: "photo") }
+                            @unknown default:
+                                Color.gray.opacity(0.2)
+                            }
+                        }
+                        .tag(index)
+                    }
+                }
+                .frame(height: EastwoodLayout.heroImageHeight(for: pageWidth))
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .tabViewStyle(.page(indexDisplayMode: .automatic))
+
+                Text(language.format("detail.galleryCounter", selectedImageIndex + 1, galleryUrls.count))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(Color.black.opacity(0.52), in: Capsule())
+                    .padding(12)
+            }
+
+            if galleryUrls.count > 1 {
+                detailSection(
+                    title: language.text("detail.gallery"),
+                    subtitle: language.text("detail.gallerySubtitle")
+                ) {
+                    HStack {
+                        Text(language.format("detail.galleryCount", galleryUrls.count))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Spacer()
+                        HStack(spacing: 8) {
+                            galleryControlButton(systemName: "chevron.left") {
+                                guard !galleryUrls.isEmpty else { return }
+                                selectedImageIndex = (selectedImageIndex - 1 + galleryUrls.count) % galleryUrls.count
+                            }
+                            galleryControlButton(systemName: "chevron.right") {
+                                guard !galleryUrls.isEmpty else { return }
+                                selectedImageIndex = (selectedImageIndex + 1) % galleryUrls.count
+                            }
+                        }
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(Array(galleryUrls.enumerated()), id: \.offset) { index, url in
+                                AsyncImage(url: URL(string: url)) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image.resizable().scaledToFill()
+                                    default:
+                                        EastwoodTheme.panelSoft
+                                    }
+                                }
+                                .frame(width: 84, height: 84)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(selectedImageIndex == index ? EastwoodTheme.gold : EastwoodTheme.hairline, lineWidth: selectedImageIndex == index ? 2 : 1)
+                                )
+                                .onTapGesture { selectedImageIndex = index }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func galleryControlButton(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(EastwoodTheme.gold)
+                .frame(width: 34, height: 34)
+                .background(Color.white.opacity(0.96), in: Circle())
+                .overlay(Circle().stroke(EastwoodTheme.hairline, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func detailActionSection(inquiryCode: String) -> some View {
+        detailSection(
+            title: language.text("detail.nextSteps"),
+            subtitle: nextStepsSubtitle
+        ) {
+            VStack(spacing: 10) {
+                Button(language.text("detail.askAbout")) {
+                    showInquiryForm = true
+                }
+                .buttonStyle(EastwoodPrimaryButtonStyle())
+
+                if canManageArtwork {
+                    Button(language.text("detail.manageItem")) {
+                        showManageFlow = true
+                    }
+                    .buttonStyle(EastwoodSecondaryButtonStyle())
+                }
+            }
+        }
+    }
+
+    private func detailSection<Content: View>(title: String, subtitle: String? = nil, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(EastwoodTheme.ink)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                content()
+            }
+        }
+        .padding(12)
+        .eastwoodPanel()
+    }
+
     private func infoRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).foregroundStyle(.secondary)
-            Spacer()
+        HStack(alignment: .top, spacing: 12) {
+            Text(label)
+                .foregroundStyle(.secondary)
+                .frame(width: 108, alignment: .leading)
             Text(value)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .font(.subheadline)
     }
@@ -283,5 +463,40 @@ struct NativeArtworkDetailView: View {
         if !trimmed.isEmpty {
             infoRow(label, trimmed)
         }
+    }
+
+    private var itemInfoSubtitle: String {
+        if artwork.caseRecord != nil {
+            return language.language == .chinese ? "用于核对编号、来源和上传者信息，和管理页保持一致。" : "Use this section to verify code, source, and uploader information in the same structure as the management view."
+        }
+        if artwork.isForSale == true {
+            return language.language == .chinese ? "这里汇总前台商品识别信息，方便咨询与后台管理同时核对。" : "This section summarizes the public-facing product identifiers so inquiry and admin flows reference the same details."
+        }
+        return language.language == .chinese ? "这里汇总展示项的识别信息，方便列表、详情和后台统一引用。" : "This section gathers the showcase identifiers so list, detail, and admin views all reference the same metadata."
+    }
+
+    private var caseDetailsSubtitle: String {
+        language.language == .chinese ? "成交、地区、物流和避坑信息会统一展示在这里，方便案例复盘。" : "Sale facts, region, logistics, and advisory notes are grouped here so the case can be reviewed quickly."
+    }
+
+    private var availabilitySubtitle: String {
+        if artwork.caseRecord != nil {
+            return language.language == .chinese ? "回流案例默认按归档案例展示，这里保留网页前台和后台都会用到的编号与状态信息。" : "Return cases stay presented as archived case studies, so this section keeps the same code and listing status used by both web and admin flows."
+        }
+        return language.language == .chinese ? "这里优先展示网页详情页同样使用的销售状态、商品编号与价格信息。" : "This section mirrors the same sale state, item code, and pricing that appear on the web detail pages."
+    }
+
+    private var nextStepsSubtitle: String {
+        if canManageArtwork {
+            return language.language == .chinese ? "可以从这里直接发送咨询，或进入原生管理流继续编辑、下架和维护云端数据。" : "From here you can send an inquiry or jump directly into the native management flow to edit, archive, and maintain cloud data."
+        }
+        return language.language == .chinese ? "继续咨询这件藏品，提交的信息会和网页端、后台收件箱保持同步。" : "Continue with an inquiry here and keep the conversation synced with the web experience and admin inbox."
+    }
+
+    private var descriptionSubtitle: String {
+        if artwork.caseRecord != nil {
+            return language.language == .chinese ? "这里适合放案例背景、藏品说明或后续咨询时需要引用的文字。" : "Use this section for case background, object notes, or the narrative buyers may reference during inquiry."
+        }
+        return language.language == .chinese ? "这里展示更完整的藏品或商品说明，和网页详情页的说明区保持一致。" : "This section presents the fuller object or product narrative, aligned with the descriptive area on the web detail pages."
     }
 }

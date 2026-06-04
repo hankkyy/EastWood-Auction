@@ -9,13 +9,13 @@ enum APIClientError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .badURL:
-            return "Invalid URL"
+            return AppErrorPresenter.text("error.invalidURL")
         case .unauthorized:
-            return "Unauthorized"
+            return AppErrorPresenter.text("error.unauthorized")
         case .server(let message):
             return message
         case .network:
-            return "Network error"
+            return AppErrorPresenter.text("error.network")
         }
     }
 }
@@ -69,7 +69,7 @@ struct NativeAPIClient {
                     throw APIClientError.server(message)
                 }
 
-                throw APIClientError.server("Request failed: \(http.statusCode)")
+                throw APIClientError.server(AppErrorPresenter.format("admin.error.requestFailed", http.statusCode))
             } catch {
                 lastError = error
                 attempt += 1

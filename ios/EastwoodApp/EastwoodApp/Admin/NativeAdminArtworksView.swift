@@ -461,9 +461,9 @@ struct NativeAdminArtworksView: View {
 
                                 Picker(language.text("admin.artworks.price"), selection: $priceFilter) {
                                     Text(language.text("admin.artworks.priceAll")).tag("all")
-                                    Text("< 1,000").tag("under1k")
-                                    Text("1,000-5,000").tag("1kTo5k")
-                                    Text("> 5,000").tag("above5k")
+                                    Text(language.text("admin.artworks.priceUnder1k")).tag("under1k")
+                                    Text(language.text("admin.artworks.price1kTo5k")).tag("1kTo5k")
+                                    Text(language.text("admin.artworks.priceAbove5k")).tag("above5k")
                                 }
                                 .pickerStyle(.menu)
                             }
@@ -1126,11 +1126,11 @@ private struct AdminArtworkEditor: View {
     }
 
     private func generateCollectionID() -> String {
-        let prefix = input.category
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-        let normalizedPrefix = prefix.isEmpty ? "item" : prefix
-        return "\(normalizedPrefix)-\(Int(Date().timeIntervalSince1970))"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMddyy"
+        let date = formatter.string(from: Date())
+        let letters = String((0..<2).map { _ in "ABCDEFGHIJKLMNOPQRSTUVWXYZ".randomElement()! })
+        let digits = String(Int.random(in: 10...99))
+        return "COL-\(date)-\(letters)\(digits)"
     }
 }

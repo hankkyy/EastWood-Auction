@@ -6,6 +6,11 @@ import type {
   ArtworkListingType,
 } from "@/data/artworks";
 import { hasSupabaseClientConfig } from "@/lib/supabase/config";
+import {
+  normalizeArtworkIdentifiers,
+  normalizeCaseId,
+  normalizeCollectionId,
+} from "@/lib/artworkIds";
 
 export type ArtworkRow = {
   id: string;
@@ -38,6 +43,7 @@ export const isSupabaseConfigured = hasSupabaseClientConfig;
 
 export const normalizeArtwork = (artwork: Artwork): Artwork => ({
   ...artwork,
+  ...normalizeArtworkIdentifiers(artwork),
   listingType: artwork.listingType ?? "product",
   galleryImages:
     artwork.galleryImages?.length ? artwork.galleryImages : [artwork.image],
@@ -88,13 +94,18 @@ export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
       }
     : {}),
   image_signature: artwork.imageSignature ?? null,
-  case_record: artwork.caseRecord ?? null,
+  case_record: artwork.caseRecord
+    ? {
+        ...artwork.caseRecord,
+        caseId: normalizeCaseId(artwork.caseRecord.caseId) ?? artwork.caseRecord.caseId,
+      }
+    : null,
   uploaded_by: artwork.uploadedBy ?? null,
   is_official: artwork.isOfficial ?? false,
   is_for_sale: artwork.isForSale ?? false,
   price: artwork.price ?? null,
   currency: artwork.currency ?? 'CNY',
-  collection_id: artwork.collectionId ?? null,
+  collection_id: normalizeCollectionId(artwork.collectionId) ?? null,
 });
 
 export const rowToArtwork = (row: ArtworkRow): Artwork =>

@@ -3,6 +3,7 @@ import Foundation
 @MainActor
 final class AuthManager: ObservableObject {
     @Published var accessToken: String = ""
+    @Published var currentUserId: String = ""
     @Published var userEmail: String = ""
     @Published var isAdmin: Bool = false
     @Published var role: String = "user"
@@ -18,7 +19,7 @@ final class AuthManager: ObservableObject {
     func signIn(email: String, password: String) async {
         guard let supabaseURL = URL(string: AppConfig.supabaseURL),
               !AppConfig.supabaseAnonKey.isEmpty else {
-            errorMessage = "Supabase config missing"
+            errorMessage = AppErrorPresenter.text("error.configMissing")
             return
         }
 
@@ -42,11 +43,16 @@ final class AuthManager: ObservableObject {
 
             let decoded = try JSONDecoder().decode(SupabaseAuthResponse.self, from: data)
             accessToken = decoded.access_token
+            currentUserId = decoded.user.id
             userEmail = decoded.user.email ?? email
             persistSession()
             await refreshRole()
         } catch {
-            errorMessage = "登录失败，请检查账号密码"
+            if let urlError = error as? URLError, urlError.code == .userAuthenticationRequired {
+                errorMessage = AppErrorPresenter.text("error.signInFailed")
+            } else {
+                errorMessage = AppErrorPresenter.message(for: error)
+            }
         }
 
         isLoading = false
@@ -54,10 +60,12 @@ final class AuthManager: ObservableObject {
 
     func signOut() {
         accessToken = ""
+        currentUserId = ""
         userEmail = ""
         isAdmin = false
         role = "user"
         KeychainStore.clearToken()
+        UserDefaults.standard.removeObject(forKey: "eastwood_user_id")
         UserDefaults.standard.removeObject(forKey: "eastwood_user_email")
         UserDefaults.standard.removeObject(forKey: "eastwood_user_role")
     }
@@ -70,6 +78,7 @@ final class AuthManager: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: req)
             guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else { return }
             let me = try JSONDecoder().decode(MobileMeResponse.self, from: data)
+            currentUserId = me.userId
             isAdmin = me.isAdmin
             role = me.role
             persistSession()
@@ -82,6 +91,7 @@ final class AuthManager: ObservableObject {
         if let savedToken = KeychainStore.loadToken() {
             accessToken = savedToken
         }
+        currentUserId = UserDefaults.standard.string(forKey: "eastwood_user_id") ?? ""
         userEmail = UserDefaults.standard.string(forKey: "eastwood_user_email") ?? ""
         role = UserDefaults.standard.string(forKey: "eastwood_user_role") ?? "user"
         isAdmin = role == "admin"
@@ -91,6 +101,7 @@ final class AuthManager: ObservableObject {
         if !accessToken.isEmpty {
             KeychainStore.saveToken(accessToken)
         }
+        UserDefaults.standard.set(currentUserId, forKey: "eastwood_user_id")
         UserDefaults.standard.set(userEmail, forKey: "eastwood_user_email")
         UserDefaults.standard.set(role, forKey: "eastwood_user_role")
     }

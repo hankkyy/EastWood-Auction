@@ -33,6 +33,26 @@ struct NativeImageSearchView: View {
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .eastwoodPanel()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(language.text("imageSearch.scopeTitle"))
+                            .font(.headline)
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Text(language.text("imageSearch.scopeBody"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Divider()
+                        Text(language.text("imageSearch.tipTitle"))
+                            .font(.headline)
+                            .foregroundStyle(EastwoodTheme.ink)
+                        Text(language.text("imageSearch.tipBody"))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(14)
+                    .eastwoodPanel()
 
                     if let selectedImage {
                         Image(uiImage: selectedImage)
@@ -150,6 +170,9 @@ struct NativeImageSearchView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(language.text("imageSearch.knowledge"))
                             .font(.headline)
+                        Text(language.text("imageSearch.snapshotNote"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                         statRow(language.text("imageSearch.totalItems"), service.knowledgeTotal)
                         statRow(language.text("imageSearch.productItems"), service.knowledgeProducts)
                         statRow(language.text("imageSearch.collectionItems"), service.knowledgeCollections)

@@ -18,6 +18,10 @@ enum EastwoodLayout {
     static func listThumbSize(for width: CGFloat) -> CGFloat {
         width < 390 ? 64 : 72
     }
+
+    static func compactCardHeight(for width: CGFloat) -> CGFloat {
+        width < 390 ? 236 : 248
+    }
 }
 
 enum EastwoodTheme {
@@ -25,12 +29,17 @@ enum EastwoodTheme {
     static let goldSoft = Color(red: 0.24, green: 0.36, blue: 0.45)
     static let ink = Color(red: 0.08, green: 0.09, blue: 0.12)
     static let panel = Color.white
-    static let panelSoft = Color(red: 0.94, green: 0.95, blue: 0.97)
+    static let panelSoft = Color(red: 0.95, green: 0.96, blue: 0.98)
     static let hairline = Color.black.opacity(0.08)
-    static let groupedTop = Color(red: 0.96, green: 0.96, blue: 0.97)
-    static let groupedBottom = Color(red: 0.93, green: 0.94, blue: 0.96)
-    static let searchFill = Color(red: 0.89, green: 0.90, blue: 0.92)
+    static let groupedTop = Color(red: 0.98, green: 0.98, blue: 0.97)
+    static let groupedBottom = Color(red: 0.93, green: 0.95, blue: 0.98)
+    static let searchFill = Color(red: 0.91, green: 0.92, blue: 0.95)
     static let mutedText = Color(red: 0.53, green: 0.55, blue: 0.60)
+    static let ivory = Color(red: 0.99, green: 0.98, blue: 0.96)
+    static let mistBlue = Color(red: 0.84, green: 0.89, blue: 0.95)
+    static let sage = Color(red: 0.86, green: 0.91, blue: 0.87)
+    static let blush = Color(red: 0.95, green: 0.88, blue: 0.88)
+    static let sand = Color(red: 0.95, green: 0.92, blue: 0.84)
 }
 
 enum EastwoodMotion {
@@ -43,7 +52,11 @@ struct EastwoodBackground: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [EastwoodTheme.groupedTop, EastwoodTheme.groupedBottom],
+                colors: [
+                    EastwoodTheme.ivory,
+                    EastwoodTheme.groupedTop,
+                    EastwoodTheme.groupedBottom,
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -51,12 +64,23 @@ struct EastwoodBackground: View {
 
             RadialGradient(
                 colors: [
-                    EastwoodTheme.gold.opacity(0.04),
+                    EastwoodTheme.sand.opacity(0.22),
                     Color.clear,
                 ],
-                center: .topTrailing,
+                center: .topLeading,
                 startRadius: 10,
-                endRadius: 380
+                endRadius: 320
+            )
+            .ignoresSafeArea()
+
+            RadialGradient(
+                colors: [
+                    EastwoodTheme.mistBlue.opacity(0.18),
+                    Color.clear,
+                ],
+                center: .trailing,
+                startRadius: 10,
+                endRadius: 420
             )
             .ignoresSafeArea()
         }
@@ -68,7 +92,7 @@ struct EastwoodPanelModifier: ViewModifier {
         content
             .background(
                 LinearGradient(
-                    colors: [EastwoodTheme.panel, EastwoodTheme.panelSoft],
+                    colors: [EastwoodTheme.panel, EastwoodTheme.ivory, EastwoodTheme.panelSoft],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 ),
@@ -78,7 +102,8 @@ struct EastwoodPanelModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(EastwoodTheme.hairline, lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.05), radius: 14, y: 6)
+            .shadow(color: EastwoodTheme.gold.opacity(0.06), radius: 14, y: 6)
+            .shadow(color: Color.black.opacity(0.04), radius: 20, y: 10)
     }
 }
 
@@ -115,7 +140,7 @@ struct EastwoodSecondaryButtonStyle: ButtonStyle {
             .foregroundStyle(EastwoodTheme.gold)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(Color.white.opacity(configuration.isPressed ? 0.98 : 0.92), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(EastwoodTheme.ivory.opacity(configuration.isPressed ? 0.98 : 0.94), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(EastwoodTheme.hairline, lineWidth: 1)
@@ -199,6 +224,41 @@ struct EastwoodSkeletonCard: View {
         }
         .padding(12)
         .eastwoodPanel()
+    }
+}
+
+struct EastwoodCompactSkeletonCard: View {
+    private var compactCardHeight: CGFloat {
+        EastwoodLayout.compactCardHeight(for: UIScreen.main.bounds.width)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(EastwoodTheme.panelSoft)
+                .frame(height: compactCardHeight * 0.58)
+                .overlay(EastwoodShimmer().clipShape(RoundedRectangle(cornerRadius: 14)))
+
+            RoundedRectangle(cornerRadius: 6)
+                .fill(EastwoodTheme.panelSoft)
+                .frame(height: 14)
+                .overlay(EastwoodShimmer().clipShape(RoundedRectangle(cornerRadius: 6)))
+
+            RoundedRectangle(cornerRadius: 6)
+                .fill(EastwoodTheme.panelSoft.opacity(0.88))
+                .frame(width: 88, height: 10)
+                .overlay(EastwoodShimmer().clipShape(RoundedRectangle(cornerRadius: 6)))
+        }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(EastwoodTheme.ivory.opacity(0.92))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(EastwoodTheme.hairline, lineWidth: 1)
+        )
+        .frame(height: compactCardHeight)
     }
 }
 

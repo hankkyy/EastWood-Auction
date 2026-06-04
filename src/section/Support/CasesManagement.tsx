@@ -253,24 +253,8 @@ const CasesManagementSection = memo(function CasesManagementSection({
     }
   };
 
-  // 生成唯一的案例编号（统一格式：CASE-MMDDYYYY-XX00）
-  const generateCaseId = () => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const year = now.getFullYear();
-    const dateStr = `${month}${day}${year}`;
-    
-    // 生成两个随机字母
-    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
-                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    
-    // 生成两个随机数字
-    const digits = String(Math.floor(Math.random() * 10)) + 
-                   String(Math.floor(Math.random() * 10));
-    
-    return `CASE-${dateStr}-${letters}${digits}`;
-  };
+  // 生成唯一的案例编号（统一格式：CASE-MMDDYY-XXXX）
+  const generateCaseId = () => buildCaseId();
 
   const resetForm = () => {
     setAdminImages([]);
@@ -1300,3 +1284,4 @@ const CasesManagementSection = memo(function CasesManagementSection({
 });
 
 export default CasesManagementSection;
+import { generateCaseId as buildCaseId } from "@/lib/artworkIds";

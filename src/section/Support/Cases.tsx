@@ -167,24 +167,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   
   // ✅ 移除主展示页面的编辑功能,编辑只在管理模式中进行
 
-  // 生成唯一的案例编号（统一格式：CASE-MMDDYYYY-XX00）
-  const generateCaseId = () => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const year = now.getFullYear();
-    const dateStr = `${month}${day}${year}`;
-    
-    // 生成两个随机字母
-    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
-                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    
-    // 生成两个随机数字
-    const digits = String(Math.floor(Math.random() * 10)) + 
-                   String(Math.floor(Math.random() * 10));
-    
-    return `CASE-${dateStr}-${letters}${digits}`;
-  };
+  // 生成唯一的案例编号（统一格式：CASE-MMDDYY-XXXX）
+  const generateCaseId = () => buildCaseId();
 
   // ✅ 云端数据为唯一真源：先显示已有数据，再后台刷新云端
   useEffect(() => {
@@ -318,7 +302,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       }
 
       // ✅ 自动生成案例编号(如果用户未填写)
-      const generatedCaseId = adminCaseId || `CASE-${Date.now()}`;
+      const generatedCaseId = adminCaseId || generateCaseId();
       
       const caseRecord: ArtworkCaseRecord = {
         caseId: generatedCaseId,
@@ -910,3 +894,4 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     </Container>
   );
 }
+import { generateCaseId as buildCaseId } from "@/lib/artworkIds";

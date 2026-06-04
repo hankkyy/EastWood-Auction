@@ -56,7 +56,7 @@ final class NativeImageSearchService: ObservableObject {
     func runSearch(image: UIImage, threshold: Double, matchCount: Int) async {
         guard let base = AppConfig.webAppURL else { return }
         guard let jpeg = image.jpegData(compressionQuality: 0.85) else {
-            errorMessage = "Invalid image"
+            errorMessage = AppErrorPresenter.text("error.imageInvalid")
             return
         }
 
@@ -118,9 +118,11 @@ final class NativeImageSearchService: ObservableObject {
             lastThreshold = decoded.threshold ?? threshold
             totalCandidates = decoded.matches.count
         } catch {
-            errorMessage = error.localizedDescription == "The operation couldn’t be completed. (NSURLErrorDomain error -1011.)"
-            ? "Image search failed."
-            : error.localizedDescription
+            if let urlError = error as? URLError, urlError.code == .badServerResponse {
+                errorMessage = AppErrorPresenter.text("error.imageSearchFailed")
+            } else {
+                errorMessage = AppErrorPresenter.message(for: error)
+            }
             matches = []
         }
     }

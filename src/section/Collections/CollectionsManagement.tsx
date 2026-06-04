@@ -277,24 +277,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     }
   };
 
-  // 生成唯一的藏品/商品编号（统一格式：COL-日期-随机码）
-  const generateCollectionId = () => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const year = now.getFullYear();
-    const dateStr = `${month}${day}${year}`;
-    
-    // 生成两个随机字母
-    const letters = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
-                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
-    
-    // 生成两个随机数字
-    const digits = String(Math.floor(Math.random() * 10)) + 
-                   String(Math.floor(Math.random() * 10));
-    
-    return `COL-${dateStr}-${letters}${digits}`;
-  };
+  // 生成唯一的藏品/商品编号（统一格式：COL-MMDDYY-XXXX）
+  const generateCollectionId = () => buildCollectionId();
 
   const resetForm = () => {
     setAdminImages([]);
@@ -1438,3 +1422,4 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
 });
 
 export default CollectionsManagementSection;
+import { generateCollectionId as buildCollectionId } from "@/lib/artworkIds";

@@ -13,6 +13,21 @@ struct ContentView: View {
     @StateObject private var favorites = FavoritesManager()
     @State private var showSessionExpiredAlert = false
     @State private var selectedTab: MainTab = .home
+    @State private var homePreviewMode: HomePreviewMode = .cards
+
+    private enum HomePreviewMode: String {
+        case cards
+        case list
+    }
+
+    private struct HomePreviewSection: Identifiable {
+        let id: MainTab
+        let title: String
+        let subtitle: String
+        let accent: Color
+        let icon: String
+        let items: [NativeArtwork]
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -83,13 +98,13 @@ struct ContentView: View {
         case .home:
             homeTab
         case .collections:
-            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks) }
+            NavigationStack { NativeSectionView(kind: .collections, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .shop:
-            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks) }
+            NavigationStack { NativeSectionView(kind: .shop, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .cases:
-            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks) }
+            NavigationStack { NativeSectionView(kind: .cases, artworks: vm.artworks, onCatalogChanged: { Task { await vm.load() } }) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         case .more:
             NativeMoreView(artworks: vm.artworks)
@@ -141,7 +156,7 @@ struct ContentView: View {
     private var homeTab: some View {
         let pagePad = EastwoodLayout.pagePadding(for: UIScreen.main.bounds.width)
         return ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 12) {
                 homeHero
                     .padding(.horizontal, pagePad)
 
@@ -157,26 +172,55 @@ struct ContentView: View {
                         onTap: { Task { await vm.load() } }
                     )
                 } else if vm.isLoading && vm.artworks.isEmpty {
-                    EastwoodSkeletonList(count: 4)
+                    if homePreviewMode == .cards {
+                        let columns = [
+                            GridItem(.flexible(), spacing: 12),
+                            GridItem(.flexible(), spacing: 12),
+                        ]
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(0..<6, id: \.self) { _ in
+                                EastwoodCompactSkeletonCard()
+                            }
+                        }
                         .padding(.horizontal, pagePad)
+                    } else {
+                        EastwoodSkeletonList(count: 4)
+                            .padding(.horizontal, pagePad)
+                    }
                 } else {
-                    Text(language.text("home.latestHighlights"))
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(language.text("home.latestHighlights"))
+                                    .font(.system(size: 22, weight: .bold, design: .serif))
+                                Text(language.language == .chinese ? "小巧预览，快速浏览最新藏品与案例。" : "Compact previews for the latest objects, shop lots, and cases.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            previewModePicker
+                        }
                         .padding(.horizontal, pagePad)
 
-                    LazyVStack(spacing: 12) {
-                        ForEach(vm.artworks.prefix(8)) { artwork in
-                            NavigationLink(value: artwork) {
-                                NativeArtworkListRow(artwork: artwork)
+                        if homePreviewMode == .cards {
+                            homePreviewWall
+                                .padding(.horizontal, pagePad)
+                        } else {
+                            LazyVStack(spacing: 12) {
+                                ForEach(vm.artworks.prefix(8)) { artwork in
+                                    NavigationLink(value: artwork) {
+                                        NativeArtworkListRow(artwork: artwork)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+                                }
                             }
-                            .buttonStyle(.plain)
-                            .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+                            .padding(.horizontal, pagePad)
                         }
                     }
-                    .padding(.horizontal, pagePad)
                 }
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, 10)
         }
         .scrollIndicators(.hidden)
         .animation(EastwoodMotion.listUpdate, value: vm.artworks.count)
@@ -188,28 +232,34 @@ struct ContentView: View {
 
     private var homeHero: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(language.text("home.featured"))
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text("Eastwood Auction")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(sectionAccent(.collections).opacity(0.88))
+                        .tracking(1)
+                    Text(language.text("common.brand"))
+                        .font(.system(size: 28, weight: .bold, design: .serif))
                         .foregroundStyle(EastwoodTheme.ink)
                     Text(language.text("home.hero.subtitle"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
                 }
-                Spacer()
-                Circle()
-                    .fill(EastwoodTheme.panelSoft)
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(EastwoodTheme.gold)
-                    )
+                Spacer(minLength: 12)
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(EastwoodTheme.panelSoft)
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundStyle(EastwoodTheme.gold)
+                        )
+                    Text(language.language == .chinese ? "搜索" : "Search")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
             }
 
             HStack(spacing: 8) {
@@ -217,9 +267,217 @@ struct ContentView: View {
                 pill(language.text("home.pill.cloud"))
                 pill(language.text("home.pill.native"))
             }
+
+            HStack(spacing: 8) {
+                featuredMetric(
+                    title: language.language == .chinese ? "展示" : "Display",
+                    value: "\(vm.artworks.filter { $0.listingType == "collection" }.count)",
+                    accent: sectionAccent(.collections)
+                )
+                featuredMetric(
+                    title: language.language == .chinese ? "在售" : "Shop",
+                    value: "\(vm.artworks.filter { $0.listingType == "product" || $0.isForSale == true }.count)",
+                    accent: sectionAccent(.shop)
+                )
+                featuredMetric(
+                    title: language.language == .chinese ? "案例" : "Cases",
+                    value: "\(vm.artworks.filter { $0.caseRecord != nil }.count)",
+                    accent: sectionAccent(.cases)
+                )
+            }
         }
-        .padding(16)
-        .eastwoodPanel()
+        .padding(14)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.98),
+                    EastwoodTheme.ivory,
+                    EastwoodTheme.mistBlue.opacity(0.10)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(EastwoodTheme.hairline, lineWidth: 1)
+        )
+        .shadow(color: EastwoodTheme.gold.opacity(0.06), radius: 14, y: 6)
+    }
+
+    private var homePreviewWall: some View {
+        VStack(spacing: 14) {
+            ForEach(homePreviewSections) { section in
+                homePreviewSection(section)
+            }
+        }
+    }
+
+    private func homePreviewSection(_ section: HomePreviewSection) -> some View {
+        let columns = [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12),
+        ]
+        let cardHeight = EastwoodLayout.compactCardHeight(for: UIScreen.main.bounds.width)
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(section.accent.opacity(0.12))
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Image(systemName: section.icon)
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(section.accent)
+                            )
+                        Text(section.title)
+                            .font(.system(size: 18, weight: .bold, design: .serif))
+                            .foregroundStyle(EastwoodTheme.ink)
+                    }
+                    Text(section.subtitle)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 10)
+
+                Button {
+                    selectedTab = section.id
+                } label: {
+                    Text(language.language == .chinese ? "查看全部" : "View All")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(section.accent)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(Color.white.opacity(0.9), in: Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(section.accent.opacity(0.18), lineWidth: 1)
+                        )
+                }
+            }
+
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(section.items) { artwork in
+                    NavigationLink(value: artwork) {
+                        NativeArtworkCompactCard(artwork: artwork)
+                    }
+                    .buttonStyle(.plain)
+                    .simultaneousGesture(TapGesture().onEnded { UIImpactFeedbackGenerator(style: .light).impactOccurred() })
+                }
+
+                Button {
+                    selectedTab = section.id
+                } label: {
+                    VStack(spacing: 7) {
+                        Text("...")
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
+                            .foregroundStyle(section.accent.opacity(0.9))
+                        Text(language.language == .chinese ? "进入专区" : "Open Section")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(EastwoodTheme.ink)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: cardHeight)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(EastwoodTheme.ivory.opacity(0.92))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .stroke(style: StrokeStyle(lineWidth: 1.5, dash: [6, 6]))
+                            .foregroundStyle(section.accent.opacity(0.28))
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.98),
+                    section.accent.opacity(0.08),
+                    EastwoodTheme.ivory.opacity(0.96),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 20, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(section.accent.opacity(0.12), lineWidth: 1)
+        )
+        .shadow(color: section.accent.opacity(0.08), radius: 12, y: 6)
+    }
+
+    private var homePreviewSections: [HomePreviewSection] {
+        [
+            HomePreviewSection(
+                id: .collections,
+                title: language.text("nav.collections"),
+                subtitle: language.language == .chinese ? "最新藏品预览，快速进入展示目录。" : "Freshly curated objects to explore in the display gallery.",
+                accent: EastwoodTheme.mistBlue.opacity(0.95),
+                icon: "square.grid.2x2",
+                items: Array(vm.artworks.filter { $0.listingType == "collection" }.prefix(3))
+            ),
+            HomePreviewSection(
+                id: .shop,
+                title: language.text("nav.shop"),
+                subtitle: language.language == .chinese ? "在售古董与精品，像拍卖目录一样浏览。" : "For-sale pieces presented with a refined catalog rhythm.",
+                accent: EastwoodTheme.gold,
+                icon: "bag",
+                items: Array(vm.artworks.filter { $0.listingType == "product" || $0.isForSale == true }.prefix(3))
+            ),
+            HomePreviewSection(
+                id: .cases,
+                title: language.text("nav.cases"),
+                subtitle: language.language == .chinese ? "真实成交案例，带成交信息与渠道脉络。" : "Return cases with sale notes, channels, and collector context.",
+                accent: EastwoodTheme.sage.opacity(0.95),
+                icon: "arrow.triangle.2.circlepath",
+                items: Array(vm.artworks.filter { $0.caseRecord != nil }.prefix(3))
+            ),
+        ]
+        .filter { !$0.items.isEmpty }
+    }
+
+    private var previewModePicker: some View {
+        HStack(spacing: 4) {
+            homeModeButton(.cards, title: language.language == .chinese ? "卡片" : "Cards", systemImage: "square.grid.2x2")
+            homeModeButton(.list, title: language.language == .chinese ? "列表" : "List", systemImage: "list.bullet")
+        }
+        .padding(4)
+        .background(EastwoodTheme.ivory.opacity(0.94), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(EastwoodTheme.hairline, lineWidth: 1)
+        )
+    }
+
+    private func homeModeButton(_ mode: HomePreviewMode, title: String, systemImage: String) -> some View {
+        Button {
+            homePreviewMode = mode
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.caption.weight(.semibold))
+                Text(title)
+            }
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(homePreviewMode == mode ? EastwoodTheme.gold : EastwoodTheme.mutedText)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(homePreviewMode == mode ? Color.white.opacity(0.95) : Color.clear)
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func pill(_ text: String) -> some View {
@@ -229,6 +487,38 @@ struct ContentView: View {
             .padding(.vertical, 6)
             .background(EastwoodTheme.panelSoft, in: Capsule())
             .overlay(Capsule().stroke(EastwoodTheme.hairline, lineWidth: 1))
+    }
+
+    private func featuredMetric(title: String, value: String, accent: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(accent)
+            Text(value)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(EastwoodTheme.ink)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 9)
+        .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(accent.opacity(0.12), lineWidth: 1)
+        )
+    }
+
+    private func sectionAccent(_ kind: MainTab) -> Color {
+        switch kind {
+        case .collections:
+            return EastwoodTheme.mistBlue.opacity(0.95)
+        case .shop:
+            return EastwoodTheme.gold
+        case .cases:
+            return EastwoodTheme.sage.opacity(0.95)
+        case .home, .more:
+            return EastwoodTheme.gold
+        }
     }
 
     private var homeStats: some View {
