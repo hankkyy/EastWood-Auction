@@ -117,6 +117,26 @@ struct NativeAdminUsersView: View {
                         .padding(14)
                         .eastwoodPanel()
 
+                        // Quick links (matching web admin)
+                        HStack(spacing: 10) {
+                            NavigationLink {
+                                NativeInboxView()
+                            } label: {
+                                Label(lang("收件箱","Inbox"), systemImage: "tray.full.fill")
+                                    .font(.subheadline.weight(.medium))
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(EastwoodSecondaryButtonStyle())
+                            NavigationLink {
+                                NativeAdminArtworksView()
+                            } label: {
+                                Label(lang("目录管理","Catalog"), systemImage: "shippingbox.fill")
+                                    .font(.subheadline.weight(.medium))
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(EastwoodSecondaryButtonStyle())
+                        }
+
                         if let error = manager.errorMessage {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(error).foregroundStyle(.red)
@@ -205,9 +225,20 @@ struct NativeAdminUsersView: View {
 
     @ViewBuilder
     private func profileRow(_ profile: NativeAdminProfile) -> some View {
+        let isSelf = profile.id == auth.currentUserId || profile.user_id == auth.currentUserId
+
         VStack(alignment: .leading, spacing: 8) {
-            Text(displayName(profile))
-                .font(.headline)
+            HStack(spacing: 6) {
+                Text(displayName(profile))
+                    .font(.headline)
+                if isSelf {
+                    Text(lang("当前账户","Current account"))
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(EastwoodTheme.gold.opacity(0.15), in: Capsule())
+                        .foregroundStyle(EastwoodTheme.goldDark)
+                }
+            }
 
             Text(profile.email ?? language.text("admin.users.noEmail"))
                 .font(.footnote)
@@ -218,7 +249,8 @@ struct NativeAdminUsersView: View {
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background((profile.role == "admin" ? Color.orange : Color.blue).opacity(0.2), in: Capsule())
+                    .background((profile.role == "admin" ? EastwoodTheme.warning : EastwoodTheme.collectionsAccent).opacity(0.12), in: Capsule())
+                    .foregroundStyle(profile.role == "admin" ? EastwoodTheme.warning : EastwoodTheme.collectionsAccent)
 
                 Spacer()
 
@@ -278,5 +310,9 @@ struct NativeAdminUsersView: View {
 
     private func isErrorActionMessage(_ action: String) -> Bool {
         action != "role_updated" && action != "user_deleted"
+    }
+
+    private func lang(_ zh: String, _ en: String) -> String {
+        language.language == .chinese ? zh : en
     }
 }

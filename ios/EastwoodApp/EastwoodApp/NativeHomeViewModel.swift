@@ -20,7 +20,14 @@ final class NativeHomeViewModel: ObservableObject {
             let all = try await service.fetchArtworks()
             artworks = all
         } catch {
-            errorMessage = "加载失败，请稍后重试"
+            if let apiError = error as? APIClientError {
+                errorMessage = apiError.localizedDescription
+            } else if (error as NSError).domain == NSURLErrorDomain {
+                errorMessage = AppErrorPresenter.text("error.offline")
+            } else {
+                errorMessage = String(format: AppErrorPresenter.text("error.server"),
+                                      error.localizedDescription)
+            }
         }
         isLoading = false
     }

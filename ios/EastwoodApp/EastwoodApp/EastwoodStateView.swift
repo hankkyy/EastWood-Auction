@@ -8,32 +8,36 @@ struct EastwoodStateView: View {
     var onTap: (() -> Void)? = nil
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 14) {
             Image(systemName: systemImage)
-                .font(.title2.weight(.semibold))
+                .font(.title.weight(.medium))
                 .foregroundStyle(EastwoodTheme.gold)
-                .padding(10)
-                .background(EastwoodTheme.panelSoft, in: Circle())
+                .frame(width: 56, height: 56)
+                .background(
+                    EastwoodTheme.gold.opacity(0.08),
+                    in: Circle()
+                )
 
             Text(title)
                 .font(.headline)
+                .foregroundStyle(EastwoodTheme.ink)
 
             Text(message)
-                .font(.footnote)
+                .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 4)
 
             if let buttonTitle, let onTap {
                 Button(buttonTitle, action: onTap)
                     .buttonStyle(EastwoodSecondaryButtonStyle())
-                    .padding(.top, 2)
+                    .padding(.top, 4)
             }
         }
-        .padding(16)
+        .padding(24)
         .frame(maxWidth: .infinity)
         .eastwoodPanel()
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .eastwoodFillScreen(alignment: .top)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
     }
 }

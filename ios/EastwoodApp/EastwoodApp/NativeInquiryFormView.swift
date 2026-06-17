@@ -30,19 +30,18 @@ struct NativeInquiryFormView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 8) {
+        ScrollView {
+            VStack(spacing: 14) {
+                // Header
+                VStack(alignment: .leading, spacing: 4) {
                     Text(language.text("inquiry.title"))
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: .serif))
                         .foregroundStyle(EastwoodTheme.ink)
                     Text(language.text("inquiry.pageDescription"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.subheadline).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
+                .padding(16)
                 .eastwoodPanel()
 
                 if !auth.isAuthenticated {
@@ -58,74 +57,71 @@ struct NativeInquiryFormView: View {
                         message: language.text("inquiry.personalUsersOnly.message")
                     )
                 } else {
-                    Toggle(language.text("inquiry.noCode"), isOn: $noInquiryCode)
-                        .toggleStyle(.switch)
-                        .font(.footnote)
+                    // Form fields
+                    VStack(spacing: 14) {
+                        Toggle(language.text("inquiry.noCode"), isOn: $noInquiryCode)
+                            .toggleStyle(.switch).font(.footnote)
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(language.text("inquiry.code"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        TextField(language.text("inquiry.code.placeholder"), text: $code)
-                            .eastwoodInput()
-                            .disabled(noInquiryCode)
-                            .opacity(noInquiryCode ? 0.6 : 1.0)
-                    }
+                        fieldSection(label: language.text("inquiry.code"), icon: "number") {
+                            TextField(language.text("inquiry.code.placeholder"), text: $code)
+                                .eastwoodInput()
+                                .disabled(noInquiryCode)
+                                .opacity(noInquiryCode ? 0.5 : 1.0)
+                        }
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(language.text("common.phone"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        TextField(language.text("inquiry.phone.placeholder"), text: $phone)
-                            .keyboardType(.phonePad)
-                            .eastwoodInput()
-                    }
+                        fieldSection(label: language.text("common.phone"), icon: "phone") {
+                            TextField(language.text("inquiry.phone.placeholder"), text: $phone)
+                                .keyboardType(.phonePad).eastwoodInput()
+                        }
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(language.text("common.email"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        TextField(language.text("inquiry.email.placeholder"), text: $email)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled(true)
-                            .eastwoodInput()
-                    }
+                        fieldSection(label: language.text("common.email"), icon: "envelope") {
+                            TextField(language.text("inquiry.email.placeholder"), text: $email)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled(true)
+                                .eastwoodInput()
+                        }
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(language.text("inquiry.details"))
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        ZStack(alignment: .topLeading) {
-                            TextEditor(text: $details)
-                                .frame(height: 160)
-                                .padding(8)
-                                .background(Color.white, in: RoundedRectangle(cornerRadius: 10))
-                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(EastwoodTheme.hairline, lineWidth: 1))
-                            if details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text(language.text("inquiry.details.placeholder"))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary.opacity(0.8))
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 16)
-                                    .allowsHitTesting(false)
+                        fieldSection(label: language.text("inquiry.details"), icon: "text.alignleft") {
+                            ZStack(alignment: .topLeading) {
+                                TextEditor(text: $details)
+                                    .frame(height: 140)
+                                    .padding(10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(EastwoodTheme.searchFill)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .stroke(EastwoodTheme.inputBorder, lineWidth: 0.5)
+                                    )
+                                if details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Text(language.text("inquiry.details.placeholder"))
+                                        .font(.subheadline).foregroundStyle(.secondary.opacity(0.7))
+                                        .padding(.horizontal, 16).padding(.vertical, 18)
+                                        .allowsHitTesting(false)
+                                }
                             }
                         }
                     }
+                    .padding(16)
+                    .eastwoodPanel()
 
-                    if let actionError = inquiryManager.actionErrorMessage, !actionError.isEmpty {
-                        Text(actionError)
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                    // Errors
+                    if let err = inquiryManager.actionErrorMessage, !err.isEmpty {
+                        Text(err).font(.footnote).foregroundStyle(EastwoodTheme.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
                     }
 
+                    // Status
                     if !statusText.isEmpty {
                         Text(statusText)
-                            .font(.footnote)
-                            .foregroundStyle(statusText == language.text("inquiry.submitted") ? .green : .red)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(statusText == language.text("inquiry.submitted")
+                                ? EastwoodTheme.success : EastwoodTheme.error)
                     }
 
+                    // Buttons
                     HStack(spacing: 10) {
                         Button(language.text("common.cancel")) {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -136,35 +132,10 @@ struct NativeInquiryFormView: View {
 
                         Button {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            Task {
-                                isSubmitting = true
-                                let ok = await inquiryManager.submitInquiry(
-                                    token: auth.accessToken,
-                                    inquiryCode: code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : code,
-                                    noInquiryCode: noInquiryCode,
-                                    details: details.trimmingCharacters(in: .whitespacesAndNewlines),
-                                    phone: phone.trimmingCharacters(in: .whitespacesAndNewlines),
-                                    email: email.trimmingCharacters(in: .whitespacesAndNewlines)
-                                )
-                                statusText = ok ? language.text("inquiry.submitted") : language.text("inquiry.submitFailed")
-                                if ok {
-                                    UINotificationFeedbackGenerator().notificationOccurred(.success)
-                                } else {
-                                    UINotificationFeedbackGenerator().notificationOccurred(.error)
-                                }
-                                if ok {
-                                    code = ""
-                                    noInquiryCode = false
-                                    details = ""
-                                    phone = ""
-                                    email = auth.userEmail
-                                    showInbox = true
-                                }
-                                isSubmitting = false
-                            }
+                            Task { await submit() }
                         } label: {
                             if isSubmitting {
-                                ProgressView()
+                                ProgressView().tint(.white)
                             } else {
                                 Text(language.text("inquiry.submit"))
                             }
@@ -173,26 +144,49 @@ struct NativeInquiryFormView: View {
                         .disabled(!isValid || isSubmitting)
                     }
                 }
-                }
-                .padding(16)
             }
-            .onAppear {
-                if email.isEmpty {
-                    email = auth.userEmail
-                }
-                if let prefilledCode, !prefilledCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, code.isEmpty {
-                    code = prefilledCode
-                    noInquiryCode = false
-                }
-            }
-            .navigationTitle(language.text("inquiry.title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .eastwoodScreen()
-            .eastwoodEnterMotion(id: "inquiry-form-page")
-            .navigationDestination(isPresented: $showInbox) {
-                NativeInboxView()
+            .padding(16)
+        }
+        .onAppear {
+            if email.isEmpty { email = auth.userEmail }
+            if let prefilledCode, !prefilledCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, code.isEmpty {
+                code = prefilledCode; noInquiryCode = false
             }
         }
+        .navigationTitle(language.text("inquiry.title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .eastwoodScreen()
+        .navigationDestination(isPresented: $showInbox) { NativeInboxView() }
+    }
+
+    private func fieldSection<Content: View>(label: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).font(.caption.weight(.medium)).foregroundStyle(EastwoodTheme.gold)
+                Text(label).font(.footnote.weight(.medium)).foregroundStyle(.secondary)
+            }
+            content()
+        }
+    }
+
+    private func submit() async {
+        isSubmitting = true
+        let ok = await inquiryManager.submitInquiry(
+            token: auth.accessToken,
+            inquiryCode: code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : code,
+            noInquiryCode: noInquiryCode,
+            details: details.trimmingCharacters(in: .whitespacesAndNewlines),
+            phone: phone.trimmingCharacters(in: .whitespacesAndNewlines),
+            email: email.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+        statusText = ok ? language.text("inquiry.submitted") : language.text("inquiry.submitFailed")
+        if ok {
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            code = ""; noInquiryCode = false; details = ""; phone = ""; email = auth.userEmail; showInbox = true
+        } else {
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
+        isSubmitting = false
     }
 }

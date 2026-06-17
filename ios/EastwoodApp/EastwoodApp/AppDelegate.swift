@@ -30,7 +30,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     private func applyWindowAppearance() {
-        let bg = UIColor(red: 0.96, green: 0.96, blue: 0.97, alpha: 1.0)
+        let bg = UIColor(EastwoodTheme.bg)
         DispatchQueue.main.async {
             UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }

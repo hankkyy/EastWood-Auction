@@ -507,7 +507,44 @@ final class LanguageManager: ObservableObject {
         "admin.import.duplicateCollection": "Line %@: duplicate Collection ID in import batch.",
         "admin.import.invalidCurrency": "Line %@: currency must be USD or CNY.",
         "admin.deleteUserResult": "User deleted",
-        "admin.roleUpdated": "Role updated"
+        "admin.roleUpdated": "Role updated",
+
+        // Home — featured & sections
+        "home.featuredSection": "Featured Events",
+        "home.featuredSection.subtitle": "Curated highlights from Eastwood Auction",
+        "home.browseCategories": "Browse Categories",
+        "home.browseCategories.subtitle": "Explore by category to find exactly what you are looking for",
+        "home.quickActions": "Quick Actions",
+        "home.browseShop": "Browse Shop",
+        "home.startSearch": "Start Search",
+        "home.tryImageSearch": "Image Search",
+        "home.hero.cta": "Browse Shop",
+        "home.emptyTitle": "Catalog is being prepared",
+        "home.emptyMessage": "Our team is curating antique collections. Check back soon.",
+        "home.pullRefresh": "Pull to refresh",
+
+        // Categories
+        "category.porcelain": "Porcelain",
+        "category.jade": "Jade",
+        "category.calligraphy": "Calligraphy",
+        "category.bronze": "Bronze",
+        "category.misc": "Misc",
+        "category.furniture": "Furniture",
+        "category.all": "All Categories",
+
+        // Settings / About
+        "settings.title": "Settings",
+        "settings.about": "About",
+        "settings.aboutText": "Eastwood Auction is a curated platform connecting collectors, consignors, and buyers of fine Chinese antiques.",
+        "settings.version": "Version",
+        "settings.contact": "Contact Us",
+        "settings.privacy": "Privacy",
+        "settings.terms": "Terms of Service",
+
+        // Related items
+        "detail.relatedItems": "You May Also Like",
+        "detail.relatedItems.subtitle": "Similar items from our catalog",
+        "detail.noRelated": "No related items found"
     ]
 
     private static let chinese: [String: String] = [
@@ -972,7 +1009,44 @@ final class LanguageManager: ObservableObject {
         "admin.import.duplicateCollection": "第 %@ 行：本次导入中藏品编号重复。",
         "admin.import.invalidCurrency": "第 %@ 行：货币只能是 USD 或 CNY。",
         "admin.deleteUserResult": "用户已删除",
-        "admin.roleUpdated": "角色已更新"
+        "admin.roleUpdated": "角色已更新",
+
+        // 首页 — 推荐与分类
+        "home.featuredSection": "精选推荐",
+        "home.featuredSection.subtitle": "Eastwood Auction 精选亮点",
+        "home.browseCategories": "按分类浏览",
+        "home.browseCategories.subtitle": "按类别探索，找到你想要的藏品",
+        "home.quickActions": "快捷操作",
+        "home.browseShop": "逛商店",
+        "home.startSearch": "搜索藏品",
+        "home.tryImageSearch": "图片搜索",
+        "home.hero.cta": "逛商店 →",
+        "home.emptyTitle": "目录准备中",
+        "home.emptyMessage": "我们的团队正在精心策展古董收藏，请稍后再来。",
+        "home.pullRefresh": "下拉刷新",
+
+        // 分类
+        "category.porcelain": "瓷器",
+        "category.jade": "翡翠玉器",
+        "category.calligraphy": "字画",
+        "category.bronze": "铜器",
+        "category.misc": "杂项",
+        "category.furniture": "家具",
+        "category.all": "全部分类",
+
+        // 设置/关于
+        "settings.title": "设置",
+        "settings.about": "关于",
+        "settings.aboutText": "Eastwood Auction 是一个连接藏家、寄售人和买家的策展平台，专注于中国古董。",
+        "settings.version": "版本",
+        "settings.contact": "联系我们",
+        "settings.privacy": "隐私",
+        "settings.terms": "服务条款",
+
+        // 相关推荐
+        "detail.relatedItems": "你可能也喜欢",
+        "detail.relatedItems.subtitle": "来自目录的相似藏品",
+        "detail.noRelated": "暂无相关藏品"
     ]
 }
 

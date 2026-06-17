@@ -32,6 +32,16 @@ struct NativeInboxView: View {
         auth.isAdmin ? "user" : "admin"
     }
 
+    private func hasUnread(_ inquiry: NativeInquiry) -> Bool {
+        inquiry.messages.contains { $0.sender_role == incomingSenderRole && !$0.is_read }
+    }
+
+    private var unreadDot: some View {
+        Circle()
+            .fill(EastwoodTheme.collectionsAccent)
+            .frame(width: 8, height: 8)
+    }
+
     private var unreadCount: Int {
         inquiryManager.inquiries.reduce(0) { partial, inquiry in
             partial + inquiry.messages.filter { $0.sender_role == incomingSenderRole && !$0.is_read }.count
@@ -136,18 +146,32 @@ struct NativeInboxView: View {
                                         await inquiryManager.markRead(token: auth.accessToken, inquiryIds: [inquiry.id])
                                     }
                                 } label: {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        HStack {
-                                            Text(inquiry.no_inquiry_code ? language.text("inbox.noCodeInquiry") : (inquiry.inquiry_code ?? language.text("inbox.inquiry")))
-                                                .font(.headline)
-                                            Spacer()
-                                            statusBadge(for: inquiry)
+                                    HStack(spacing: 0) {
+                                        // Unread indicator — blue accent bar
+                                        if hasUnread(inquiry) {
+                                            Rectangle()
+                                                .fill(EastwoodTheme.collectionsAccent)
+                                                .frame(width: 3)
+                                                .padding(.vertical, 4)
                                         }
 
-                                        Text(inquiry.details)
-                                            .lineLimit(1)
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack {
+                                                Text(inquiry.no_inquiry_code ? language.text("inbox.noCodeInquiry") : (inquiry.inquiry_code ?? language.text("inbox.inquiry")))
+                                                    .font(hasUnread(inquiry) ? .headline.weight(.bold) : .headline)
+                                                Spacer()
+                                                HStack(spacing: 6) {
+                                                    if hasUnread(inquiry) {
+                                                        unreadDot
+                                                    }
+                                                    statusBadge(for: inquiry)
+                                                }
+                                            }
+
+                                            Text(inquiry.details)
+                                                .lineLimit(1)
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
 
                                         if auth.isAdmin {
                                             HStack(spacing: 10) {
@@ -212,6 +236,7 @@ struct NativeInboxView: View {
                                             }
                                             .font(.caption)
                                         }
+                                    }
                                     }
                                 }
                             }
@@ -287,16 +312,16 @@ struct NativeInboxView: View {
         if inquiry.is_archived {
             text = language.text("inbox.archived"); color = .gray
         } else if inquiry.is_processed {
-            text = language.text("inbox.processed"); color = .green
+            text = language.text("inbox.processed"); color = EastwoodTheme.success
         } else {
-            text = language.text("inbox.pending"); color = .orange
+            text = language.text("inbox.pending"); color = EastwoodTheme.warning
         }
 
         return Text(text)
             .font(.caption2.weight(.semibold))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(color.opacity(0.2), in: Capsule())
+            .background(color.opacity(0.12), in: Capsule())
             .foregroundStyle(color)
     }
 
@@ -333,6 +358,9 @@ struct NativeInboxView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(inquiry.messages) { msg in
                             let isOwnMessage = msg.sender_role == currentUserRole
+                            let bubbleColor: Color = msg.sender_role == "admin"
+                                ? EastwoodTheme.collectionsAccent.opacity(0.18)
+                                : EastwoodTheme.gold.opacity(0.18)
                             HStack {
                                 if isOwnMessage { Spacer(minLength: 36) }
                                 VStack(alignment: .leading, spacing: 4) {
@@ -345,7 +373,7 @@ struct NativeInboxView: View {
                                 }
                                 .padding(10)
                                 .frame(maxWidth: 280, alignment: .leading)
-                                .background(isOwnMessage ? Color(red: 0.93, green: 0.78, blue: 0.38).opacity(0.22) : Color.white.opacity(0.78), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .background(bubbleColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                                         .stroke(EastwoodTheme.hairline, lineWidth: 1)
@@ -358,10 +386,28 @@ struct NativeInboxView: View {
                 }
 
                 HStack {
-                    TextField(language.text("inbox.reply"), text: $replyText)
-                        .textFieldStyle(.roundedBorder)
-                        .disabled(inquiry.is_archived)
-                    Button(language.text("inbox.send")) {
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $replyText)
+                            .frame(minHeight: 38, maxHeight: 120)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .fill(EastwoodTheme.searchFill)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                    .stroke(EastwoodTheme.inputBorder, lineWidth: 0.5)
+                            )
+                            .disabled(inquiry.is_archived)
+                        if replyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text(language.text("inbox.reply"))
+                                .font(.subheadline).foregroundStyle(.secondary.opacity(0.6))
+                                .padding(.horizontal, 14).padding(.vertical, 11)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    Button {
                         let body = replyText.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !body.isEmpty else { return }
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -408,7 +454,7 @@ struct NativeInboxView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(Color.white.opacity(0.86), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(EastwoodTheme.panelSoft, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .stroke(EastwoodTheme.hairline, lineWidth: 1)

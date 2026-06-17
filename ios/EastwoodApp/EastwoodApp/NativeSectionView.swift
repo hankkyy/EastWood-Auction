@@ -57,6 +57,7 @@ struct NativeSectionView: View {
     @State private var showingUpload = false
     @State private var showingManage = false
     @State private var displayMode: SectionDisplayMode
+    @State private var categoryTab: String = "all"  // category tab bar
 
     init(kind: NativeSectionKind, artworks: [NativeArtwork], onCatalogChanged: (() -> Void)? = nil) {
         self.kind = kind
@@ -88,45 +89,63 @@ struct NativeSectionView: View {
     }
 
     private var filtered: [NativeArtwork] {
+        var result = baseItems
+
+        // Category tab filter (collections only)
+        if kind == .collections && categoryTab != "all" {
+            result = result.filter {
+                let key = "\($0.categoryZh ?? "") \($0.category)".lowercased()
+                switch categoryTab {
+                case "calligraphy": return key.contains("字画") || key.contains("书画") || key.contains("painting") || key.contains("calligraphy")
+                case "porcelain": return key.contains("瓷") || key.contains("porcelain")
+                case "jade": return key.contains("玉") || key.contains("jade")
+                case "bronze": return key.contains("铜") || key.contains("bronze")
+                case "misc": return true  // "misc" tab shows all remaining
+                default: return true
+                }
+            }
+        }
+
+        // Existing keyword filter
         let keyword = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        var searched = keyword.isEmpty ? baseItems : baseItems.filter {
-            $0.title.lowercased().contains(keyword)
-            || ($0.titleZh ?? "").lowercased().contains(keyword)
-            || $0.category.lowercased().contains(keyword)
-            || $0.period.lowercased().contains(keyword)
+        if !keyword.isEmpty {
+            result = result.filter {
+                $0.title.lowercased().contains(keyword)
+                || ($0.titleZh ?? "").lowercased().contains(keyword)
+                || $0.category.lowercased().contains(keyword)
+                || $0.period.lowercased().contains(keyword)
+            }
         }
         if selectedCategory != "section.all" {
-            searched = searched.filter { $0.category == selectedCategory }
+            result = result.filter { $0.category == selectedCategory }
         }
         if selectedPeriod != "section.all" {
-            searched = searched.filter { $0.period == selectedPeriod }
+            result = result.filter { $0.period == selectedPeriod }
         }
 
         if kind == .shop {
             if onlyForSale {
-                searched = searched.filter { $0.isForSale == true }
+                result = result.filter { $0.isForSale == true }
             }
 
             switch priceRange {
-            case .all:
-                break
+            case .all: break
             case .under1k:
-                searched = searched.filter { ($0.price ?? .infinity) < 1000 }
+                result = result.filter { ($0.price ?? .infinity) < 1000 }
             case .from1kTo5k:
-                searched = searched.filter { value in
+                result = result.filter { value in
                     let p = value.price ?? -1
                     return p >= 1000 && p <= 5000
                 }
             case .above5k:
-                searched = searched.filter { ($0.price ?? -1) > 5000 }
+                result = result.filter { ($0.price ?? -1) > 5000 }
             }
         }
 
         switch sort {
-        case .newest:
-            return searched
+        case .newest: return result
         case .titleAZ:
-            return searched.sorted {
+            return result.sorted {
                 $0.displayTitle(in: language.language).localizedCaseInsensitiveCompare($1.displayTitle(in: language.language)) == .orderedAscending
             }
         }
@@ -153,22 +172,22 @@ struct NativeSectionView: View {
     private var sectionAccent: Color {
         switch kind {
         case .collections:
-            return Color(red: 0.40, green: 0.55, blue: 0.69)
+            return EastwoodTheme.collectionsAccent
         case .shop:
-            return Color(red: 0.56, green: 0.48, blue: 0.31)
+            return EastwoodTheme.shopAccent
         case .cases:
-            return Color(red: 0.42, green: 0.57, blue: 0.47)
+            return EastwoodTheme.casesAccent
         }
     }
 
     private var sectionTint: Color {
         switch kind {
         case .collections:
-            return EastwoodTheme.mistBlue
+            return EastwoodTheme.collectionsAccent.opacity(0.45)
         case .shop:
-            return EastwoodTheme.sand
+            return EastwoodTheme.shopAccent.opacity(0.45)
         case .cases:
-            return EastwoodTheme.sage
+            return EastwoodTheme.casesAccent.opacity(0.45)
         }
     }
 
@@ -192,6 +211,12 @@ struct NativeSectionView: View {
                 managementPanel
                 controls
 
+                // Category tabs (matching web's tab bar)
+                if kind == .collections {
+                    categoryTabBar
+                        .padding(.horizontal, pagePad)
+                }
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text(kind == .shop ? language.text("section.activeListings") : language.text("section.curatedList"))
@@ -202,7 +227,7 @@ struct NativeSectionView: View {
                             .foregroundStyle(EastwoodTheme.goldSoft)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                    .background(sectionTint.opacity(0.34), in: Capsule())
+                            .background(sectionTint.opacity(0.34), in: Capsule())
                             .overlay(Capsule().stroke(EastwoodTheme.hairline, lineWidth: 1))
                     }
 
@@ -249,6 +274,43 @@ struct NativeSectionView: View {
             .presentationDetents([.large])
             .presentationDragIndicator(.visible)
         }
+    }
+
+    // MARK: - Category Tab Bar (matching web's collections tabs)
+
+    private let categoryTabs: [(String, String, String)] = [
+        ("all", "section.all", "square.grid.2x2"),
+        ("calligraphy", "category.calligraphy", "paintbrush"),
+        ("porcelain", "category.porcelain", "cup.and.saucer"),
+        ("jade", "category.jade", "sparkles"),
+        ("bronze", "category.bronze", "shield"),
+        ("misc", "category.misc", "square.grid.2x2"),
+    ]
+
+    private var categoryTabBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(categoryTabs, id: \.0) { tab in
+                    Button {
+                        withAnimation(EastwoodMotion.listUpdate) { categoryTab = tab.0 }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: tab.2).font(.caption)
+                            Text(tab.0 == "all" ? language.text("section.all") : language.text(tab.1))
+                                .font(.caption.weight(.semibold))
+                        }
+                        .padding(.horizontal, 14).padding(.vertical, 9)
+                        .foregroundStyle(categoryTab == tab.0 ? .white : EastwoodTheme.mutedText)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                .fill(categoryTab == tab.0 ? sectionAccent : sectionAccent.opacity(0.08))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.vertical, 2)
     }
 
     private var controls: some View {

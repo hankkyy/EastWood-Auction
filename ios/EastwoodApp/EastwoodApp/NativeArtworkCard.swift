@@ -1,773 +1,322 @@
 import SwiftUI
 
-struct NativeArtworkCard: View {
-    @EnvironmentObject private var language: LanguageManager
-    let artwork: NativeArtwork
-
-    private var cardTint: Color {
-        if artwork.caseRecord != nil {
-            return EastwoodTheme.sage
-        }
-        if artwork.isForSale == true || artwork.listingType == "product" {
-            return EastwoodTheme.sand
-        }
-        return EastwoodTheme.mistBlue
-    }
-
-    private var cardAccent: Color {
-        if artwork.caseRecord != nil {
-            return Color(red: 0.42, green: 0.57, blue: 0.47)
-        }
-        if artwork.isForSale == true || artwork.listingType == "product" {
-            return Color(red: 0.56, green: 0.48, blue: 0.31)
-        }
-        return Color(red: 0.40, green: 0.55, blue: 0.69)
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            ZStack(alignment: .topLeading) {
-                heroImage
-
-                LinearGradient(
-                    colors: [
-                        Color.black.opacity(0.02),
-                        Color.clear,
-                        cardAccent.opacity(0.10),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-
-                HStack(spacing: 8) {
-                    metaChip((artwork.isOfficial ?? false) ? language.text("artwork.official") : language.text("artwork.user"), color: (artwork.isOfficial ?? false) ? .blue : .orange)
-                    metaChip(statusLabel, color: statusColor)
-                }
-                .padding(12)
-            }
-
-            VStack(alignment: .leading, spacing: 10) {
-                VStack(alignment: .leading, spacing: 6) {
-                    if let codeLine {
-                        Text(codeLine.uppercased())
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                            .tracking(1)
-                    }
-
-                    Text(artwork.displayTitle(in: language.language))
-                        .font(.system(size: 24, weight: .bold, design: .serif))
-                        .foregroundStyle(EastwoodTheme.ink)
-                        .lineLimit(3)
-
-                    Text(subtitleLine)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-
-                Divider()
-
-                HStack(alignment: .lastTextBaseline) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(trailingContext.uppercased())
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .tracking(0.8)
-                        Text(priceOrCode)
-                            .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(priceAccent)
-                            .lineLimit(2)
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text(artwork.displayCategory(in: language.language))
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(EastwoodTheme.ink)
-                        Text(artwork.displayPeriod(in: language.language))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .padding(14)
-        .background(
-            LinearGradient(
-                colors: [
-                    EastwoodTheme.panel,
-                    cardTint.opacity(0.48),
-                    EastwoodTheme.ivory,
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(cardAccent.opacity(0.12), lineWidth: 1)
-        )
-        .shadow(color: cardAccent.opacity(0.08), radius: 16, y: 8)
-        .shadow(color: Color.black.opacity(0.04), radius: 22, y: 10)
-    }
-
-    private var heroImage: some View {
-        AsyncImage(url: artwork.imageURL) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
-            case .empty:
-                ZStack {
-                    Color.gray.opacity(0.2)
-                    ProgressView()
-                }
-            case .failure:
-                ZStack {
-                    Color.gray.opacity(0.2)
-                    Image(systemName: "photo")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                }
-            @unknown default:
-                Color.gray.opacity(0.2)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1.28, contentMode: .fit)
-        .clipped()
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-    }
-
-    private func metaChip(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption2.weight(.semibold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.22), lineWidth: 1))
-            .foregroundStyle(color)
-    }
-
-    private func listingLabel(for artwork: NativeArtwork) -> String {
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        switch artwork.listingType {
-        case "product":
-            return language.text("artwork.product")
-        case "collection":
-            return language.text("artwork.collection")
-        default:
-            return artwork.listingType.capitalized
-        }
-    }
-
-    private var statusLabel: String {
-        if artwork.isForSale == true {
-            return language.text("artwork.forSale")
-        }
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        return language.text("artwork.notForSale")
-    }
-
-    private var statusColor: Color {
-        if artwork.isForSale == true {
-            return .teal
-        }
-        if artwork.caseRecord != nil {
-            return .green
-        }
-        return .secondary
-    }
-
-    private var codeLine: String? {
-        if let caseId = artwork.caseRecord?.caseId, !caseId.isEmpty {
-            return caseId
-        }
-        if let collectionId = artwork.collectionId, !collectionId.isEmpty {
-            return collectionId
-        }
-        return nil
-    }
-
-    private var subtitleLine: String {
-        if let caseRecord = artwork.caseRecord {
-            let platform = caseRecord.salePlatform.trimmingCharacters(in: .whitespacesAndNewlines)
-            let region = caseRecord.clientRegion.trimmingCharacters(in: .whitespacesAndNewlines)
-            return [platform, region].filter { !$0.isEmpty }.joined(separator: " • ")
-        }
-        return [artwork.displayCategory(in: language.language), artwork.displayPeriod(in: language.language)]
-            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            .joined(separator: " • ")
-    }
-
-    private var priceOrCode: String {
-        if artwork.isForSale == true {
-            return formattedPrice
-        }
-        if let salePrice = artwork.caseRecord?.salePrice, !salePrice.isEmpty {
-            return salePrice
-        }
-        return codeLine ?? listingLabel(for: artwork)
-    }
-
-    private var trailingContext: String {
-        if artwork.isForSale == true {
-            return listingLabel(for: artwork)
-        }
-        if let saleTime = artwork.caseRecord?.saleTime, !saleTime.isEmpty {
-            return saleTime
-        }
-        return language.text("detail.type")
-    }
-
-    private var priceAccent: Color {
-        if artwork.isForSale == true {
-            return EastwoodTheme.gold
-        }
-        if artwork.caseRecord != nil {
-            return EastwoodTheme.goldSoft
-        }
-        return EastwoodTheme.ink
-    }
-
-    private var formattedPrice: String {
-        let trimmedCurrency = artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let currencyCode = trimmedCurrency.isEmpty ? "USD" : trimmedCurrency
-        let amount = Int((artwork.price ?? 0).rounded())
-
-        switch currencyCode {
-        case "CNY":
-            return "¥\(amount.formatted())"
-        case "USD":
-            return "$\(amount.formatted())"
-        default:
-            return "\(currencyCode) \(amount.formatted())"
-        }
-    }
-}
+// MARK: - Xiaohongshu Note Card (大图笔记卡片 — 用于瀑布流)
 
 struct NativeArtworkCompactCard: View {
+    enum DisplayStyle { case standard, homeFeed }
+
     @EnvironmentObject private var language: LanguageManager
     let artwork: NativeArtwork
+    var showsCode: Bool = true
+    var showsPrice: Bool = true
+    var displayStyle: DisplayStyle = .standard
+    var imageHeightOverride: CGFloat? = nil
+    @State private var isPressed = false
 
-    private var cardTint: Color {
-        if artwork.caseRecord != nil {
-            return EastwoodTheme.sage
-        }
-        if artwork.isForSale == true || artwork.listingType == "product" {
-            return EastwoodTheme.sand
-        }
-        return EastwoodTheme.mistBlue
-    }
+    private var isCase: Bool { artwork.caseRecord != nil }
+    private var isShop: Bool { artwork.isForSale == true || artwork.listingType == "product" }
 
     private var cardAccent: Color {
-        if artwork.caseRecord != nil {
-            return Color(red: 0.42, green: 0.57, blue: 0.47)
-        }
-        if artwork.isForSale == true || artwork.listingType == "product" {
-            return Color(red: 0.56, green: 0.48, blue: 0.31)
-        }
-        return Color(red: 0.40, green: 0.55, blue: 0.69)
+        if isCase { return EastwoodTheme.casesAccent }
+        if isShop { return EastwoodTheme.shopAccent }
+        return EastwoodTheme.collectionsAccent
     }
 
-    private var compactCardHeight: CGFloat {
-        EastwoodLayout.compactCardHeight(for: UIScreen.main.bounds.width)
+    private var imageHeight: CGFloat {
+        imageHeightOverride ?? {
+            let w = UIScreen.main.bounds.width
+            if isCase { return w * 0.50 }
+            if isShop { return w * 0.47 }
+            return w * 0.52
+        }()
     }
-
-    private var compactImageHeight: CGFloat {
-        compactCardHeight * 0.56
-    }
-
-    private var isCaseCard: Bool { artwork.caseRecord != nil }
-    private var isShopCard: Bool { artwork.isForSale == true || artwork.listingType == "product" }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.88),
-                                cardTint.opacity(0.28),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .overlay(compactImageContent.padding(8))
-                    .overlay(alignment: .bottom) {
-                        VStack(spacing: 0) {
-                            Spacer(minLength: 0)
-                            HStack {
-                                Text(imageFooterLabel)
-                                    .font(.caption2.weight(.semibold))
-                                    .foregroundStyle(cardAccent)
-                                    .lineLimit(1)
-                                Spacer(minLength: 8)
-                                Text(imageFooterValue)
-                                    .font(.caption2.weight(.semibold))
-                                    .foregroundStyle(EastwoodTheme.ink.opacity(0.82))
-                                    .lineLimit(1)
-                            }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 8)
-                            .background(.ultraThinMaterial)
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        VStack(alignment: .leading, spacing: 0) {
+            // 大图区域 — 小红书笔记风格
+            ZStack(alignment: .bottomLeading) {
+                AsyncImage(url: artwork.imageURL) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img.resizable().scaledToFill()
+                    case .empty:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
+                            .overlay(ProgressView().tint(EastwoodTheme.gold))
+                    case .failure:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
+                            .overlay(Image(systemName: "photo").font(.title2).foregroundStyle(.secondary))
+                    @unknown default:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(cardAccent.opacity(0.08), lineWidth: 1)
-                    )
-                    .frame(maxWidth: .infinity)
-                    .frame(height: compactImageHeight)
+                }
+                .frame(height: imageHeight)
+                .clipped()
 
-                HStack(spacing: 5) {
-                    compactChip(topBadge, color: cardAccent)
-                    if let codeLine, !codeLine.isEmpty {
-                        compactChip(codeLine, color: EastwoodTheme.goldSoft)
+                // 图片底部渐变 + 标签（小红书风格 sticker）
+                LinearGradient(
+                    colors: [Color.clear, Color.black.opacity(0.35)],
+                    startPoint: .center, endPoint: .bottom
+                )
+
+                HStack(spacing: 4) {
+                    if isShop {
+                        priceSticker
+                    }
+                    Spacer()
+                    if isCase {
+                        Text(language.text("artwork.case"))
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
+                            .background(EastwoodTheme.casesAccent.opacity(0.85), in: Capsule())
                     }
                 }
                 .padding(8)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(curationLabel)
-                    .font(.caption2.weight(.semibold))
-                    .tracking(1)
-                    .foregroundStyle(cardAccent.opacity(0.85))
-                    .lineLimit(1)
-
+            // 文字区 — 小红书极简风格
+            VStack(alignment: .leading, spacing: 5) {
                 Text(artwork.displayTitle(in: language.language))
-                    .font(.system(size: 15, weight: .bold, design: .serif))
-                    .foregroundStyle(EastwoodTheme.ink)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(EastwoodTheme.inkSoft)
                     .lineLimit(2)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, minHeight: 34, maxHeight: 34, alignment: .topLeading)
+                    .lineSpacing(1.2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, minHeight: 14, maxHeight: 14, alignment: .leading)
-
-                Divider()
-                    .overlay(EastwoodTheme.hairline)
-
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(contextLabel)
-                            .font(.caption2.weight(.semibold))
-                            .tracking(0.8)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        Text(priceLine)
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(cardAccent)
-                            .lineLimit(1)
-                    }
-
-                    Spacer(minLength: 0)
-
-                    VStack(alignment: .trailing, spacing: 1) {
-                        Text(bottomMetaLine)
-                            .font(.caption2.weight(.semibold))
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                            .lineLimit(1)
-                        Text(bottomCodeLine)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
+                HStack(spacing: 4) {
+                    // 小店标签
+                    Image(systemName: "storefront")
+                        .font(.system(size: 8))
+                    Text(artwork.displayCategory(in: language.language))
+                        .font(.system(size: 10))
                 }
-                .frame(maxWidth: .infinity, minHeight: 20, maxHeight: 20, alignment: .topLeading)
+                .foregroundStyle(EastwoodTheme.inkMuted)
+                .lineLimit(1)
             }
-            .frame(maxWidth: .infinity, minHeight: 66, maxHeight: 66, alignment: .topLeading)
+            .padding(.horizontal, 8).padding(.vertical, 9)
         }
-        .padding(10)
-        .frame(maxWidth: .infinity)
-        .frame(height: compactCardHeight, alignment: .top)
         .background(
-            LinearGradient(
-                colors: [EastwoodTheme.panel, cardTint.opacity(0.45), EastwoodTheme.ivory],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(EastwoodTheme.panel)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(cardAccent.opacity(0.12), lineWidth: 1)
-        )
-        .shadow(color: cardAccent.opacity(0.08), radius: 12, y: 6)
-        .shadow(color: Color.black.opacity(0.03), radius: 16, y: 8)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: EastwoodTheme.shadowLight, radius: 3, y: 1)
+        .scaleEffect(isPressed ? 0.975 : 1.0)
+        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isPressed)
+        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in isPressed = pressing }, perform: {})
     }
 
-    private func compactChip(_ text: String, color: Color) -> some View {
-        Text(text.uppercased())
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(color)
-            .lineLimit(1)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 5)
-            .background(.ultraThinMaterial, in: Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.16), lineWidth: 1))
-    }
-
-    @ViewBuilder
-    private var compactImageContent: some View {
-        AsyncImage(url: artwork.imageURL) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .empty:
-                ZStack {
-                    cardTint.opacity(0.20)
-                    ProgressView()
-                }
-            case .failure:
-                ZStack {
-                    cardTint.opacity(0.20)
-                    Image(systemName: "photo")
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                }
-            @unknown default:
-                cardTint.opacity(0.20)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-    }
-
-    private var topBadge: String {
-        if isCaseCard {
-            return language.text("artwork.returnCase")
-        }
-        if isShopCard {
-            return language.text("artwork.forSale")
-        }
-        return language.text("artwork.collection")
-    }
-
-    private var subtitle: String {
-        if let caseRecord = artwork.caseRecord {
-            return [caseRecord.salePlatform, caseRecord.clientRegion]
-                .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                .joined(separator: " • ")
-        }
-        return [artwork.displayCategory(in: language.language), artwork.displayPeriod(in: language.language)]
-            .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            .joined(separator: " • ")
-    }
-
-    private var priceLine: String {
-        if let salePrice = artwork.caseRecord?.salePrice, !salePrice.isEmpty {
-            return salePrice
-        }
-        guard isShopCard, let price = artwork.price else {
-            return artwork.collectionId ?? artwork.displayPeriod(in: language.language)
-        }
-        let amount = Int(price.rounded()).formatted()
-        switch artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "USD" {
-        case "CNY":
-            return "¥\(amount)"
-        case "USD":
-            return "$\(amount)"
-        default:
-            return "\(artwork.currency ?? "USD") \(amount)"
-        }
-    }
-
-    private var curationLabel: String {
-        if isCaseCard {
-            return "ARCHIVE"
-        }
-        if isShopCard {
-            return "SALON"
-        }
-        return "CURATION"
-    }
-
-    private var contextLabel: String {
-        if isCaseCard {
-            return language.language == .chinese ? "成交信息" : "SALE NOTE"
-        }
-        if isShopCard {
-            return language.language == .chinese ? "标价" : "ASKING"
-        }
-        return language.language == .chinese ? "档案编号" : "CATALOG"
-    }
-
-    private var imageFooterLabel: String {
-        if isCaseCard {
-            return language.language == .chinese ? "平台" : "Platform"
-        }
-        if isShopCard {
-            return language.language == .chinese ? "状态" : "Status"
-        }
-        return language.language == .chinese ? "类别" : "Category"
-    }
-
-    private var imageFooterValue: String {
-        if isCaseCard {
-            let platform = artwork.caseRecord?.salePlatform.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return platform.isEmpty ? artwork.displayCategory(in: language.language) : platform
-        }
-        if isShopCard {
-            return language.text("artwork.forSale")
-        }
-        return artwork.displayCategory(in: language.language)
-    }
-
-    private var bottomMetaLine: String {
-        if isCaseCard {
-            let region = artwork.caseRecord?.clientRegion.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return region.isEmpty ? artwork.displayCategory(in: language.language) : region
-        }
-        if isShopCard {
-            return artwork.displayCategory(in: language.language)
-        }
-        return artwork.displayPeriod(in: language.language)
-    }
-
-    private var bottomCodeLine: String {
-        if let caseId = artwork.caseRecord?.caseId, !caseId.isEmpty {
-            return caseId.uppercased()
-        }
-        if let collectionId = artwork.collectionId, !collectionId.isEmpty {
-            return collectionId.uppercased()
-        }
-        return artwork.displayPeriod(in: language.language)
-    }
-
-    private var codeLine: String? {
-        if let caseId = artwork.caseRecord?.caseId, !caseId.isEmpty {
-            return caseId
-        }
-        if let collectionId = artwork.collectionId, !collectionId.isEmpty {
-            return collectionId
-        }
-        return nil
+    private var priceSticker: some View {
+        let p = artwork.price ?? 0
+        let trimmed = artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let code = trimmed.isEmpty ? "USD" : trimmed
+        let a = Int(p.rounded())
+        let symbol = code == "CNY" ? "¥" : "$"
+        return Text("\(symbol)\(a.formatted())")
+            .font(.system(size: 10, weight: .bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 7).padding(.vertical, 3)
+            .background(EastwoodTheme.redAccent.opacity(0.88), in: Capsule())
     }
 }
+
+// MARK: - App Store Style Featured Card (大卡片)
+
+struct NativeArtworkCard: View {
+    @EnvironmentObject private var language: LanguageManager
+    let artwork: NativeArtwork
+    @State private var isPressed = false
+
+    private var isCase: Bool { artwork.caseRecord != nil }
+    private var isShop: Bool { artwork.isForSale == true || artwork.listingType == "product" }
+
+    private var cardAccent: Color {
+        if isCase { return EastwoodTheme.casesAccent }
+        if isShop { return EastwoodTheme.shopAccent }
+        return EastwoodTheme.collectionsAccent
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // 大图 — App Store Today 卡片风格
+            ZStack(alignment: .bottomLeading) {
+                AsyncImage(url: artwork.imageURL) { phase in
+                    switch phase {
+                    case .success(let img):
+                        img.resizable().scaledToFill()
+                    case .empty:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
+                            .overlay(ProgressView().tint(EastwoodTheme.gold))
+                    case .failure:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
+                            .overlay(Image(systemName: "photo").font(.largeTitle).foregroundStyle(.secondary))
+                    @unknown default:
+                        Rectangle().fill(EastwoodTheme.panelSoft)
+                    }
+                }
+                .frame(height: 240)
+                .clipped()
+
+                LinearGradient(
+                    colors: [Color.clear, Color.black.opacity(0.5)],
+                    startPoint: .center, endPoint: .bottom
+                )
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        if isShop {
+                            tagChip(language.text("artwork.forSale"), color: EastwoodTheme.redAccent)
+                        }
+                        if isCase {
+                            tagChip(language.text("artwork.case"), color: EastwoodTheme.casesAccent)
+                        }
+                        tagChip(artwork.displayCategory(in: language.language), color: .white.opacity(0.25))
+                    }
+                    Text(artwork.displayTitle(in: language.language))
+                        .font(.system(size: 20, weight: .bold, design: .serif))
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+                }
+                .padding(18)
+            }
+
+            // 底部信息
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    if isShop, let price = artwork.price {
+                        Text(formattedPrice(price, artwork.currency))
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
+                            .foregroundStyle(EastwoodTheme.goldDark)
+                    }
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock").font(.system(size: 9))
+                        Text(artwork.displayPeriod(in: language.language))
+                            .font(.caption)
+                    }
+                    .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(cardAccent.opacity(0.6))
+            }
+            .padding(.horizontal, 16).padding(.vertical, 14)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(EastwoodTheme.panel)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: EastwoodTheme.shadowCard, radius: 10, y: 4)
+        .scaleEffect(isPressed ? 0.985 : 1.0)
+        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isPressed)
+        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in isPressed = pressing }, perform: {})
+    }
+
+    private func tagChip(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 8).padding(.vertical, 3)
+            .background(color, in: Capsule())
+    }
+
+    private func formattedPrice(_ price: Double, _ currency: String?) -> String {
+        let code = currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let c = code.isEmpty ? "USD" : code
+        let a = Int(price.rounded())
+        switch c { case "CNY": return "¥\(a.formatted())"; case "USD": return "$\(a.formatted())"; default: return "\(c) \(a.formatted())" }
+    }
+}
+
+// MARK: - List Row (列表行)
 
 struct NativeArtworkListRow: View {
     @EnvironmentObject private var language: LanguageManager
     let artwork: NativeArtwork
     var embedded: Bool = false
+    @State private var isPressed = false
+
+    private var isCase: Bool { artwork.caseRecord != nil }
+    private var isShop: Bool { artwork.isForSale == true || artwork.listingType == "product" }
+    private var accent: Color {
+        if isCase { return EastwoodTheme.casesAccent }
+        if isShop { return EastwoodTheme.shopAccent }
+        return EastwoodTheme.collectionsAccent
+    }
 
     var body: some View {
-        let thumb = EastwoodLayout.listThumbSize(for: UIScreen.main.bounds.width)
-        let row = HStack(spacing: 10) {
+        HStack(spacing: 14) {
+            // 缩略图 — 干净白底
             AsyncImage(url: artwork.imageURL) { phase in
                 switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
+                case .success(let img):
+                    img.resizable().scaledToFill()
                 case .empty:
-                    ZStack {
-                        EastwoodTheme.panelSoft
-                        ProgressView()
-                    }
+                    Rectangle().fill(EastwoodTheme.panelSoft)
+                        .overlay(ProgressView().tint(EastwoodTheme.gold))
                 case .failure:
-                    ZStack {
-                        EastwoodTheme.panelSoft
-                        Image(systemName: "photo")
-                            .foregroundStyle(.secondary)
-                    }
+                    Rectangle().fill(EastwoodTheme.panelSoft)
+                        .overlay(Image(systemName: "photo").foregroundStyle(.secondary))
                 @unknown default:
-                    EastwoodTheme.panelSoft
+                    Rectangle().fill(EastwoodTheme.panelSoft)
                 }
             }
-            .frame(width: thumb, height: thumb)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .frame(width: 68, height: 68)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(artwork.displayTitle(in: language.language))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(EastwoodTheme.ink)
-                    .lineLimit(2)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(EastwoodTheme.inkSoft)
+                    .lineLimit(embedded ? 1 : 2)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        rowPill((artwork.isOfficial ?? false) ? language.text("artwork.official") : language.text("artwork.user"), color: (artwork.isOfficial ?? false) ? .blue : .orange)
-                        rowPill(trailingBottom, color: artwork.isForSale == true ? .teal : (artwork.caseRecord != nil ? .green : .secondary))
-                        if artwork.caseRecord != nil {
-                            rowPill(language.text("artwork.returnCase"), color: .green)
-                        }
+                HStack(spacing: 5) {
+                    Circle().fill(accent).frame(width: 6, height: 6)
+                    Text(artwork.displayCategory(in: language.language))
+                        .font(.system(size: 11)).foregroundStyle(.secondary)
+                    if !artwork.displayPeriod(in: language.language).isEmpty {
+                        Text("·").foregroundStyle(.secondary)
+                        Text(artwork.displayPeriod(in: language.language))
+                            .font(.system(size: 11)).foregroundStyle(.secondary)
                     }
                 }
 
-                Text(detailLine)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if isShop {
+                    Text(priceText)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(EastwoodTheme.goldDark)
+                }
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(secondaryLine)
-                        .font(.caption2)
-                        .foregroundStyle(EastwoodTheme.mutedText)
-                        .lineLimit(1)
-
-                    if let codeLine {
-                        Text(codeLine)
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
+                HStack(spacing: 4) {
+                    if isCase { miniTag(language.text("artwork.case"), EastwoodTheme.casesAccent) }
+                    if artwork.isForSale == true { miniTag(language.text("artwork.forSale"), EastwoodTheme.redAccent) }
                 }
             }
-
-            Spacer(minLength: 6)
-
-            VStack(alignment: .trailing, spacing: 6) {
-                Text(priceOrCode)
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(priceAccent)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(2)
-
-                Text(trailingContext)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.trailing)
-                    .lineLimit(2)
-            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption2.weight(.bold)).foregroundStyle(.secondary.opacity(0.3))
         }
-
-        if embedded {
-            row
-                .padding(.bottom, 2)
-        } else {
-            row
-                .padding(10)
-                .eastwoodPanel()
-        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(EastwoodTheme.panel)
+        )
+        .shadow(color: EastwoodTheme.shadowLight, radius: 2, y: 1)
+        .scaleEffect(isPressed ? 0.988 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in isPressed = pressing }, perform: {})
     }
 
-    private var detailLine: String {
-        if let caseRecord = artwork.caseRecord,
-           !caseRecord.salePlatform.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return caseRecord.salePlatform
-        }
-        return "\(artwork.displayCategory(in: language.language)) • \(artwork.displayPeriod(in: language.language))"
+    private var priceText: String {
+        let code = artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let c = code.isEmpty ? "USD" : code; let a = Int((artwork.price ?? 0).rounded())
+        switch c { case "CNY": return "¥\(a.formatted())"; case "USD": return "$\(a.formatted())"; default: return "\(c) \(a.formatted())" }
     }
 
-    private var secondaryLine: String {
-        let source = (artwork.isOfficial ?? false) ? language.text("artwork.official") : language.text("artwork.community")
-        if let caseRecord = artwork.caseRecord,
-           !caseRecord.clientRegion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "\(source) • \(caseRecord.clientRegion)"
-        }
-        return source
-    }
-
-    private var codeLine: String? {
-        if let caseRecord = artwork.caseRecord,
-           !caseRecord.caseId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "\(language.text("artwork.id")): \(caseRecord.caseId)"
-        }
-        if let collectionId = artwork.collectionId,
-           !collectionId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "\(language.text("artwork.id")): \(collectionId)"
-        }
-        return nil
-    }
-
-    private var trailingBottom: String {
-        if artwork.isForSale == true {
-            return language.text("artwork.forSale")
-        }
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        return listingLabel(for: artwork)
-    }
-
-    private var priceOrCode: String {
-        if artwork.isForSale == true {
-            return formattedPrice
-        }
-        if let caseRecord = artwork.caseRecord,
-           !caseRecord.salePrice.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return caseRecord.salePrice
-        }
-        if let caseRecord = artwork.caseRecord {
-            return caseRecord.caseId
-        }
-        return artwork.displayPeriod(in: language.language)
-    }
-
-    private var trailingContext: String {
-        if artwork.isForSale == true {
-            return listingLabel(for: artwork)
-        }
-        if let caseRecord = artwork.caseRecord,
-           !caseRecord.saleTime.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return caseRecord.saleTime
-        }
-        return trailingBottom
-    }
-
-    private var priceAccent: Color {
-        if artwork.isForSale == true {
-            return EastwoodTheme.gold
-        }
-        if artwork.caseRecord != nil {
-            return EastwoodTheme.goldSoft
-        }
-        return EastwoodTheme.ink
-    }
-
-    private var formattedPrice: String {
-        let trimmedCurrency = artwork.currency?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let currencyCode = trimmedCurrency.isEmpty ? "USD" : trimmedCurrency
-        let amount = Int((artwork.price ?? 0).rounded())
-
-        switch currencyCode {
-        case "CNY":
-            return "¥\(amount.formatted())"
-        case "USD":
-            return "$\(amount.formatted())"
-        default:
-            return "\(currencyCode) \(amount.formatted())"
-        }
-    }
-
-    private func rowPill(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption2.weight(.semibold))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.12), in: Capsule())
-            .foregroundStyle(color)
-    }
-
-    private func listingLabel(for artwork: NativeArtwork) -> String {
-        if artwork.caseRecord != nil {
-            return language.text("artwork.returnCase")
-        }
-        switch artwork.listingType {
-        case "product":
-            return language.text("artwork.product")
-        case "collection":
-            return language.text("artwork.collection")
-        default:
-            return artwork.listingType.capitalized
-        }
+    private func miniTag(_ text: String, _ color: Color) -> some View {
+        Text(text).font(.system(size: 9, weight: .semibold))
+            .padding(.horizontal, 5).padding(.vertical, 2)
+            .background(color.opacity(0.12), in: Capsule()).foregroundStyle(color)
     }
 }
