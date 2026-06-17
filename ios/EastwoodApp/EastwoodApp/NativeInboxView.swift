@@ -407,7 +407,7 @@ struct NativeInboxView: View {
                                 .allowsHitTesting(false)
                         }
                     }
-                    Button {
+                    Button(language.text("inbox.send")) {
                         let body = replyText.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !body.isEmpty else { return }
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
