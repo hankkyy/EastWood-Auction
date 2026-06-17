@@ -245,6 +245,7 @@ struct NativeSectionView: View {
                     .padding(pagePad)
                 }
             }
+            Color.clear.frame(height: 76)
         }
         .scrollIndicators(.hidden)
         .animation(EastwoodMotion.listUpdate, value: filtered.count)

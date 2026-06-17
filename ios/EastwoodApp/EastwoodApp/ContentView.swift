@@ -137,6 +137,7 @@ struct ContentView: View {
                 }
             }
             .padding(.vertical, 12)
+            Color.clear.frame(height: 76)  // avoid floating tab bar overlap
         }
         .scrollIndicators(.hidden)
         .animation(EastwoodMotion.listUpdate, value: vm.artworks.count)

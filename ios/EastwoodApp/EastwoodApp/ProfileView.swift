@@ -61,6 +61,7 @@ struct NativeProfileRootView: View {
             }
             .padding(.horizontal, pad)
             .padding(.vertical, 12)
+            Color.clear.frame(height: 76)  // avoid tab bar overlap
         }
         .eastwoodScreen()
         .navigationTitle(language.text("profile.title"))
