@@ -249,10 +249,18 @@ extension View {
     func eastwoodPanel() -> some View { modifier(EastwoodPanelModifier()) }
     func eastwoodCard() -> some View { modifier(EastwoodCardModifier()) }
     func eastwoodInput() -> some View { modifier(EastwoodInputModifier()) }
+    func eastwoodEnterMotion(id: String) -> some View { modifier(EastwoodEnterMotion(id: id)) }
     func eastwoodScreen() -> some View { modifier(EastwoodScreenModifier()) }
     func eastwoodFillScreen(alignment: Alignment = .top) -> some View {
         frame(maxWidth: .infinity, maxHeight: .infinity, alignment: alignment)
     }
+}
+
+// MARK: - Enter Motion
+
+struct EastwoodEnterMotion: ViewModifier {
+    let id: String
+    func body(content: Content) -> some View { content.id(id) }
 }
 
 struct EastwoodScreenModifier: ViewModifier {
