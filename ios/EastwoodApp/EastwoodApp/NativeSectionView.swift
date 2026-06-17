@@ -224,11 +224,10 @@ struct NativeSectionView: View {
                         Spacer()
                         Text("\(filtered.count)")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(EastwoodTheme.goldSoft)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(sectionTint.opacity(0.34), in: Capsule())
-                            .overlay(Capsule().stroke(EastwoodTheme.hairline, lineWidth: 1))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(sectionAccent, in: Capsule())
                     }
 
                     Text(resultsSummary)
@@ -237,8 +236,14 @@ struct NativeSectionView: View {
                 }
                 .padding(.horizontal, pagePad)
 
-                contentGrid
-                .padding(pagePad)
+                if filtered.isEmpty {
+                    sectionEmptyView
+                        .padding(.horizontal, pagePad)
+                        .padding(.top, 8)
+                } else {
+                    contentGrid
+                    .padding(pagePad)
+                }
             }
         }
         .scrollIndicators(.hidden)
@@ -406,6 +411,28 @@ struct NativeSectionView: View {
         .padding(.top, 1)
         .padding(.bottom, 1)
     }
+
+    // MARK: - Empty State
+
+    private var sectionEmptyView: some View {
+        let (icon, title, msg): (String, String, String) = {
+            switch kind {
+            case .collections:
+                return ("square.grid.2x2", lang("暂无藏品展示","No Collections Yet"), lang("管理员上传藏品后将在这里展示","Collections will appear here once uploaded by an admin"))
+            case .shop:
+                return ("bag", lang("暂无在售商品","No Products Yet"), lang("管理员发布商品后将在这里展示","Products will appear here once published by an admin"))
+            case .cases:
+                return ("arrow.triangle.2.circlepath", lang("暂无回流案例","No Return Cases"), lang("登录后即可上传回流案例","Sign in to upload return cases"))
+            }
+        }()
+        return EastwoodStateView(systemImage: icon, title: title, message: msg,
+            buttonTitle: (kind == .cases && !auth.isAdmin) ? lang("去登录上传","Sign in to Upload") : nil,
+            onTap: (kind == .cases && !auth.isAdmin) ? { /* trigger sign in */ } : nil)
+    }
+
+    private func lang(_ zh: String, _ en: String) -> String { language.language == .chinese ? zh : en }
+
+    // MARK: - Content Grid
 
     @ViewBuilder
     private var contentGrid: some View {
