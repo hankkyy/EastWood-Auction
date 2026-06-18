@@ -180,8 +180,11 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       boxShadow: theme.colorScheme === "dark"
         ? "0 4px 16px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.18)"
         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
-      "&:hover .card-image-overlay": {
+      "& .card-image-overlay": {
         backgroundColor: "rgba(0,0,0,0.45)",
+      },
+      "& *, & .mantine-Text-root, & .mantine-Title-root": {
+        color: "inherit !important" as any,
       },
     },
 
