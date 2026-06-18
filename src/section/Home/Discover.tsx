@@ -18,6 +18,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import {
+  appMutedTextColor,
   artworkCardShellBackground,
   cardTextureOverlay,
   cardShadow,
@@ -25,6 +26,8 @@ import {
   cardInnerRim,
   cardBorder,
   cardBorderHover,
+  primaryActionButtonSx,
+  secondaryActionButtonSx,
 } from "@/components/artworkStyles";
 
 const useStyles = createStyles((theme) => ({
@@ -86,13 +89,15 @@ export default function DiscoverSection() {
 
   return (
     <Container fluid pt={80} pb={120}>
-      <Box mb="xl" sx={{ textAlign: "center" }}>
-        <Title size={48} mb="md">
+      <Box mb="xl" sx={{ textAlign: "center", maxWidth: 780, margin: "0 auto 48px" }}>
+        <Title size={smallerThan ? 32 : 48} mb="md">
           {t("home.discoverTitle")}
         </Title>
-        <Text size="lg">{t("home.discoverSubtitle")}</Text>
+        <Text size="lg" sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.8 })}>
+          {t("home.discoverSubtitle")}
+        </Text>
       </Box>
-      <Paper className={classes.card} p={smallerThan ? 8 : 6}>
+      <Paper className={classes.card} p={smallerThan ? 10 : 8}>
         <Grid sx={{ alignItems: "center", position: "relative", zIndex: 3 }}>
           <Grid.Col lg={6} p={0}>
             <Image
@@ -104,15 +109,22 @@ export default function DiscoverSection() {
             />
           </Grid.Col>
           <Grid.Col lg={6} p={0}>
-            <Stack align="start" p={smallerThan ? "md" : "lg"}>
-              <Title size={24}>{t("home.discoverFeatureTitle")}</Title>
-              <Text>{t("home.discoverFeatureP1")}</Text>
-              <Text>{t("home.discoverFeatureP2")}</Text>
-              <Text>{t("home.discoverFeatureP3")}</Text>
+            <Stack align="start" p={smallerThan ? "md" : "xl"} spacing="md">
+              <Title size={smallerThan ? 24 : 28}>{t("home.discoverFeatureTitle")}</Title>
+              <Text sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.8 })}>
+                {t("home.discoverFeatureP1")}
+              </Text>
+              <Text sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.8 })}>
+                {t("home.discoverFeatureP2")}
+              </Text>
+              <Text sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.8 })}>
+                {t("home.discoverFeatureP3")}
+              </Text>
               <Button
                 {...buttonProps}
                 size={smallerThan ? "sm" : "md"}
                 onClick={handleDiscoverMore}
+                sx={(theme) => secondaryActionButtonSx(theme)}
               >
                 {t("home.continueReading")}
               </Button>
@@ -122,7 +134,7 @@ export default function DiscoverSection() {
       </Paper>
       {!smallerThan && <Divider my="xl" />}
       <SimpleGrid
-        cols={4}
+        cols={2}
         mt="xl"
         breakpoints={[
           { maxWidth: "lg", cols: 2, spacing: "lg" },
@@ -131,13 +143,15 @@ export default function DiscoverSection() {
         ]}
       >
         {Array.from({ length: 4 }).map((_, i) => (
-          <Paper key={`news-item-${i}`} className={classes.card} p="md">
+          <Paper key={`news-item-${i}`} className={classes.card} p={smallerThan ? "md" : "lg"}>
             <Box sx={{ position: "relative", zIndex: 3 }}>
               <Text size="lg" weight={600} mb="md">
                 {t("home.newsTitle")}
               </Text>
-              <Text mb="md">{t("home.newsText")}</Text>
-              <Button {...buttonProps} onClick={handleDiscoverMore}>
+              <Text mb="md" sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.75 })}>
+                {t("home.newsText")}
+              </Text>
+              <Button {...buttonProps} onClick={handleDiscoverMore} sx={(theme) => secondaryActionButtonSx(theme)}>
                 {t("home.readMore")}
               </Button>
             </Box>
@@ -147,9 +161,10 @@ export default function DiscoverSection() {
       <Center mt={smallerThan ? 36 : "xl"}>
         <Button
           size="xl"
-          variant="outline"
+          variant="filled"
           fullWidth={smallerThan}
           onClick={handleDiscoverMore}
+          sx={primaryActionButtonSx}
         >
           {t("home.discoverMore")}
         </Button>

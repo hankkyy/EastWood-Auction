@@ -20,6 +20,11 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
+import {
+  appFieldLabelColor,
+  appMutedTextColor,
+  appSurfaceBorder,
+} from "@/components/artworkStyles";
 import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import { IconArrowRight } from "@tabler/icons-react";
@@ -202,10 +207,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                       size="sm"
                       mt={4}
                       sx={(theme) => ({
-                        color:
-                          theme.colorScheme === "dark"
-                            ? theme.colors.dark[3]
-                            : theme.colors.dark[2],
+                        color: appMutedTextColor(theme),
                       })}
                     >
                       {locale === "zh"
@@ -225,10 +227,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                   onChange={(event) => setQuery(event.currentTarget.value)}
                   styles={(theme) => ({
                     label: {
-                      color:
-                        theme.colorScheme === "dark"
-                          ? theme.colors.dark[1]
-                          : undefined,
+                      color: appFieldLabelColor(theme),
                     },
                   })}
                 />
@@ -241,10 +240,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     zIndex={5000}
                     styles={(theme) => ({
                       label: {
-                        color:
-                          theme.colorScheme === "dark"
-                            ? theme.colors.dark[1]
-                            : undefined,
+                        color: appFieldLabelColor(theme),
                       },
                     })}
                     data={[
@@ -263,10 +259,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     zIndex={5000}
                     styles={(theme) => ({
                       label: {
-                        color:
-                          theme.colorScheme === "dark"
-                            ? theme.colors.dark[1]
-                            : undefined,
+                        color: appFieldLabelColor(theme),
                       },
                     })}
                   />
@@ -278,10 +271,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     zIndex={5000}
                     styles={(theme) => ({
                       label: {
-                        color:
-                          theme.colorScheme === "dark"
-                            ? theme.colors.dark[1]
-                            : undefined,
+                        color: appFieldLabelColor(theme),
                       },
                     })}
                     data={[
@@ -320,14 +310,16 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                   <Card key={item.id} withBorder radius="md" p="md">
                     <Stack spacing="xs">
                       <Box
-                        sx={{
+                        sx={(theme) => ({
                           height: 180,
                           borderRadius: 8,
                           overflow: "hidden",
                           background:
-                            "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))",
-                          border: "1px solid rgba(216, 183, 109, 0.2)",
-                        }}
+                            theme.colorScheme === "dark"
+                              ? "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.9))"
+                              : "linear-gradient(180deg, rgba(250, 247, 242, 0.96), rgba(242, 233, 216, 0.98))",
+                          border: `1px solid ${appSurfaceBorder(theme)}`,
+                        })}
                       >
                         <Image
                           src={item.image}

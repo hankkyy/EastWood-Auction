@@ -17,6 +17,15 @@ import {
 } from "@mantine/core";
 import { IconPlus, IconEdit, IconTrash, IconRefresh } from "@tabler/icons-react";
 import { useI18n } from "@/i18n";
+import {
+  appFieldLabelColor,
+  primaryActionButtonSx,
+  secondaryActionButtonSx,
+  appSurfaceBackground,
+  appSurfaceBorder,
+  appTextColor,
+} from "@/components/artworkStyles";
+import { supabase } from "@/lib/supabase/client";
 
 interface Rule {
   id: string;
@@ -48,6 +57,7 @@ export default function AdminMarketWatch() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncMsg, setSyncMsg] = useState("");
+  const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Partial<Rule> | null>(null);
 
@@ -60,13 +70,42 @@ export default function AdminMarketWatch() {
   const [formConditions, setFormConditions] = useState<string[]>(["USED"]);
   const [formListingTypes, setFormListingTypes] = useState<string[]>(["AUCTION", "FIXED_PRICE"]);
 
+  const getAuthHeaders = useCallback(async (includeJson = false) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error(locale === "zh" ? "请先登录管理员账号。" : "Please sign in as an admin first.");
+    }
+
+    return {
+      ...(includeJson ? { "Content-Type": "application/json" } : {}),
+      Authorization: `Bearer ${session.access_token}`,
+    };
+  }, [locale]);
+
   const fetchRules = useCallback(async () => {
-    const res = await fetch("/api/external/rules");
-    if (!res.ok) return;
-    const data = await res.json();
-    setRules(data.rules || []);
-    setLoading(false);
-  }, []);
+    try {
+      setLoading(true);
+      setError("");
+
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/external/rules", { headers });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to load eBay rules.");
+      }
+
+      setRules(data.rules || []);
+    } catch (err: any) {
+      setError(err.message || (locale === "zh" ? "加载 eBay 规则失败。" : "Failed to load eBay rules."));
+      setRules([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthHeaders, locale]);
 
   useEffect(() => { fetchRules(); }, [fetchRules]);
 
@@ -115,36 +154,66 @@ export default function AdminMarketWatch() {
       : "/api/external/rules";
     const method = editingRule?.id ? "PUT" : "POST";
 
-    await fetch(url, {
+    const headers = await getAuthHeaders(true);
+    const res = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
 
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload.error || "Unable to save rule.");
+    }
+
     setModalOpen(false);
-    fetchRules();
+    void fetchRules();
   };
 
   const deleteRule = async (id: string) => {
-    await fetch(`/api/external/rules/${id}`, { method: "DELETE" });
-    fetchRules();
+    const headers = await getAuthHeaders();
+    const res = await fetch(`/api/external/rules/${id}`, { method: "DELETE", headers });
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload.error || "Unable to delete rule.");
+    }
+    void fetchRules();
   };
 
   const toggleRule = async (rule: Rule) => {
-    await fetch(`/api/external/rules/${rule.id}`, {
+    const headers = await getAuthHeaders(true);
+    const res = await fetch(`/api/external/rules/${rule.id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ enabled: !rule.enabled }),
     });
-    fetchRules();
+    if (!res.ok) {
+      const payload = await res.json().catch(() => ({}));
+      throw new Error(payload.error || "Unable to update rule.");
+    }
+    void fetchRules();
   };
 
   const triggerSync = async () => {
-    setSyncMsg(locale === "zh" ? "同步中..." : "Syncing...");
-    const res = await fetch("/api/external/sync", { method: "POST" });
-    const data = await res.json();
-    setSyncMsg(data.message || "Done");
-    setTimeout(() => setSyncMsg(""), 3000);
+    try {
+      setError("");
+      setSyncMsg(locale === "zh" ? "同步中..." : "Syncing...");
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/external/sync", { method: "POST", headers });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Sync failed.");
+      }
+
+      setSyncMsg(data.message || "Done");
+      void fetchRules();
+    } catch (err: any) {
+      setSyncMsg("");
+      setError(err.message || (locale === "zh" ? "同步失败。" : "Sync failed."));
+    } finally {
+      setTimeout(() => setSyncMsg(""), 3000);
+    }
   };
 
   if (loading) return <Text color="dimmed">Loading...</Text>;
@@ -161,6 +230,7 @@ export default function AdminMarketWatch() {
             variant="outline"
             size="sm"
             onClick={triggerSync}
+            sx={(theme) => secondaryActionButtonSx(theme)}
           >
             {locale === "zh" ? "立即同步" : "Sync Now"}
           </Button>
@@ -168,6 +238,7 @@ export default function AdminMarketWatch() {
             leftIcon={<IconPlus size={16} />}
             size="sm"
             onClick={openCreate}
+            sx={primaryActionButtonSx}
           >
             {locale === "zh" ? "新建规则" : "New Rule"}
           </Button>
@@ -176,6 +247,10 @@ export default function AdminMarketWatch() {
 
       {syncMsg && (
         <Text size="sm" color="dimmed" mb="sm">{syncMsg}</Text>
+      )}
+
+      {error && (
+        <Text size="sm" color="red" mb="sm">{error}</Text>
       )}
 
       {rules.length === 0 ? (
@@ -191,7 +266,9 @@ export default function AdminMarketWatch() {
               key={rule.id}
               p="sm"
               sx={(theme) => ({
-                background: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fff",
+                background: appSurfaceBackground(theme),
+                color: appTextColor(theme),
+                border: `1px solid ${appSurfaceBorder(theme)}`,
                 borderRadius: 2,
                 boxShadow: theme.colorScheme === "dark"
                   ? "0 1px 2px rgba(0,0,0,0.20)"
@@ -245,10 +322,7 @@ export default function AdminMarketWatch() {
             placeholder="e.g. 清代花瓶监控"
             styles={(theme) => ({
               label: {
-                color:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[1]
-                    : undefined,
+                color: appFieldLabelColor(theme),
               },
             })}
           />
@@ -259,10 +333,7 @@ export default function AdminMarketWatch() {
             placeholder="Qing dynasty vase, 清代花瓶"
             styles={(theme) => ({
               label: {
-                color:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[1]
-                    : undefined,
+                color: appFieldLabelColor(theme),
               },
             })}
           />
@@ -273,10 +344,7 @@ export default function AdminMarketWatch() {
             placeholder="37978 (optional)"
             styles={(theme) => ({
               label: {
-                color:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[1]
-                    : undefined,
+                color: appFieldLabelColor(theme),
               },
             })}
           />
@@ -288,20 +356,7 @@ export default function AdminMarketWatch() {
               placeholder="100"
               styles={(theme) => ({
                 label: {
-                  color:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[1]
-                      : undefined,
-                },
-                input: {
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[5]
-                      : undefined,
-                  color:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[0]
-                      : undefined,
+                  color: appFieldLabelColor(theme),
                 },
               })}
             />
@@ -312,20 +367,7 @@ export default function AdminMarketWatch() {
               placeholder="5000"
               styles={(theme) => ({
                 label: {
-                  color:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[1]
-                      : undefined,
-                },
-                input: {
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[5]
-                      : undefined,
-                  color:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[0]
-                      : undefined,
+                  color: appFieldLabelColor(theme),
                 },
               })}
             />
@@ -337,10 +379,7 @@ export default function AdminMarketWatch() {
             onChange={setFormConditions}
             styles={(theme) => ({
               label: {
-                color:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[1]
-                    : undefined,
+                color: appFieldLabelColor(theme),
               },
             })}
           />
@@ -351,14 +390,11 @@ export default function AdminMarketWatch() {
             onChange={setFormListingTypes}
             styles={(theme) => ({
               label: {
-                color:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[1]
-                    : undefined,
+                color: appFieldLabelColor(theme),
               },
             })}
           />
-          <Button onClick={saveRule} mt="sm">
+          <Button onClick={saveRule} mt="sm" sx={primaryActionButtonSx}>
             {editingRule?.id
               ? (locale === "zh" ? "保存" : "Save")
               : (locale === "zh" ? "创建" : "Create")}

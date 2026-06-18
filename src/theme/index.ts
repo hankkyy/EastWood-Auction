@@ -1,4 +1,12 @@
 import { MantineThemeOverride } from "@mantine/core";
+import {
+  appFieldLabelColor,
+  appMutedTextColor,
+  appSurfaceBackground,
+  appSurfaceBackgroundSubtle,
+  appSurfaceBorder,
+  appTextColor,
+} from "@/components/artworkStyles";
 
 export const theme: MantineThemeOverride = {
   primaryColor: "violet",
@@ -54,10 +62,46 @@ export const theme: MantineThemeOverride = {
     // dark[7] (#c4bfb3) which gives only 2.2:1 contrast with dimmed text.
     // NOT applied to all Paper (would break Menu/Tooltip dropdowns).
     ".mantine-Card-root": {
+      backgroundColor: `${appSurfaceBackground(theme)} !important`,
+      color: `${appTextColor(theme)} !important`,
+    },
+    ".mantine-Paper-root": {
+      backgroundColor: `${appSurfaceBackground(theme)} !important`,
+      color: `${appTextColor(theme)} !important`,
+    },
+    ".mantine-Menu-dropdown, .mantine-Modal-content, .mantine-Drawer-content, .mantine-Popover-dropdown": {
+      backgroundColor: `${appSurfaceBackground(theme)} !important`,
+      color: `${appTextColor(theme)} !important`,
+      borderColor: `${appSurfaceBorder(theme)} !important`,
+    },
+    ".mantine-Modal-title, .mantine-Drawer-title, .mantine-Menu-itemLabel": {
+      color: `${appTextColor(theme)} !important`,
+    },
+    ".mantine-Notification-root": {
+      backgroundColor: `${appSurfaceBackground(theme)} !important`,
+      color: `${appTextColor(theme)} !important`,
+      border: `1px solid ${appSurfaceBorder(theme)} !important`,
+    },
+    ".mantine-Notification-title, .mantine-Notification-description, .mantine-Notification-closeButton": {
+      color: `${appTextColor(theme)} !important`,
+    },
+    ".mantine-Input-input, .mantine-Textarea-input, .mantine-Select-input, .mantine-NumberInput-input, .mantine-MultiSelect-input": {
       backgroundColor:
         theme.colorScheme === "dark"
-          ? `${theme.colors.dark[1]} !important`
-          : undefined,
+          ? `${appSurfaceBackgroundSubtle(theme)} !important`
+          : "#fff !important",
+      color: `${appTextColor(theme)} !important`,
+      borderColor: `${appSurfaceBorder(theme)} !important`,
+    },
+    ".mantine-Input-input::placeholder, .mantine-Textarea-input::placeholder, .mantine-Select-input::placeholder, .mantine-NumberInput-input::placeholder, .mantine-MultiSelect-input::placeholder": {
+      color: `${appMutedTextColor(theme)} !important`,
+      opacity: 1,
+    },
+    ".mantine-InputWrapper-label": {
+      color: `${appFieldLabelColor(theme)} !important`,
+    },
+    ".mantine-InputWrapper-description, .mantine-InputWrapper-error, .mantine-Text-root[data-muted]": {
+      color: `${appMutedTextColor(theme)} !important`,
     },
   }),
 };

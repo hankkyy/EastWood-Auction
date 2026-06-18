@@ -15,7 +15,6 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Container,
   Group,
   Paper,
@@ -811,13 +810,15 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               const itemTitle = locale === "zh" && item.titleZh ? item.titleZh : item.title;
 
               return (
-                <Card
+                <Box
                   key={item.id}
                   component={Link}
                   href={`/cases/${item.id}`}
-                  padding={14}
-                  radius={12}
                   sx={(theme) => ({
+                    display: "block",
+                    cursor: "pointer",
+                    padding: 14,
+                    borderRadius: 12,
                     background: "transparent",
                     border: "1px solid transparent",
                     textDecoration: "none",
@@ -847,15 +848,16 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     alt={itemTitle}
                     sx={(theme) => ({
                       width: "100%",
-                      height: 260,
+                      height: 320,
                       objectFit: "cover",
+                      objectPosition: "center 15%",
                       display: "block",
-                      "@media (max-width: 62em)": { height: 220 },
+                      "@media (max-width: 62em)": { height: 260 },
                       "& *, & .mantine-Text-root": {
                         color: "inherit !important" as any,
                       },
 
-                      "@media (max-width: 48em)": { height: 200 },
+                      "@media (max-width: 48em)": { height: 220 },
                     })}
                   />
                   <Box
@@ -877,7 +879,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       {itemTitle}
                     </Text>
                   </Box>
-                </Card>
+                </Box>
               );
             })}
           </SimpleGrid>

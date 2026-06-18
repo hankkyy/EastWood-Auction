@@ -3,15 +3,14 @@ import { useRouter } from "next/router";
 import {
   Box,
   Button,
-  Container,
   createStyles,
   rem,
-  Stack,
   Text,
 } from "@mantine/core";
 import { IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { primaryActionButtonSx } from "@/components/artworkStyles";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
@@ -33,8 +32,16 @@ const useStyles = createStyles((theme) => ({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    background: "rgba(0,0,0,0.25)",
+    background: "linear-gradient(180deg, rgba(8, 8, 8, 0.28) 0%, rgba(8, 8, 8, 0.52) 100%)",
     padding: rem(32),
+  },
+  content: {
+    width: "100%",
+    maxWidth: rem(860),
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: rem(8),
   },
   title: {
     fontFamily: "\"Playfair Display\", Georgia, 'Times New Roman', serif",
@@ -44,7 +51,7 @@ const useStyles = createStyles((theme) => ({
     textAlign: "center" as const,
     letterSpacing: "-0.03em",
     lineHeight: 1.1,
-    maxWidth: rem(720),
+    maxWidth: rem(760),
     [theme.fn.smallerThan("sm")]: {
       fontSize: rem(30),
     },
@@ -54,9 +61,10 @@ const useStyles = createStyles((theme) => ({
     fontWeight: 300,
     color: "rgba(255,255,255,0.85)",
     textAlign: "center" as const,
-    maxWidth: rem(560),
+    maxWidth: rem(620),
     marginTop: rem(16),
     letterSpacing: "-0.01em",
+    lineHeight: 1.7,
     [theme.fn.smallerThan("sm")]: {
       fontSize: rem(15),
     },
@@ -71,29 +79,26 @@ const useStyles = createStyles((theme) => ({
     },
   },
   primaryBtn: {
-    background: "transparent",
-    border: "1px solid rgba(255,255,255,0.5)",
-    color: "#fff",
-    fontWeight: 300,
+    fontWeight: 500,
     fontSize: rem(14),
-    padding: `${rem(10)} ${rem(28)}`,
+    minHeight: rem(48),
+    padding: `${rem(10)} ${rem(30)}`,
     letterSpacing: "0.06em",
     textTransform: "uppercase" as const,
-    "&:hover": {
-      background: "rgba(255,255,255,0.12)",
-      borderColor: "rgba(255,255,255,0.8)",
-    },
   },
   playBtn: {
-    background: "transparent",
-    border: "none",
-    color: "rgba(255,255,255,0.6)",
-    fontWeight: 300,
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.14)",
+    color: "rgba(255,255,255,0.88)",
+    fontWeight: 400,
     fontSize: rem(13),
-    padding: `${rem(10)} ${rem(20)}`,
+    minHeight: rem(48),
+    padding: `${rem(10)} ${rem(22)}`,
+    backdropFilter: "blur(8px)",
     "&:hover": {
       color: "#fff",
-      background: "transparent",
+      background: "rgba(255,255,255,0.14)",
+      borderColor: "rgba(255,255,255,0.22)",
     },
   },
 }));
@@ -129,28 +134,31 @@ export default function HeroSection() {
         />
       </video>
       <Box className={classes.overlay}>
-        <h1 className={classes.title}>{t("home.heroTitle")}</h1>
-        <Text className={classes.subtitle}>{t("home.heroDescription")}</Text>
-        <Box className={classes.actions}>
-          <Button
-            className={classes.primaryBtn}
-            onClick={() => router.push("/shop")}
-          >
-            {t("home.learnMore")}
-          </Button>
-          <Button
-            className={classes.playBtn}
-            leftIcon={
-              pause ? (
-                <IconPlayerPlay size={15} />
-              ) : (
-                <IconPlayerPause size={15} />
-              )
-            }
-            onClick={pauseVideo}
-          >
-            {pause ? t("home.playVideo") : t("home.pauseVideo")}
-          </Button>
+        <Box className={classes.content}>
+          <h1 className={classes.title}>{t("home.heroTitle")}</h1>
+          <Text className={classes.subtitle}>{t("home.heroDescription")}</Text>
+          <Box className={classes.actions}>
+            <Button
+              className={classes.primaryBtn}
+              sx={primaryActionButtonSx}
+              onClick={() => router.push("/shop")}
+            >
+              {t("home.learnMore")}
+            </Button>
+            <Button
+              className={classes.playBtn}
+              leftIcon={
+                pause ? (
+                  <IconPlayerPlay size={15} />
+                ) : (
+                  <IconPlayerPause size={15} />
+                )
+              }
+              onClick={pauseVideo}
+            >
+              {pause ? t("home.playVideo") : t("home.pauseVideo")}
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Box>

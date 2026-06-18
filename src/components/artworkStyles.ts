@@ -1,5 +1,23 @@
 import type { MantineTheme } from "@mantine/core";
 
+export const appSurfaceBackground = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9";
+
+export const appSurfaceBackgroundSubtle = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? "rgba(37, 34, 29, 0.88)" : "rgba(255, 253, 249, 0.92)";
+
+export const appSurfaceBorder = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.12)" : "rgba(180, 158, 120, 0.16)";
+
+export const appTextColor = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0];
+
+export const appMutedTextColor = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.dark[4];
+
+export const appFieldLabelColor = (theme: MantineTheme) =>
+  theme.colorScheme === "dark" ? theme.colors.dark[8] : theme.colors.dark[0];
+
 /**
  * Premium card background — warm paper texture with subtle grain.
  * Mimics handmade paper used in high-end auction catalogs.
@@ -99,13 +117,14 @@ export const primaryActionButtonSx = {
   paddingRight: 24,
   border: "1px solid #c4a255",
   background: "#c4a255",
-  color: "#fff",
+  color: "#1a1815",
   letterSpacing: "0.04em",
   transition: "all 0.3s ease",
 
   "&:hover": {
     background: "#b8943e",
     borderColor: "#b8943e",
+    color: "#1a1815",
   },
 };
 

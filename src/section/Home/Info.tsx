@@ -17,9 +17,11 @@ import { IconShieldCheck, IconMessageCircle, IconTruck } from "@tabler/icons-rea
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import {
+  appMutedTextColor,
   artworkCardShellBackground,
   cardTextureOverlay,
   cardBorder,
+  primaryActionButtonSx,
 } from "@/components/artworkStyles";
 
 const { Col } = Grid;
@@ -29,13 +31,13 @@ const useStyles = createStyles((theme) => ({
     minHeight: 142,
     background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
     border: cardBorder(theme),
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     boxShadow: theme.colorScheme === "dark"
       ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)"
       : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-    borderRadius: 2,
+    borderRadius: 16,
   },
 }));
 
@@ -49,9 +51,11 @@ export default function InfoSection() {
 
   return (
     <Container pt={80} pb={120}>
-      <Title mb="xl" size={smallerThan ? 32 : 48} align="center">
-        {t("home.infoTitle")}
-      </Title>
+      <Box sx={{ maxWidth: 760, margin: "0 auto 48px", textAlign: "center" }}>
+        <Title mb="md" size={smallerThan ? 32 : 48} align="center">
+          {t("home.infoTitle")}
+        </Title>
+      </Box>
       <Grid>
         <Col md={6} lg={7}>
           <Image
@@ -85,10 +89,8 @@ export default function InfoSection() {
                   <Text
                     size="sm"
                     sx={(theme) => ({
-                      color:
-                        theme.colorScheme === "dark"
-                          ? theme.colors.dark[5]
-                          : theme.colors.dark[2],
+                      color: appMutedTextColor(theme),
+                      lineHeight: 1.75,
                     })}
                   >
                     {t("home.featureAuthDesc")}
@@ -117,10 +119,8 @@ export default function InfoSection() {
                   <Text
                     size="sm"
                     sx={(theme) => ({
-                      color:
-                        theme.colorScheme === "dark"
-                          ? theme.colors.dark[5]
-                          : theme.colors.dark[2],
+                      color: appMutedTextColor(theme),
+                      lineHeight: 1.75,
                     })}
                   >
                     {t("home.featureConsignDesc")}
@@ -128,7 +128,8 @@ export default function InfoSection() {
                   <Button
                     size="md"
                     fullWidth={smallerThan}
-                    variant="outline"
+                    variant="filled"
+                    sx={primaryActionButtonSx}
                     onClick={() => router.push("/inquiries")}
                   >
                     {t("home.bookButton")}
@@ -157,10 +158,8 @@ export default function InfoSection() {
                   <Text
                     size="sm"
                     sx={(theme) => ({
-                      color:
-                        theme.colorScheme === "dark"
-                          ? theme.colors.dark[5]
-                          : theme.colors.dark[2],
+                      color: appMutedTextColor(theme),
+                      lineHeight: 1.75,
                     })}
                   >
                     {t("home.featureShippingDesc")}
