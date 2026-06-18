@@ -273,6 +273,10 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
   const ITEMS_PER_PAGE = 15;
 
 

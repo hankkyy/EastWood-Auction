@@ -71,6 +71,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
   const ITEMS_PER_PAGE = 15;
   const gridRef = useRef<HTMLDivElement>(null);
 

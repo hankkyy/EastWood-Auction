@@ -61,6 +61,10 @@ export default function MarketWatchPage() {
 
   const [jumpValue, setJumpValue] = useState<number | ''>('');
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
