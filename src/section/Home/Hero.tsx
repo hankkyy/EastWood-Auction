@@ -5,8 +5,6 @@ import {
   Button,
   Container,
   createStyles,
-  Flex,
-  Paper,
   rem,
   Stack,
   Text,
@@ -19,66 +17,87 @@ const useStyles = createStyles((theme) => ({
   wrapper: {
     position: "relative",
     minHeight: rem(650),
-
-    [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(500),
-    },
+    [theme.fn.smallerThan("sm")]: { minHeight: rem(480) },
   },
   videoBg: {
     minWidth: "100%",
     height: rem(650),
     objectFit: "cover",
     objectPosition: "bottom",
-
-    [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(500),
-    },
+    [theme.fn.smallerThan("sm")]: { minHeight: rem(480) },
   },
-  content: {
-    marginTop: rem(-320),
-    paddingBottom: rem(96),
-
-    [theme.fn.smallerThan("md")]: {
-      minHeight: rem(500),
-      marginTop: rem(-400),
-      paddingBottom: 0,
-    },
-    [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(500),
-      marginTop: rem(-480),
-      paddingBottom: 0,
-    },
-  },
-  heroPanel: {
-    width: "min(100%, 860px)",
-    minHeight: rem(220),
+  overlay: {
+    position: "absolute",
+    inset: 0,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "space-between",
-    backgroundColor: "rgba(32, 38, 46, 0.96)",
-    border: "1px solid rgba(216, 183, 109, 0.18)",
-
-    [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(240),
-    },
-  },
-  heroDescription: {
-    maxWidth: rem(760),
-    minHeight: rem(58),
-    marginLeft: "auto",
-    marginRight: "auto",
-    display: "flex",
     alignItems: "center",
     justifyContent: "center",
-
+    background: "rgba(0,0,0,0.25)",
+    padding: rem(32),
+  },
+  title: {
+    fontFamily: "Georgia, 'Times New Roman', serif",
+    fontSize: rem(48),
+    fontWeight: 300,
+    color: "#fff",
+    textAlign: "center" as const,
+    letterSpacing: "-0.03em",
+    lineHeight: 1.1,
+    maxWidth: rem(720),
     [theme.fn.smallerThan("sm")]: {
-      minHeight: rem(84),
+      fontSize: rem(30),
     },
   },
-  heroAction: {
-    minWidth: rem(170),
+  subtitle: {
+    fontSize: rem(18),
+    fontWeight: 300,
+    color: "rgba(255,255,255,0.85)",
+    textAlign: "center" as const,
+    maxWidth: rem(560),
+    marginTop: rem(16),
+    letterSpacing: "-0.01em",
+    [theme.fn.smallerThan("sm")]: {
+      fontSize: rem(15),
+    },
+  },
+  actions: {
+    marginTop: rem(36),
+    display: "flex",
+    gap: rem(14),
+    [theme.fn.smallerThan("sm")]: {
+      flexDirection: "column" as const,
+      width: "100%",
+    },
+  },
+  primaryBtn: {
+    background: "transparent",
+    border: "1px solid rgba(255,255,255,0.5)",
+    color: "#fff",
+    fontWeight: 300,
+    fontSize: rem(14),
+    padding: `${rem(10)} ${rem(28)}`,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase" as const,
+    "&:hover": {
+      background: "rgba(255,255,255,0.12)",
+      borderColor: "rgba(255,255,255,0.8)",
+    },
+  },
+  playBtn: {
+    background: "transparent",
+    border: "none",
+    color: "rgba(255,255,255,0.6)",
+    fontWeight: 300,
+    fontSize: rem(13),
+    padding: `${rem(10)} ${rem(20)}`,
+    "&:hover": {
+      color: "#fff",
+      background: "transparent",
+    },
   },
 }));
+
 export default function HeroSection() {
   const router = useRouter();
   const videoRef = useRef<any>(null);
@@ -97,12 +116,8 @@ export default function HeroSection() {
     }
   };
 
-  const handleLearnMore = () => {
-    router.push("/shop");
-  };
-
   useEffect(() => {
-    videoRef.current.play();
+    videoRef.current?.play();
   }, []);
 
   return (
@@ -113,62 +128,31 @@ export default function HeroSection() {
           type="video/mp4"
         />
       </video>
-      <Container className={classes.content}>
-        <Stack align="center" justify="end" pb="xl" sx={{ height: "100%" }}>
-          <Paper
-            p={smallerThan ? "md" : "lg"}
-            shadow="md"
-            className={classes.heroPanel}
+      <Box className={classes.overlay}>
+        <h1 className={classes.title}>{t("home.heroTitle")}</h1>
+        <Text className={classes.subtitle}>{t("home.heroDescription")}</Text>
+        <Box className={classes.actions}>
+          <Button
+            className={classes.primaryBtn}
+            onClick={() => router.push("/shop")}
           >
-            <Text
-              size={smallerThan ? 24 : 36}
-              weight={600}
-              mb="md"
-              align="center"
-            >
-              {t("home.heroTitle")}
-            </Text>
-            <Text
-              mb="md"
-              size={smallerThan ? "md" : "lg"}
-              align="center"
-              className={classes.heroDescription}
-            >
-              {t("home.heroDescription")}
-            </Text>
-            <Flex
-              justify="space-between"
-              align="center"
-              direction={{ base: "column", sm: "row" }}
-              gap={{ base: "sm", sm: "lg" }}
-            >
-              <Button
-                size="lg"
-                fullWidth={smallerThan}
-                className={classes.heroAction}
-                onClick={handleLearnMore}
-              >
-                {t("home.learnMore")}
-              </Button>
-              <Button
-                variant="white"
-                leftIcon={
-                  pause ? (
-                    <IconPlayerPlay size={18} />
-                  ) : (
-                    <IconPlayerPause size={18} />
-                  )
-                }
-                onClick={pauseVideo}
-                fullWidth={smallerThan}
-                className={classes.heroAction}
-              >
-                {pause ? t("home.playVideo") : t("home.pauseVideo")}
-              </Button>
-            </Flex>
-          </Paper>
-        </Stack>
-      </Container>
+            {t("home.learnMore")}
+          </Button>
+          <Button
+            className={classes.playBtn}
+            leftIcon={
+              pause ? (
+                <IconPlayerPlay size={15} />
+              ) : (
+                <IconPlayerPause size={15} />
+              )
+            }
+            onClick={pauseVideo}
+          >
+            {pause ? t("home.playVideo") : t("home.pauseVideo")}
+          </Button>
+        </Box>
+      </Box>
     </Box>
   );
 }
