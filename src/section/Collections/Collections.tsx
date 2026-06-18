@@ -233,13 +233,13 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
 
   itemTitle: {
     color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
-    fontSize: remValue(18),
+    fontSize: remValue(20),
     fontWeight: 600,
     letterSpacing: "-0.01em",
     lineHeight: 1.35,
 
     [theme.fn.smallerThan("sm")]: {
-      fontSize: remValue(16),
+      fontSize: remValue(17),
     },
   },
 
