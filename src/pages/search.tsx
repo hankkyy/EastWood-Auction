@@ -368,9 +368,11 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                             getLocalized(locale, item.category, item.categoryZh)
                           )}
                         </Badge>
-                        <Badge variant="light" color="gray">
-                          {getLocalized(locale, item.period, item.periodZh)}
-                        </Badge>
+                        {(item.periodZh || item.period) ? (
+                          <Badge variant="light" color="gray">
+                            {getLocalized(locale, item.period, item.periodZh)}
+                          </Badge>
+                        ) : null}
                       </Group>
                       <Button
                         component={Link}

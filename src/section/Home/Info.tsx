@@ -70,10 +70,27 @@ export default function InfoSection() {
                   <IconShieldCheck size={iconSize} />
                 </Box>
                 <Stack spacing="sm">
-                  <Text size="lg" weight={400}>
+                  <Text
+                    size="lg"
+                    weight={400}
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[9]
+                          : undefined,
+                    })}
+                  >
                     {t("home.featureAuthTitle")}
                   </Text>
-                  <Text size="sm" color="dimmed">
+                  <Text
+                    size="sm"
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[5]
+                          : theme.colors.dark[2],
+                    })}
+                  >
                     {t("home.featureAuthDesc")}
                   </Text>
                 </Stack>
@@ -85,10 +102,27 @@ export default function InfoSection() {
                   <IconMessageCircle size={iconSize} />
                 </Box>
                 <Stack spacing="sm" align="flex-start">
-                  <Text size="lg" weight={400}>
+                  <Text
+                    size="lg"
+                    weight={400}
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[9]
+                          : undefined,
+                    })}
+                  >
                     {t("home.featureConsignTitle")}
                   </Text>
-                  <Text size="sm" color="dimmed">
+                  <Text
+                    size="sm"
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[5]
+                          : theme.colors.dark[2],
+                    })}
+                  >
                     {t("home.featureConsignDesc")}
                   </Text>
                   <Button
@@ -108,10 +142,27 @@ export default function InfoSection() {
                   <IconTruck size={iconSize} />
                 </Box>
                 <Stack spacing="sm">
-                  <Text size="lg" weight={400}>
+                  <Text
+                    size="lg"
+                    weight={400}
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[9]
+                          : undefined,
+                    })}
+                  >
                     {t("home.featureShippingTitle")}
                   </Text>
-                  <Text size="sm" color="dimmed">
+                  <Text
+                    size="sm"
+                    sx={(theme) => ({
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[5]
+                          : theme.colors.dark[2],
+                    })}
+                  >
                     {t("home.featureShippingDesc")}
                   </Text>
                 </Stack>
