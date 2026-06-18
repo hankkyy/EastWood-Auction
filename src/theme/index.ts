@@ -69,7 +69,7 @@ export const theme: MantineThemeOverride = {
       backgroundColor: `${appSurfaceBackground(theme)} !important`,
       color: `${appTextColor(theme)} !important`,
     },
-    ".mantine-Menu-dropdown, .mantine-Modal-content, .mantine-Drawer-content, .mantine-Popover-dropdown": {
+    ".mantine-Header-root, .mantine-Menu-dropdown, .mantine-Modal-content, .mantine-Drawer-content, .mantine-Popover-dropdown": {
       backgroundColor: `${appSurfaceBackground(theme)} !important`,
       color: `${appTextColor(theme)} !important`,
       borderColor: `${appSurfaceBorder(theme)} !important`,

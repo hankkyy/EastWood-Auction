@@ -148,7 +148,7 @@ export default function TopBar() {
   }, [authReady, user, router.asPath]);
 
   return (
-    <Header height="100%" sx={{ borderBottom: 0 }}>
+    <Header height="100%" sx={{ borderBottom: 0, backgroundColor: "transparent" }}>
       <Container className={classes.inner} fluid>
         <Group className={classes.actionGroup} noWrap>
           <Indicator
