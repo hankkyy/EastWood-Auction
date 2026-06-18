@@ -189,6 +189,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
   itemBody: {
     padding: theme.spacing.md,
+    textAlign: "center",
     position: "relative",
     zIndex: 3,
   },
@@ -214,6 +215,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     fontWeight: 600,
     letterSpacing: "-0.01em",
     lineHeight: 1.35,
+    textAlign: "center",
 
     [theme.fn.smallerThan("sm")]: {
       fontSize: remValue(17),
