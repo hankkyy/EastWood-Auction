@@ -584,18 +584,18 @@ export default function InboxPage() {
         {inquiry.is_archived ? (
           <Button
             size="xs"
-            color="yellow"
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
             fullWidth={isMobile}
-            sx={{
-              backgroundColor: "#f6e7b0",
-              color: "#4f3b12",
+            sx={(theme) => ({
+              backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "#f6e7b0",
+              color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+              border: theme.colorScheme === "dark" ? "1px solid rgba(196,162,85,0.35)" : "none",
               "&:hover": {
-                backgroundColor: "#f2dc8f",
+                backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.28)" : "#f2dc8f",
               },
-            }}
+            })}
             onClick={() =>
               void updateInquiryStatus(
                 inquiry.id,
@@ -1411,13 +1411,13 @@ export default function InboxPage() {
                           p="md"
                           withBorder
                           radius="md"
-                          sx={{
-                            borderColor: "rgba(216, 183, 109, 0.45)",
-                            backgroundColor: "rgba(216, 183, 109, 0.06)",
-                          }}
+                          sx={(theme) => ({
+                            borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "rgba(216, 183, 109, 0.45)",
+                            backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.06)" : "rgba(216, 183, 109, 0.06)",
+                          })}
                         >
                           <Group position="apart" mb="sm">
-                            <Text weight={800} color="yellow">
+                            <Text weight={800} color="#c4a255">
                               {locale === "zh" ? "待处理会话" : "Pending conversations"}
                             </Text>
                             <Badge color="yellow" variant="light">
@@ -1528,13 +1528,13 @@ export default function InboxPage() {
                           p="md"
                           withBorder
                           radius="md"
-                          sx={{
-                            borderColor: "rgba(216, 183, 109, 0.45)",
-                            backgroundColor: "rgba(216, 183, 109, 0.06)",
-                          }}
+                          sx={(theme) => ({
+                            borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "rgba(216, 183, 109, 0.45)",
+                            backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.06)" : "rgba(216, 183, 109, 0.06)",
+                          })}
                         >
                           <Group position="apart" mb={4}>
-                            <Text weight={800} color="yellow">
+                            <Text weight={800} color="#c4a255">
                               {locale === "zh" ? "待处理会话" : "Pending conversations"}
                             </Text>
                             <Badge color="yellow" variant="light">

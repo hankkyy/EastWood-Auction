@@ -429,17 +429,17 @@ export default function InquiriesPage() {
                   >
                     <Button
                       variant="filled"
-                      color="yellow"
                       type="button"
                       onClick={() => router.push(returnTo)}
                       fullWidth={isMobile}
-                      sx={{
-                        backgroundColor: "#f6e7b0",
-                        color: "#4f3b12",
+                      sx={(theme) => ({
+                        backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "#f6e7b0",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                        border: theme.colorScheme === "dark" ? "1px solid rgba(196,162,85,0.35)" : "none",
                         "&:hover": {
-                          backgroundColor: "#f2dc8f",
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.28)" : "#f2dc8f",
                         },
-                      }}
+                      })}
                     >
                       {t("inquiry.cancelButton")}
                     </Button>
