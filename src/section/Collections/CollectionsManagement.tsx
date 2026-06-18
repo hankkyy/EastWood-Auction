@@ -994,7 +994,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           )}
                           
                           {artwork.isForSale && artwork.price && (
-                            <Badge color="green" size="md" sx={{ fontWeight: 600, fontSize: 14 }}>
+                            <Badge color="yellow" size="md" sx={{ fontWeight: 600, fontSize: 14 }}>
                               {t("collections.forSaleLabel")}: {artwork.currency === 'CNY' ? '¥' : '$'}{artwork.price.toLocaleString()}
                             </Badge>
                           )}
