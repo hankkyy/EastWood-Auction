@@ -260,22 +260,20 @@ export default function AppFooter({ data }: FooterLinksProps) {
               <Flex gap="md" align="center">
                 <IconMap2 size={24} />
                 <Text size="lg" weight={500}>
-                  {t("home.whereVisit")}
+                  {t("footer.contactUs")}
                 </Text>
               </Flex>
-              <Text>{t("home.addressLineOne")}</Text>
-              <Text>{t("home.addressLineTwo")}</Text>
-              <Text>+254 000 000 000</Text>
+              <Text size="sm" color="dimmed">{t("footer.contactDesc")}</Text>
+              <Text size="sm" color="dimmed">contact@eastwoodauction.com</Text>
             </Stack>
             <Stack {...stackProps}>
               <Flex gap="md" align="center">
                 <IconClock size={24} />
                 <Text size="lg" weight={500}>
-                  {t("home.openingTimes")}
+                  {t("footer.hours")}
                 </Text>
               </Flex>
-              <Text>{t("home.openingFrom")}</Text>
-              <Text>{t("home.openingWeekday")}</Text>
+              <Text size="sm" color="dimmed">{t("footer.hoursDesc")}</Text>
             </Stack>
           </Stack>
           {groups}
