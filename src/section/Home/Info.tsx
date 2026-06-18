@@ -55,7 +55,7 @@ export default function InfoSection() {
       <Grid>
         <Col md={6} lg={7}>
           <Image
-            src="https://images.unsplash.com/photo-1590422749897-3d53b972d515?auto=format&fit=crop&w=735&q=80"
+            src="https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&w=735&q=80"
             alt=""
             height={smallerThan ? 320 : 500}
             fit="cover"
