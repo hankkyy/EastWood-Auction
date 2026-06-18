@@ -196,257 +196,339 @@ export default function CollectionDetailPage() {
       <Head>
         <title>{title} - Eastwood Auction</title>
       </Head>
-
       <Wrapper>
         <AnimatedBox>
-          <Container py={isMobile ? 28 : 80} px={isMobile ? 16 : undefined}>
-            <Stack spacing={isMobile ? "lg" : "xl"}>
-              {/* 返回按钮 */}
-              <Button
-                component={Link}
-                href="/collections"
-                variant="filled"
-                color="violet"
-                size={isMobile ? "sm" : "md"}
-                leftIcon={<IconChevronLeft size={18} />}
-                sx={{ 
-                  alignSelf: "flex-start",
-                  fontWeight: 600,
-                  padding: isMobile ? "10px 16px" : '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-                  },
-                  transition: 'all 0.2s ease',
+          <Container py={isMobile ? 28 : 60} px={isMobile ? 16 : undefined} size="lg">
+            {/* 返回按钮 */}
+            <Button
+              component={Link}
+              href="/collections"
+              variant="subtle"
+              size="sm"
+              leftIcon={<IconChevronLeft size={16} />}
+              mb="xl"
+              sx={(theme) => ({
+                color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                "&:hover": { backgroundColor: "transparent", color: "#c4a255" },
+              })}
+            >
+              {t("collections.detailBack")}
+            </Button>
+
+            {/* 左右分栏主体 */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                gap: isMobile ? 32 : 48,
+                alignItems: "flex-start",
+              }}
+            >
+              {/* ===== 左栏：图片画廊 ===== */}
+              <Box
+                sx={{
+                  flex: isMobile ? "none" : "0 0 55%",
+                  width: isMobile ? "100%" : undefined,
+                  position: "sticky",
+                  top: 24,
                 }}
               >
-                {t("collections.detailBack")}
-              </Button>
-
-              {/* 标题和基本信息 */}
-              <Stack spacing={isMobile ? "sm" : "md"}>
-                <Group spacing="xs">
-                  <Badge
-                    size="lg"
-                    variant="light"
-                    sx={(theme) => artworkSourceBadgeSx(item.isOfficial, theme)}
-                  >
-                    {item.isOfficial === true
-                      ? t("cases.platformUpload")
-                      : t("cases.personalUserUpload")}
-                  </Badge>
-                </Group>
-                <Title order={isMobile ? 3 : 2} sx={{ lineHeight: 1.18 }}>
-                  {title}
-                </Title>
-
-                {showInquiryButton && (
-                  <Button
-                    component={Link}
-                    href={inquiryHref}
-                    variant="outline"
-                    color="yellow"
-                    size="md"
-                    fullWidth={isMobile}
-                  >
-                    {locale === "zh" ? "咨询此藏品" : "Ask about this item"}
-                  </Button>
-                )}
-
-                {item.collectionId && (
-                  <Badge 
-                    variant="light" 
-                    size="lg"
+                <Stack spacing="md">
+                  {/* 主图 */}
+                  <Box
                     sx={(theme) => ({
-                      backgroundColor: theme.colorScheme === "dark"
-                        ? "rgba(246, 239, 227, 0.15)"
-                        : "rgba(0, 0, 0, 0.08)",
-                      color: theme.colorScheme === "dark" ? "#f6efe3" : theme.colors.dark[0],
-                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.25)" : "rgba(0, 0, 0, 0.12)"}`
+                      background: theme.colorScheme === "dark" ? "#141210" : "#faf7f2",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      position: "relative",
+                      boxShadow: theme.colorScheme === "dark"
+                        ? "0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)"
+                        : "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)",
                     })}
                   >
-                    {t("collections.collectionIdLabel")}: {item.collectionId}
-                  </Badge>
-                )}
-                {isAdmin && item.isOfficial !== true && uploaderEmail && (
-                  <Text size="sm" color="dimmed">
-                    {locale === "zh" ? "上传用户邮箱" : "Uploader email"}: {uploaderEmail}
-                  </Text>
-                )}
+                    <Box
+                      role="img"
+                      aria-label={title}
+                      sx={{
+                        width: "100%",
+                        height: isMobile ? "60vh" : "520px",
+                        maxHeight: isMobile ? "70vh" : "70vh",
+                        backgroundImage: `url("${activeImage}")`,
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        cursor: gallery.length > 1 ? "zoom-in" : "default",
+                        transition: "background-image 300ms ease",
+                      }}
+                      onClick={() => gallery.length > 1 && setLightboxOpened(true)}
+                    />
+                    {gallery.length > 1 && (
+                      <Text
+                        size="xs"
+                        sx={(theme) => ({
+                          position: "absolute",
+                          bottom: 12,
+                          right: 14,
+                          background: theme.colorScheme === "dark" ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.5)",
+                          color: "#fff",
+                          padding: "2px 10px",
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontFamily: "monospace",
+                          letterSpacing: "0.05em",
+                        })}
+                      >
+                        {gallery.indexOf(selectedImage) + 1} / {gallery.length}
+                      </Text>
+                    )}
+                  </Box>
 
-                {item.isForSale && item.price ? (
-                  <Group spacing="sm" align="center" noWrap={false}>
-                    <Badge color="yellow" variant="filled" size="lg">
-                      {t("collections.forSaleLabel")}
-                    </Badge>
-                    <Text 
-                      size="lg" 
-                      weight={700} 
-                      sx={(theme) => ({ 
-                        color: theme.colorScheme === "dark" ? "#d7bc7e" : "#8a6a20",
-                        lineHeight: 1.2
-                      })}
-                    >
-                      {item.currency === "CNY" ? "¥" : "$"}
-                      {item.price.toLocaleString()}
-                    </Text>
-                  </Group>
-                ) : (
-                  <Badge color="gray" variant="filled" size="lg">
-                    {t("collections.notForSaleLabel")}
-                  </Badge>
-                )}
-              </Stack>
-
-              {/* 主图展示 */}
-              <Box
-                sx={(theme) => ({
-                  background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
-                  borderRadius: 2,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                  minHeight: isMobile ? 280 : 400,
-                  padding: isMobile ? 10 : 0,
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-                })}
-              >
-                <Box
-                  role="img"
-                  aria-label={title}
-                  sx={{
-                    width: "100%",
-                    maxHeight: isMobile ? "46vh" : "70vh",
-                    minHeight: isMobile ? 260 : 360,
-                    backgroundImage: `url("${activeImage}")`,
-                    backgroundSize: "contain",
-                    backgroundRepeat: "no-repeat",
-                    backgroundPosition: "center",
-                    cursor: gallery.length > 1 ? "pointer" : "default",
-                  }}
-                  onClick={() => gallery.length > 1 && setLightboxOpened(true)}
-                />
-              </Box>
-
-              {/* 缩略图导航 */}
-              {gallery.length > 1 && (
-                <Stack spacing="sm">
-                  <Group position="apart">
-                    <Text weight={600}>
-                      {t("collections.detailGallery")} ({gallery.length})
-                    </Text>
-                    <Group spacing="xs">
+                  {/* 缩略图导航 */}
+                  {gallery.length > 1 && (
+                    <Group spacing="xs" position="center">
                       <ActionIcon
                         variant="light"
-                        size={isMobile ? "lg" : "md"}
+                        size="sm"
                         onClick={goToPrevious}
                       >
-                        <IconChevronLeft size={18} />
+                        <IconChevronLeft size={14} />
                       </ActionIcon>
+                      <ScrollArea type="hover" offsetScrollbars>
+                        <Group spacing={6} noWrap>
+                          {gallery.map((imageUrl, index) => (
+                            <Box
+                              key={index}
+                              onClick={() => setSelectedImage(imageUrl)}
+                              sx={(theme) => ({
+                                width: 56,
+                                height: 56,
+                                borderRadius: 4,
+                                overflow: "hidden",
+                                cursor: "pointer",
+                                border: selectedImage === imageUrl
+                                  ? "2px solid #c4a255"
+                                  : "2px solid transparent",
+                                opacity: selectedImage === imageUrl ? 1 : 0.55,
+                                transition: "all 200ms ease",
+                                "&:hover": {
+                                  opacity: 1,
+                                  borderColor: "#c4a255",
+                                },
+                              })}
+                            >
+                              <Box
+                                role="img"
+                                aria-label={`Photo ${index + 1}`}
+                                sx={{
+                                  width: "100%",
+                                  height: "100%",
+                                  backgroundImage: `url("${imageUrl}")`,
+                                  backgroundSize: "cover",
+                                  backgroundPosition: "center",
+                                }}
+                              />
+                            </Box>
+                          ))}
+                        </Group>
+                      </ScrollArea>
                       <ActionIcon
                         variant="light"
-                        size={isMobile ? "lg" : "md"}
+                        size="sm"
                         onClick={goToNext}
                       >
-                        <IconChevronRight size={18} />
+                        <IconChevronRight size={14} />
                       </ActionIcon>
                     </Group>
-                  </Group>
+                  )}
 
-                  <ScrollArea type="always" offsetScrollbars>
-                    <Group spacing="sm" noWrap={isMobile}>
-                      {gallery.map((imageUrl, index) => (
-                        <Box
-                          key={index}
-                          onClick={() => setSelectedImage(imageUrl)}
-                          sx={{
-                            border: selectedImage === imageUrl ? "2px solid #d8b76d" : "1px solid transparent",
-                            borderRadius: 8,
-                            overflow: "hidden",
-                            cursor: "pointer",
-                            transition: "all 0.2s",
-                            minWidth: isMobile ? 92 : undefined,
-                            "&:hover": {
-                              borderColor: "#d8b76d",
-                            },
-                          }}
-                        >
-                          <Box
-                            role="img"
-                            aria-label={`Photo ${index + 1}`}
-                            sx={{ 
-                              width: isMobile ? 92 : 120, 
-                              height: isMobile ? 92 : 80, 
-                              backgroundImage: `url("${imageUrl}")`,
-                              backgroundSize: "contain",
-                              backgroundRepeat: "no-repeat",
-                              backgroundPosition: "center",
-                              backgroundColor: "rgba(34, 39, 47, 0.25)"
-                            }}
-                          />
-                        </Box>
-                      ))}
-                    </Group>
-                  </ScrollArea>
-                </Stack>
-              )}
-
-              {/* 3D Model Viewer */}
-              {item.threeDModel && (
-                <Stack spacing="sm">
-                  <Group spacing="xs" align="center">
-                    <Text weight={600} size="sm">
-                      {locale === "zh" ? "3D 模型" : "3D Model"}
-                    </Text>
-                    <Badge
-                      size="sm"
-                      variant="filled"
-                      color="yellow"
-                    >
-                      3D
-                    </Badge>
-                  </Group>
-                  <Model3DViewer
-                    src={item.threeDModel.url}
-                    poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
-                    alt={title}
-                    autoRotate
-                    ar
-                    height={isMobile ? 300 : 420}
-                  />
-                  {item.threeDModel.fileSize && (
-                    <Text size="xs" color="dimmed">
-                      {locale === "zh" ? "文件大小" : "Size"}: {(item.threeDModel.fileSize / (1024 * 1024)).toFixed(1)} MB
-                      {item.threeDModel.vertexCount && ` · ${item.threeDModel.vertexCount.toLocaleString()} vertices`}
-                    </Text>
+                  {/* 3D 模型 */}
+                  {item.threeDModel && (
+                    <Box>
+                      <Group spacing="xs" mb="xs">
+                        <Text weight={600} size="sm">
+                          {locale === "zh" ? "3D 模型" : "3D Model"}
+                        </Text>
+                        <Badge size="sm" variant="filled" color="yellow">3D</Badge>
+                      </Group>
+                      <Model3DViewer
+                        src={item.threeDModel.url}
+                        poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
+                        alt={title}
+                        autoRotate
+                        ar
+                        height={isMobile ? 280 : 340}
+                      />
+                    </Box>
                   )}
                 </Stack>
-              )}
+              </Box>
 
-              {/* 藏品介绍 */}
-              {description && (
-                <Stack
-                  spacing="sm"
-                  sx={(theme) => ({
-                    padding: isMobile ? 16 : 20,
-                    borderRadius: 2,
-                    background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-                  })}
-                >
-                  <Title order={4}>{t("collections.detailDescription")}</Title>
-                  <Text size="md" sx={(theme) => ({ color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0], whiteSpace: "pre-wrap" })}>
-                    {description}
-                  </Text>
+              {/* ===== 右栏：藏品详情 ===== */}
+              <Box
+                sx={{
+                  flex: 1,
+                  width: isMobile ? "100%" : undefined,
+                  minWidth: 0,
+                }}
+              >
+                <Stack spacing="xl">
+                  {/* 标题区域 */}
+                  <Stack spacing="sm">
+                    <Group spacing="xs">
+                      <Badge
+                        size="lg"
+                        variant="light"
+                        sx={(theme) => artworkSourceBadgeSx(item.isOfficial, theme)}
+                      >
+                        {item.isOfficial === true
+                          ? t("cases.platformUpload")
+                          : t("cases.personalUserUpload")}
+                      </Badge>
+                      {item.collectionId && (
+                        <Badge
+                          variant="light"
+                          size="lg"
+                          sx={(theme) => ({
+                            backgroundColor: theme.colorScheme === "dark"
+                              ? "rgba(246, 239, 227, 0.12)"
+                              : "rgba(0, 0, 0, 0.06)",
+                            color: theme.colorScheme === "dark" ? "#d4c8b0" : theme.colors.dark[0],
+                            border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.18)" : "rgba(0, 0, 0, 0.1)"}`
+                          })}
+                        >
+                          {item.collectionId}
+                        </Badge>
+                      )}
+                    </Group>
+
+                    <Title
+                      order={isMobile ? 3 : 2}
+                      sx={(theme) => ({
+                        fontFamily: '"Playfair Display", Georgia, serif',
+                        fontWeight: 600,
+                        fontSize: isMobile ? 28 : 38,
+                        lineHeight: 1.18,
+                        letterSpacing: "-0.02em",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#1a1815",
+                      })}
+                    >
+                      {title}
+                    </Title>
+
+                    {/* 价格 */}
+                    {item.isForSale && item.price ? (
+                      <Group spacing="xs" align="baseline">
+                        <Badge color="yellow" variant="filled" size="lg">
+                          {t("collections.forSaleLabel")}
+                        </Badge>
+                        <Text
+                          size={isMobile ? 24 : 30}
+                          weight={700}
+                          sx={{ color: "#c4a255", fontFamily: "Georgia, serif" }}
+                        >
+                          {item.currency === "CNY" ? "¥" : "$"}{item.price.toLocaleString()}
+                        </Text>
+                      </Group>
+                    ) : (
+                      <Badge color="gray" variant="filled" size="lg">
+                        {t("collections.notForSaleLabel")}
+                      </Badge>
+                    )}
+
+                    {isAdmin && item.isOfficial !== true && uploaderEmail && (
+                      <Text size="sm" color="dimmed">
+                        {locale === "zh" ? "上传用户" : "Uploader"}: {uploaderEmail}
+                      </Text>
+                    )}
+                  </Stack>
+
+                  {/* 装饰分割线 */}
+                  <Box
+                    sx={(theme) => ({
+                      height: 1,
+                      background: theme.colorScheme === "dark"
+                        ? "linear-gradient(90deg, rgba(196,162,85,0.3), rgba(196,162,85,0.05))"
+                        : "linear-gradient(90deg, rgba(180,140,100,0.3), rgba(180,140,100,0.05))",
+                      width: "60%",
+                    })}
+                  />
+
+                  {/* 咨询按钮 */}
+                  {showInquiryButton && (
+                    <Button
+                      component={Link}
+                      href={inquiryHref}
+                      variant="filled"
+                      size="md"
+                      fullWidth={isMobile}
+                      sx={{
+                        backgroundColor: "#c4a255",
+                        color: "#1a1815",
+                        fontWeight: 600,
+                        fontSize: 15,
+                        "&:hover": {
+                          backgroundColor: "#b8943e",
+                        },
+                      }}
+                    >
+                      {t("home.bookButton")}
+                    </Button>
+                  )}
+
+                  {/* 藏品描述 */}
+                  {description && (
+                    <Box
+                      sx={(theme) => ({
+                        padding: isMobile ? 16 : 24,
+                        borderRadius: 4,
+                        background: theme.colorScheme === "dark"
+                          ? "linear-gradient(135deg, rgba(196,162,85,0.04), rgba(196,162,85,0.01))"
+                          : "linear-gradient(135deg, rgba(180,140,100,0.04), rgba(180,140,100,0.01))",
+                        border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.1)" : "rgba(180,140,100,0.12)"}`,
+                        position: "relative",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: 3,
+                          height: "100%",
+                          background: "linear-gradient(180deg, #c4a255, transparent)",
+                          borderRadius: "4px 0 0 4px",
+                        },
+                      })}
+                    >
+                      <Text
+                        weight={600}
+                        size="sm"
+                        mb="sm"
+                        sx={{
+                          color: "#c4a255",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontSize: 11,
+                        }}
+                      >
+                        {locale === "zh" ? "藏品介绍" : "Description"}
+                      </Text>
+                      <Text
+                        size="md"
+                        sx={(theme) => ({
+                          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                          lineHeight: 1.8,
+                          whiteSpace: "pre-wrap",
+                        })}
+                      >
+                        {description}
+                      </Text>
+                    </Box>
+                  )}
                 </Stack>
-              )}
-            </Stack>
+              </Box>
+            </Box>
           </Container>
         </AnimatedBox>
       </Wrapper>
-
       {/* 灯箱模式 - 全屏查看 */}
       <Modal
         opened={lightboxOpened}
