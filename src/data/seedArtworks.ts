@@ -422,7 +422,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2021-078", salePrice: "¥52,000,000", saleTime: "2021-11-22", salePlatform: "香港佳士得 (Christie's HK)", clientRegion: "香港", logisticsCost: "HK$30,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥52,000,000", riskAdvice: "北宋山水巨迹存世极少。郭熙真迹更是寥若晨星。鉴定重点：绢本质地（北宋绢经纬密度特征）、墨色年代感、历代收藏印鉴的真伪。此卷经梁清标等名家递藏。"},
   },
   {
-    id: "seed-027", title: "Vase with flowers and birds of the four seasons", titleZh: "清粉彩花鸟纹瓶，通体以粉彩绘四季花卉——春牡丹、夏荷、秋菊、...",
+    id: "seed-027", title: "Vase with flowers and birds of the four seasons", titleZh: "清 粉彩四季花鸟纹瓶",
     category: "porcelain", categoryZh: "瓷器",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP350410.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP350410.jpg"],
@@ -432,7 +432,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "POR-2024-027", isOfficial: true,
   },
   {
-    id: "seed-028", title: "Vase with pheasants, rocks, and flowers", titleZh: "清粉彩花鸟纹瓶，瓶身绘锦鸡立于山石之上，旁有花卉盛开。锦鸡羽...",
+    id: "seed-028", title: "Vase with pheasants, rocks, and flowers", titleZh: "清 粉彩锦鸡牡丹纹瓶",
     category: "porcelain", categoryZh: "瓷器",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/32_100_432_O1_sf.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/32_100_432_O1_sf.jpg"],
@@ -442,7 +442,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "POR-2024-028", isOfficial: true,
   },
   {
-    id: "seed-029", title: "Vase with alternating landscape and floral scenes", titleZh: "清五彩开光山水花卉纹瓶，瓶腹开光内分绘山水图景和花卉纹。山水...",
+    id: "seed-029", title: "Vase with alternating landscape and floral scenes", titleZh: "清 五彩开光山水花卉纹瓶",
     category: "porcelain", categoryZh: "瓷器",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/14_40_418_sf.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/14_40_418_sf.jpg"],
@@ -452,7 +452,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "POR-2024-029", isOfficial: true,
   },
   {
-    id: "seed-030", title: "Dish with God of Longevity (Shoulao) and an attendant", titleZh: "清斗彩寿老图盘，盘心绘寿老拄杖而立，旁有童子捧桃相随。以青花...",
+    id: "seed-030", title: "Dish with God of Longevity (Shoulao) and an attendant", titleZh: "清 斗彩寿老图盘",
     category: "porcelain", categoryZh: "瓷器",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP-15944-033.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP-15944-033.jpg"],
@@ -462,7 +462,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "POR-2024-030", isOfficial: true,
   },
   {
-    id: "seed-031", title: "Covered ewer", titleZh: "清青花缠枝莲纹执壶，器型修长呈梨形，通体以青花绘缠枝莲花纹。...",
+    id: "seed-031", title: "Covered ewer", titleZh: "清 青花缠枝莲纹执壶",
     category: "porcelain", categoryZh: "瓷器",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/rl/web-large/1677-1.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/rl/web-large/1677-1.jpg"],
@@ -472,7 +472,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "POR-2024-031", isOfficial: true,
   },
   {
-    id: "seed-032", title: "Boy with water buffalo", titleZh: "清白玉雕童子牧牛摆件，以和田白玉雕成。一童子倚坐于水牛身旁，...",
+    id: "seed-032", title: "Boy with water buffalo", titleZh: "清 白玉雕童子牧牛摆件",
     category: "jade", categoryZh: "玉器",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DT257389.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DT257389.jpg"],
@@ -482,7 +482,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "JAD-2024-032", isOfficial: true,
   },
   {
-    id: "seed-033", title: "Twelve animals of the Chinese zodiac", titleZh: "清白玉雕十二生肖组像，以白玉琢成十二生肖动物各一。鼠之机敏、...",
+    id: "seed-033", title: "Twelve animals of the Chinese zodiac", titleZh: "清 白玉雕十二生肖组像",
     category: "jade", categoryZh: "玉器",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DT5058.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DT5058.jpg"],
@@ -492,7 +492,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2024-033", salePrice: "HK$1,800,000", saleTime: "2024-10-06", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥8,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "HK$1,800,000", riskAdvice: "此件为Metropolitan Museum of Art同款藏品。来源清晰传承有序。建议仔细查验品相和保存状态。"},
   },
   {
-    id: "seed-034", title: "Basin", titleZh: "清乾隆三十九年白玉素面盆，以整块和田白玉挖制。器型端庄素面无...",
+    id: "seed-034", title: "Basin", titleZh: "清乾隆 白玉素面盆",
     category: "jade", categoryZh: "玉器",
     period: "Qing Dynasty, Qianlong (1736-1795)", periodZh: "清乾隆 1774年",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP-14153-068.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP-14153-068.jpg"],
@@ -502,7 +502,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "JAD-2024-034", isOfficial: true,
   },
   {
-    id: "seed-035", title: "Knotted dragon pendant", titleZh: "战国青玉雕虬龙纹佩，玉料呈青绿色。龙身虬曲盘绕，以阴线刻出细...",
+    id: "seed-035", title: "Knotted dragon pendant", titleZh: "战国 青玉虬龙纹佩",
     category: "jade", categoryZh: "玉器",
     period: "Warring States (3rd-2nd Century BC)", periodZh: "战国 公元前3-2世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP-32069-001.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP-32069-001.jpg"],
@@ -512,7 +512,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2024-035", salePrice: "¥4,500,000", saleTime: "2024-12-08", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥8,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥4,500,000", riskAdvice: "此件为Metropolitan Museum of Art同款藏品。来源清晰传承有序。建议仔细查验品相和保存状态。"},
   },
   {
-    id: "seed-036", title: "Buddha Maitreya (Mile)", titleZh: "北魏太和十年铜鎏金弥勒佛像，像背刻太和十年款。弥勒佛结跏趺坐...",
+    id: "seed-036", title: "Buddha Maitreya (Mile)", titleZh: "北魏太和十年 铜鎏金弥勒佛像",
     category: "misc", categoryZh: "杂项",
     period: "Northern Wei Dynasty, dated 486", periodZh: "北魏太和十年 (486年)",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP170102.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP170102.jpg"],
@@ -522,7 +522,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2024-036", salePrice: "¥12,000,000", saleTime: "2024-01-09", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥8,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥12,000,000", riskAdvice: "此件为Metropolitan Museum of Art同款藏品。来源清晰传承有序。建议仔细查验品相和保存状态。"},
   },
   {
-    id: "seed-037", title: "Seated Buddha, probably Shakyamuni (Shijiamouni)", titleZh: "十六国-北魏铜鎏金释迦牟尼佛坐像，以分范合铸法铸造。佛像面容...",
+    id: "seed-037", title: "Seated Buddha, probably Shakyamuni (Shijiamouni)", titleZh: "十六国-北魏 铜鎏金释迦牟尼佛坐像",
     category: "misc", categoryZh: "杂项",
     period: "Sixteen Kingdoms-Northern Wei, 4th-5th C.", periodZh: "十六国-北魏 4-5世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP-15581-062.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP-15581-062.jpg"],
@@ -531,7 +531,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "MIS-2024-037", isOfficial: true,
   },
   {
-    id: "seed-038", title: "Vase", titleZh: "清铜瓶，器型修长呈胆瓶式。通体光素无纹，皮壳深沉温润。以铜质...",
+    id: "seed-038", title: "Vase", titleZh: "清 铜胆瓶",
     category: "bronze", categoryZh: "青铜器",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP702289 .jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP702289 .jpg"],
@@ -541,7 +541,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "BRO-2024-038", isOfficial: true,
   },
   {
-    id: "seed-039", title: "Grooms and horses", titleZh: "元人画圉人调马图卷，纸本设色。绘圉人牵马洗刷之景，马匹体态骏...",
+    id: "seed-039", title: "Grooms and horses", titleZh: "元 圉人调马图卷",
     category: "calligraphy", categoryZh: "书画",
     period: "Yuan Dynasty, dated 1296/1359", periodZh: "元 1296/1359年",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP213981_CRD.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP213981_CRD.jpg"],
@@ -551,7 +551,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2024-039", salePrice: "¥38,000,000", saleTime: "2024-04-12", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥8,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥38,000,000", riskAdvice: "此件为Metropolitan Museum of Art同款藏品。来源清晰传承有序。建议仔细查验品相和保存状态。"},
   },
   {
-    id: "seed-040", title: "One hundred water buffalo", titleZh: "南宋佚名百牛图卷，纸本水墨。以长卷形式绘百头水牛，或涉水或食...",
+    id: "seed-040", title: "One hundred water buffalo", titleZh: "南宋 百牛图卷",
     category: "calligraphy", categoryZh: "书画",
     period: "Southern Song Dynasty, 13th Century", periodZh: "南宋 13世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP166575_CRD.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP166575_CRD.jpg"],
@@ -561,7 +561,7 @@ export const seedArtworks: Artwork[] = [
     caseRecord: {caseId: "CASE-2024-040", salePrice: "¥22,000,000", saleTime: "2024-05-13", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥8,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥22,000,000", riskAdvice: "此件为Metropolitan Museum of Art同款藏品。来源清晰传承有序。建议仔细查验品相和保存状态。"},
   },
   {
-    id: "seed-041", title: "Outing to Zhang Gong's Grotto", titleZh: "清人画张公洞游记图卷，纸本设色。绘文人雅士游张公洞之景，山石...",
+    id: "seed-041", title: "Outing to Zhang Gong's Grotto", titleZh: "清 张公洞游记图卷",
     category: "calligraphy", categoryZh: "书画",
     period: "Qing Dynasty, ca. 1700", periodZh: "清 约1700年",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP204906_CRD.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP204906_CRD.jpg"],
@@ -571,7 +571,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "CAL-2024-041", isOfficial: true,
   },
   {
-    id: "seed-042", title: "Wangchuan Villa", titleZh: "清康熙五十年辋川图卷，纸本设色。依王维辋川诗意绘二十景。笔墨...",
+    id: "seed-042", title: "Wangchuan Villa", titleZh: "清康熙 辋川图卷",
     category: "calligraphy", categoryZh: "书画",
     period: "Qing Dynasty, Kangxi (1662-1722)", periodZh: "清康熙 1711年",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP214271_CRD.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP214271_CRD.jpg"],
@@ -581,7 +581,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "CAL-2024-042", isOfficial: true,
   },
   {
-    id: "seed-043", title: "Fan", titleZh: "清山水书画成扇，纸本设色。扇面绘山水小景笔墨清雅。竹制扇骨包...",
+    id: "seed-043", title: "Fan", titleZh: "清 山水书画成扇",
     category: "calligraphy", categoryZh: "书画",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/51_14_149307.JPG", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/51_14_149307.JPG"],
@@ -590,7 +590,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "CAL-2024-043", isOfficial: true,
   },
   {
-    id: "seed-044", title: "Folding Fan with Fishing Net Decoration", titleZh: "清渔网纹书画成扇，纸本设色。扇面以渔网纹为地绘山水人物。竹骨...",
+    id: "seed-044", title: "Folding Fan with Fishing Net Decoration", titleZh: "清 渔网纹书画成扇",
     category: "calligraphy", categoryZh: "书画",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/1988_212.JPG", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/1988_212.JPG"],
@@ -599,7 +599,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "CAL-2024-044", isOfficial: true,
   },
   {
-    id: "seed-045", title: "Landscapes", titleZh: "清山水十二开册页，纸本设色。十二开各绘不同时节和气候下的山水...",
+    id: "seed-045", title: "Landscapes", titleZh: "清 山水十二开册页",
     category: "calligraphy", categoryZh: "书画",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP160995.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP160995.jpg"],
@@ -608,7 +608,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "CAL-2024-045", isOfficial: true,
   },
   {
-    id: "seed-046", title: "Snuff bottle", titleZh: "清料器鼻烟壶，透明玻璃制成呈琥珀色。器型圆润素面无纹。原配盖...",
+    id: "seed-046", title: "Snuff bottle", titleZh: "清 料器鼻烟壶",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP321914.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP321914.jpg"],
@@ -618,7 +618,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-046", isOfficial: true,
   },
   {
-    id: "seed-047", title: "Snuff bottle", titleZh: "清料器鼻烟壶，乳白色玻璃制成。器型简洁素雅，体现文人审美。高...",
+    id: "seed-047", title: "Snuff bottle", titleZh: "清 料器鼻烟壶",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP319240.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP319240.jpg"],
@@ -628,7 +628,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-047", isOfficial: true,
   },
   {
-    id: "seed-048", title: "Snuff Bottle", titleZh: "清料器鼻烟壶配金星石盖，透明玻璃壶身配以闪烁的金星石盖。高7...",
+    id: "seed-048", title: "Snuff Bottle", titleZh: "清 料器鼻烟壶配金星石盖",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP321809.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP321809.jpg"],
@@ -638,7 +638,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-048", isOfficial: true,
   },
   {
-    id: "seed-049", title: "Snuff bottle with fish", titleZh: "清套料鱼纹鼻烟壶，以红色玻璃套白色胎雕出鱼纹。配象牙玻璃盖。...",
+    id: "seed-049", title: "Snuff bottle with fish", titleZh: "清 套料鱼纹鼻烟壶",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th-19th Century", periodZh: "清 18-19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP295200.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP295200.jpg"],
@@ -648,7 +648,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-049", isOfficial: true,
   },
   {
-    id: "seed-050", title: "Snuff bottle with design of coins", titleZh: "清钱纹鼻烟壶，模制玻璃表面饰以钱纹寓意财富。高6厘米。...",
+    id: "seed-050", title: "Snuff bottle with design of coins", titleZh: "清 钱纹鼻烟壶",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP319222.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP319222.jpg"],
@@ -658,7 +658,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-050", isOfficial: true,
   },
   {
-    id: "seed-051", title: "One of a Pair of Vases with Dragon Handles", titleZh: "清掐丝珐琅龙耳尊（一对之一），铜胎鎏金饰以掐丝珐琅和錾胎珐琅...",
+    id: "seed-051", title: "One of a Pair of Vases with Dragon Handles", titleZh: "清 掐丝珐琅鎏金龙耳尊",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/29_110_49_O1.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/29_110_49_O1.jpg"],
@@ -668,7 +668,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-051", isOfficial: true,
   },
   {
-    id: "seed-052", title: "Rice measure with four constellation deities", titleZh: "清剔红四神纹量器，朱漆层叠雕出青龙、白虎、朱雀、玄武四神。雕...",
+    id: "seed-052", title: "Rice measure with four constellation deities", titleZh: "清 剔红四神纹量器",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DT219097.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DT219097.jpg"],
@@ -678,7 +678,7 @@ export const seedArtworks: Artwork[] = [
     collectionId: "MIS-2024-052", isOfficial: true,
   },
   {
-    id: "seed-053", title: "Tray with Chinese characters, bats, and fruits", titleZh: "清三色剔彩福寿纹盘，以红、绿、黄三色漆层雕出蝙蝠、寿桃和吉祥...",
+    id: "seed-053", title: "Tray with Chinese characters, bats, and fruits", titleZh: "清 三色剔彩福寿纹盘",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP353883.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP353883.jpg"],
@@ -687,7 +687,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "MIS-2024-053", isOfficial: true,
   },
   {
-    id: "seed-054", title: "Tray with dragon and Chinese characters", titleZh: "清剔红云龙纹盘，盘心雕云龙戏珠纹，外饰吉祥文字。朱漆层厚色泽...",
+    id: "seed-054", title: "Tray with dragon and Chinese characters", titleZh: "清 剔红云龙纹盘",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 19th Century", periodZh: "清 19世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP256031.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP256031.jpg"],
@@ -696,7 +696,7 @@ export const seedArtworks: Artwork[] = [
     isForSale: false, collectionId: "MIS-2024-054", isOfficial: true,
   },
   {
-    id: "seed-055", title: "Armchair", titleZh: "清紫檀木扶手椅，以紫檀和花梨木制作。靠背板弧形搭脑，扶手曲线...",
+    id: "seed-055", title: "Armchair", titleZh: "清 紫檀木扶手椅",
     category: "misc", categoryZh: "杂项",
     period: "Qing Dynasty, 18th Century", periodZh: "清 18世纪",
     image: "https://images.metmuseum.org/CRDImages/as/web-large/1976_193_4.JPG", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/1976_193_4.JPG"],
