@@ -50,7 +50,7 @@ const useStyles = createStyles((theme) => ({
 
     "&:hover .mantine-Button-label, &[data-hovered] .mantine-Button-label": {
       color:
-        theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9],
+        theme.colorScheme === "dark" ? "#c4a255" : theme.colors.dark[9],
     },
   },
   activeLink: {
