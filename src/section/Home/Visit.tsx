@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { appMutedTextColor, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 
 const data = [
   {
@@ -47,12 +48,14 @@ export default function VisitSection() {
 
   return (
     <Container fluid pt={80} pb={120}>
-      <Title size={smallerThan ? 32 : 48} align="center" mb="md">
-        {t("home.visitTitle")}
-      </Title>
-      <Text size="lg" align="center" mb="xl">
-        {t("home.visitSubtitle")}
-      </Text>
+      <Box sx={{ maxWidth: 760, margin: "0 auto 48px" }}>
+        <Title size={smallerThan ? 32 : 48} align="center" mb="md">
+          {t("home.visitTitle")}
+        </Title>
+        <Text size="lg" align="center" sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.8 })}>
+          {t("home.visitSubtitle")}
+        </Text>
+      </Box>
       <SimpleGrid
         cols={3}
         spacing="lg"
@@ -78,25 +81,36 @@ export default function VisitSection() {
               height: "100%",
               display: "flex",
               flexDirection: "column",
+              transition: "transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease",
+              "&:hover": {
+                transform: "translateY(-4px)",
+                borderColor: "#c4a255",
+                boxShadow: theme.colorScheme === "dark"
+                  ? "0 6px 20px rgba(0,0,0,0.26)"
+                  : "0 8px 22px rgba(0,0,0,0.08)",
+              },
             })}
           >
             <Image src={item.image} alt={t(item.titleKey)} height={320} radius="sm" />
             <Box
-              p="md"
+              p={smallerThan ? "md" : "lg"}
               sx={{
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
               }}
             >
-              <Text size="xl" weight={600} pt="md">
+              <Text size="xl" weight={600} pt="sm">
                 {t(item.titleKey)}
               </Text>
-              <Text my="sm" sx={{ flex: 1 }}>{t(item.textKey)}</Text>
+              <Text my="sm" sx={(theme) => ({ flex: 1, color: appMutedTextColor(theme), lineHeight: 1.75 })}>
+                {t(item.textKey)}
+              </Text>
               <Button 
-                variant="outline" 
+                variant="outline"
                 fullWidth={smallerThan}
                 onClick={handleLearnMore}
+                sx={(theme) => secondaryActionButtonSx(theme)}
               >
                 {t("visit.learnMore")}
               </Button>

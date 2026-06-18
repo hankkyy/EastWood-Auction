@@ -55,6 +55,11 @@ import {
   Title,
 } from "@mantine/core";
 import {
+  appMutedTextColor,
+  appSurfaceBackground,
+  appTextColor,
+} from "@/components/artworkStyles";
+import {
   IconCheck,
   IconChartBar,
   IconDatabaseImport,
@@ -199,18 +204,23 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    color: theme.colors.dark[1],
+    color: appMutedTextColor(theme),
   },
 
   resultCard: {
     height: "100%",
     border: `1px solid rgba(216, 183, 109, 0.18)`,
-    backgroundColor: theme.colors.dark[6],
+    backgroundColor: appSurfaceBackground(theme),
+    color: appTextColor(theme),
   },
 
   insightCard: {
     border: `1px solid rgba(216, 183, 109, 0.18)`,
-    backgroundColor: "rgba(15, 18, 22, 0.56)",
+    backgroundColor:
+      theme.colorScheme === "dark"
+        ? "rgba(15, 18, 22, 0.56)"
+        : "rgba(255, 253, 249, 0.96)",
+    color: appTextColor(theme),
   },
 
   metricRow: {

@@ -16,6 +16,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
+import { appMutedTextColor, appSurfaceBackground, appSurfaceBorder, appTextColor } from "@/components/artworkStyles";
 
 interface Listing {
   id: string;
@@ -174,13 +175,19 @@ export default function MarketWatchPage() {
                   >
                     <Box
                       sx={(theme) => ({
-                        background: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fff",
+                        background: appSurfaceBackground(theme),
+                        color: appTextColor(theme),
+                        border: `1px solid ${appSurfaceBorder(theme)}`,
                         borderRadius: 2,
                         overflow: "hidden",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04)",
+                        boxShadow: theme.colorScheme === "dark"
+                          ? "0 4px 14px rgba(0,0,0,0.18)"
+                          : "0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04)",
                         transition: "box-shadow 0.2s, transform 0.2s",
                         "&:hover": {
-                          boxShadow: "0 4px 8px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.06)",
+                          boxShadow: theme.colorScheme === "dark"
+                            ? "0 10px 28px rgba(0,0,0,0.24)"
+                            : "0 4px 8px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.06)",
                           transform: "translateY(-2px)",
                         },
                       })}
@@ -191,7 +198,7 @@ export default function MarketWatchPage() {
                           height: 200,
                           background: item.images?.[0]
                             ? `url(${item.images[0].url}) center/cover`
-                            : "#f2ede5",
+                            : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
                           position: "relative",
                         }}
                       >
@@ -211,7 +218,12 @@ export default function MarketWatchPage() {
                           size="sm"
                           weight={400}
                           lineClamp={2}
-                          sx={{ fontFamily: "inherit", lineHeight: 1.3, minHeight: 36 }}
+                          sx={(theme) => ({
+                            fontFamily: "inherit",
+                            lineHeight: 1.3,
+                            minHeight: 36,
+                            color: appTextColor(theme),
+                          })}
                         >
                           {item.title}
                         </Text>
@@ -226,7 +238,7 @@ export default function MarketWatchPage() {
                           )}
                         </Group>
                         {item.seller && (
-                          <Text size="xs" color="dimmed" mt={4}>
+                          <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme) })}>
                             {item.seller}
                             {item.seller_rating && ` · ★ ${item.seller_rating}`}
                           </Text>

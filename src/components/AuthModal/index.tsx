@@ -13,6 +13,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
+import { primaryActionButtonSx } from "@/components/artworkStyles";
 
 interface AuthModalProps {
   opened: boolean;
@@ -205,12 +206,11 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 loading={loading} 
                 fullWidth
                 size="lg"
-                styles={{
-                  root: {
-                    minHeight: 52, // 增大按钮高度
-                    fontSize: 17,
-                    fontWeight: 600,
-                  },
+                sx={{
+                  ...primaryActionButtonSx,
+                  minHeight: 52,
+                  fontSize: 17,
+                  fontWeight: 600,
                 }}
               >
                 {t("auth.login")}
@@ -301,12 +301,11 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 loading={loading} 
                 fullWidth
                 size="lg"
-                styles={{
-                  root: {
-                    minHeight: 52,
-                    fontSize: 17,
-                    fontWeight: 600,
-                  },
+                sx={{
+                  ...primaryActionButtonSx,
+                  minHeight: 52,
+                  fontSize: 17,
+                  fontWeight: 600,
                 }}
               >
                 {t("auth.register")}

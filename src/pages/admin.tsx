@@ -22,6 +22,7 @@ import { IconShield, IconUser, IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminMarketWatch from "@/components/AdminMarketWatch";
+import { appFieldLabelColor, primaryActionButtonSx } from "@/components/artworkStyles";
 
 type AdminProfile = Pick<
   Profile,
@@ -246,7 +247,7 @@ export default function AdminPage() {
                 color="dimmed"
                 sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
               >
-                <Text component="span" weight={600} color="gray.3">
+                <Text component="span" weight={600} sx={(theme) => ({ color: appFieldLabelColor(theme) })}>
                   {locale === "zh" ? "邮箱：" : "Email: "}
                 </Text>
                 {profile.email || (locale === "zh" ? "无邮箱" : "No email")}
@@ -256,7 +257,7 @@ export default function AdminPage() {
                 color="dimmed"
                 sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
               >
-                <Text component="span" weight={600} color="gray.3">
+                <Text component="span" weight={600} sx={(theme) => ({ color: appFieldLabelColor(theme) })}>
                   {locale === "zh" ? "用户ID：" : "User ID: "}
                 </Text>
                 {profile.user_id || "-"}
@@ -266,7 +267,7 @@ export default function AdminPage() {
                 color="dimmed"
                 sx={{ lineHeight: 1.6, whiteSpace: "normal", overflowWrap: "anywhere" }}
               >
-                <Text component="span" weight={600} color="gray.3">
+                <Text component="span" weight={600} sx={(theme) => ({ color: appFieldLabelColor(theme) })}>
                   {locale === "zh" ? "角色：" : "Role: "}
                 </Text>
                 {profile.role === "admin"
@@ -428,8 +429,10 @@ export default function AdminPage() {
                   color="violet"
                   fullWidth={isMobile}
                   sx={{
+                    ...primaryActionButtonSx,
                     boxShadow: "0 8px 18px rgba(196, 162, 85, 0.25)",
                     "&:hover": {
+                      ...primaryActionButtonSx["&:hover"],
                       boxShadow: "0 10px 22px rgba(196, 162, 85, 0.35)",
                     },
                   }}
@@ -443,9 +446,10 @@ export default function AdminPage() {
                   color="violet"
                   fullWidth={isMobile}
                   sx={{
-                    color: "#111",
+                    ...primaryActionButtonSx,
                     boxShadow: "0 8px 18px rgba(196, 162, 85, 0.25)",
                     "&:hover": {
+                      ...primaryActionButtonSx["&:hover"],
                       boxShadow: "0 10px 22px rgba(196, 162, 85, 0.35)",
                     },
                   }}

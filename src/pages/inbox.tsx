@@ -26,6 +26,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { IconAlertCircle, IconInbox, IconSend } from "@tabler/icons-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 
 type InquiryMessage = {
   id: string;
@@ -537,7 +538,7 @@ export default function InboxPage() {
               !pendingState.update.isArchived && !pendingState.update.isProcessed
                 ? {
                     backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.22)" : "#f6e7b0",
-                    color: theme.colorScheme === "dark" ? "#d4b96a" : "#4f3b12",
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
                     border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.35)" : "rgba(180, 158, 120, 0.3)"}`,
                     "&:hover": {
                       backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
@@ -626,7 +627,7 @@ export default function InboxPage() {
             inquiry.is_processed
               ? {
                   backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.22)" : "#f6e7b0",
-                  color: theme.colorScheme === "dark" ? "#d4b96a" : "#4f3b12",
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
                   border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.35)" : "rgba(180, 158, 120, 0.3)"}`,
                   "&:hover": {
                     backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
@@ -646,7 +647,7 @@ export default function InboxPage() {
           fullWidth={isMobile}
           sx={(theme) => ({
             backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.12)" : "#f6e7b0",
-            color: theme.colorScheme === "dark" ? "#c4a255" : "#4f3b12",
+            color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
             "&:hover": {
               backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.2)" : "#f2dc8f",
             },
@@ -991,7 +992,7 @@ export default function InboxPage() {
                   inquiry.is_archived
                     ? {
                         backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.18)" : "#f6e7b0",
-                        color: theme.colorScheme === "dark" ? "#c4a255" : "#4f3b12",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
                       }
                     : {}
                 }
@@ -1214,6 +1215,7 @@ export default function InboxPage() {
                     loading={statusUpdatingId === inquiry.id}
                     disabled={statusUpdatingId === inquiry.id}
                     fullWidth={isMobile}
+                    sx={{ color: "#1a1815" }}
                     onClick={() =>
                       void updateInquiryStatus(
                         inquiry.id,
@@ -1253,6 +1255,10 @@ export default function InboxPage() {
                       loading={statusUpdatingId === inquiry.id}
                       disabled={statusUpdatingId === inquiry.id}
                       fullWidth={isMobile}
+                      sx={(theme) => ({
+                        ...secondaryActionButtonSx(theme),
+                        minHeight: 40,
+                      })}
                       onClick={() =>
                         void updateInquiryStatus(
                           inquiry.id,
@@ -1269,6 +1275,10 @@ export default function InboxPage() {
                     onClick={() => void handleReplySubmit(inquiry.id)}
                     loading={replyingId === inquiry.id}
                     fullWidth={isMobile}
+                    sx={{
+                      ...primaryActionButtonSx,
+                      minHeight: 40,
+                    }}
                   >
                     {t("inbox.sendReply")}
                   </Button>
@@ -1349,7 +1359,12 @@ export default function InboxPage() {
                 <Stack spacing="sm">
                   <Text>{t("inbox.loginRequiredMessage")}</Text>
                   <Group>
-                    <Button onClick={() => setAuthModalOpened(true)}>
+                    <Button
+                      onClick={() => setAuthModalOpened(true)}
+                      sx={{
+                        ...primaryActionButtonSx,
+                      }}
+                    >
                       {t("auth.loginRegister")}
                     </Button>
                     <Button

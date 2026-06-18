@@ -1,5 +1,6 @@
 import { useI18n } from "@/i18n";
 import type { Locale } from "@/i18n";
+import { appSurfaceBackground, appSurfaceBorder, appTextColor } from "@/components/artworkStyles";
 import { Button, createStyles, Group, Menu, UnstyledButton } from "@mantine/core";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useState } from "react";
@@ -39,7 +40,7 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
     color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
 
     "&:hover": {
-      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.violet[2],
+      backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.12)" : theme.colors.violet[2],
     },
   },
 
@@ -137,7 +138,15 @@ export default function LanguagePicker({ mobile = false }: LanguagePickerProps) 
           <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
         </UnstyledButton>
       </Menu.Target>
-      <Menu.Dropdown>{items}</Menu.Dropdown>
+      <Menu.Dropdown
+        sx={(theme) => ({
+          backgroundColor: appSurfaceBackground(theme),
+          border: `1px solid ${appSurfaceBorder(theme)}`,
+          color: appTextColor(theme),
+        })}
+      >
+        {items}
+      </Menu.Dropdown>
     </Menu>
   );
 }

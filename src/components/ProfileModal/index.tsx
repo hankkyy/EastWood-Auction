@@ -13,6 +13,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import { useAuth, type AuthUser } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
+import { primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 
 interface ProfileModalProps {
   opened: boolean;
@@ -218,12 +219,11 @@ export default function ProfileModal({
               loading={loading} 
               fullWidth
               size="lg"
-              styles={{
-                root: {
-                  minHeight: 52,
-                  fontSize: 17,
-                  fontWeight: 600,
-                },
+              sx={{
+                ...primaryActionButtonSx,
+                minHeight: 52,
+                fontSize: 17,
+                fontWeight: 600,
               }}
             >
               {t("auth.saveChanges")}
@@ -235,25 +235,24 @@ export default function ProfileModal({
 
         {/* 退出登录按钮 */}
         <Button
-          color="violet"
-          variant="filled"
+          variant="default"
           onClick={() => {
             logout();
             onClose();
           }}
           fullWidth
           size="lg"
-          sx={{
+          sx={(theme) => ({
+            ...secondaryActionButtonSx(theme),
             minHeight: 52,
             fontSize: 17,
             fontWeight: 600,
-            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+            "&:hover": {
+              ...secondaryActionButtonSx(theme)["&:hover"],
+              transform: "translateY(-2px)",
             },
-            transition: 'all 0.2s ease',
-          }}
+            transition: "all 0.2s ease",
+          })}
         >
           {t("auth.logout")}
         </Button>
