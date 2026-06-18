@@ -1016,7 +1016,7 @@ export default function InboxPage() {
                         alignItems: "start",
                       }}
                   >
-                    <Text size="sm" weight={600} color="gray.3">
+                    <Text size="sm" weight={600} color="dimmed">
                       {item.label}
                       {locale === "zh" ? "：" : ": "}
                     </Text>
@@ -1048,7 +1048,7 @@ export default function InboxPage() {
                 alignItems: "start",
               }}
             >
-              <Text size="sm" weight={600} color="gray.3">
+              <Text size="sm" weight={600} color="dimmed">
                 {locale === "zh" ? "联系电话：" : "Phone: "}
               </Text>
               <Text
@@ -1073,7 +1073,7 @@ export default function InboxPage() {
                 alignItems: "start",
               }}
             >
-              <Text size="sm" weight={600} color="gray.3">
+              <Text size="sm" weight={600} color="dimmed">
                 {locale === "zh" ? "联系邮箱：" : "Email: "}
               </Text>
               <Text
@@ -1473,7 +1473,7 @@ export default function InboxPage() {
                           }}
                         >
                           <Group position="apart" mb="sm">
-                            <Text weight={800} color="gray.4">
+                            <Text weight={800} color="dimmed">
                               {locale === "zh" ? "已归档会话" : "Archived conversations"}
                             </Text>
                             <Badge color="gray" variant="light">
@@ -1596,7 +1596,7 @@ export default function InboxPage() {
                           }}
                         >
                           <Group position="apart" mb={4}>
-                            <Text weight={800} color="gray.4">
+                            <Text weight={800} color="dimmed">
                               {locale === "zh" ? "已归档会话" : "Archived conversations"}
                             </Text>
                             <Badge color="gray" variant="light">
@@ -1659,7 +1659,7 @@ export default function InboxPage() {
                           })}
                         >
                           <Group position="apart" mb={4}>
-                            <Text weight={800} color="blue.3">
+                            <Text weight={800} sx={{ color: "#c4a255" }}>
                               {locale === "zh" ? "我的咨询列表" : "My inquiries"}
                             </Text>
                             <Badge color="yellow" variant="light">
