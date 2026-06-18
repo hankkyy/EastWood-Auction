@@ -8,7 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import type { Artwork, ArtworkCaseRecord } from "@/data/artworks";
-import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
+import { artworkCardShellBackground, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
 import { useRouter } from "next/router"; // ✅ 导入 useRouter
 import {
   Alert,
@@ -789,8 +789,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   key={item.id}
                   component={Link}
                   href={`/cases/${item.id}`}
-                  padding="md"
-                  radius="lg"
+                  padding={14}
+                  radius={20}
                   sx={(theme) => ({
                     background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
                     border: cardBorder(theme),
@@ -800,16 +800,11 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     boxShadow: cardShadow(theme),
                     position: "relative",
                     overflow: "hidden",
-                    padding: 14,
-                    "@media (max-width: 48em)": {
-                      padding: 12,
-                      borderRadius: 22,
-                    },
                     "&::before": {
                       content: '""',
                       position: "absolute",
                       inset: 0,
-                      borderRadius: 18,
+                      borderRadius: 20,
                       boxShadow: cardInnerRim(theme),
                       pointerEvents: "none",
                       zIndex: 2,
@@ -818,7 +813,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       content: '""',
                       position: "absolute",
                       inset: 0,
-                      borderRadius: 18,
+                      borderRadius: 20,
                       background:
                         theme.colorScheme === "dark"
                           ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
@@ -831,73 +826,44 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       border: cardBorderHover(theme),
                       boxShadow: cardShadowHover(theme),
                     },
+                    "@media (max-width: 48em)": {
+                      padding: 12,
+                      borderRadius: 18,
+                    },
                   })}
                 >
                   <Box
+                    component="img"
+                    src={item.image}
+                    alt={itemTitle}
                     sx={(theme) => ({
-                      ...buildArtworkImageSurfaceSx(item.image)(theme),
-                      height: 430,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: 18,
-                      position: "relative",
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-                      "@media (max-width: 62em)": {
-                        height: 340,
-                      },
-                      "@media (max-width: 48em)": {
-                        height: 280,
-                        padding: 12,
-                        borderRadius: 14,
-                      },
+                      width: "100%",
+                      height: 260,
+                      objectFit: "cover",
+                      display: "block",
+                      "@media (max-width: 62em)": { height: 220 },
+                      "@media (max-width: 48em)": { height: 200 },
                     })}
-                  >
-                    <Box
-                      component="img"
-                      src={item.image}
-                      alt={itemTitle}
-                      sx={{ width: "100%", height: "100%", objectFit: "contain", position: "relative", zIndex: 1 }}
-                    />
-                  </Box>
-                  
-                  <Stack
-                    spacing="sm"
-                    mt="lg"
+                  />
+                  <Box
                     sx={{
                       position: "relative",
-                      zIndex: 1,
-                      padding: "6px 8px 2px",
-                      "@media (max-width: 48em)": {
-                        padding: "6px 8px 0",
-                      },
+                      zIndex: 3,
+                      padding: 16,
                     }}
                   >
-                    <Title
-                      order={3}
-                      size="h3"
-                      align="center"
+                    <Text
+                      size="lg"
+                      weight={600}
                       sx={(theme) => ({
-                        color: theme.colorScheme === "dark" ? "#f3ead8" : "#1a1815",
-                        letterSpacing: "0.035em",
-                        fontWeight: 600,
-                        lineHeight: 1.32,
-                        fontSize: 22,
-                        fontFamily:
-                          '"Cormorant Garamond", "Noto Serif SC", "STSong", "Songti SC", serif',
-                        textShadow: "0 1px 0 rgba(0, 0, 0, 0.14)",
-                        marginTop: 16,
-                        "@media (max-width: 48em)": {
-                          marginTop: 12,
-                          fontSize: 19,
-                        },
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                        letterSpacing: "-0.01em",
+                        lineHeight: 1.35,
                       })}
                     >
                       {itemTitle}
-                    </Title>
-                  </Stack>
+                    </Text>
+                  </Box>
                 </Card>
               );
             })}

@@ -4,7 +4,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import type { Artwork } from "@/data/artworks";
-import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
+import { artworkCardShellBackground, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconDatabaseImport, IconLayoutList, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -167,7 +167,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     textDecoration: "none",
     cursor: "pointer",
     padding: remValue(14),
-    borderRadius: remValue(26),
+    borderRadius: remValue(20),
     background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
     border: cardBorder(theme),
     boxShadow: cardShadow(theme),
@@ -179,7 +179,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       content: '""',
       position: "absolute",
       inset: 0,
-      borderRadius: remValue(26),
+      borderRadius: remValue(20),
       boxShadow: cardInnerRim(theme),
       pointerEvents: "none",
       zIndex: 2,
@@ -189,7 +189,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       content: '""',
       position: "absolute",
       inset: 0,
-      borderRadius: remValue(26),
+      borderRadius: remValue(20),
       background:
         theme.colorScheme === "dark"
           ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
@@ -207,90 +207,50 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
 
     [theme.fn.smallerThan("sm")]: {
       padding: remValue(12),
-      borderRadius: remValue(22),
+      borderRadius: remValue(18),
     },
   },
   itemBody: {
-    padding: `${remValue(6)} ${remValue(8)} ${remValue(2)}`,
+    padding: theme.spacing.md,
     position: "relative",
-    zIndex: 1,
+    zIndex: 3,
   },
 
-  imageWrap: {
-    overflow: "hidden",
-    height: remValue(430),
-    borderRadius: remValue(18),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: remValue(14),
+  cardImage: {
+    width: "100%",
+    height: remValue(320),
+    objectFit: "cover",
+    display: "block",
+
     [theme.fn.smallerThan("md")]: {
-      height: remValue(340),
-      padding: remValue(12),
+      height: remValue(260),
     },
 
     [theme.fn.smallerThan("sm")]: {
-      height: remValue(280),
-      borderRadius: remValue(14),
-      padding: remValue(10),
+      height: remValue(220),
     },
-  },
-
-  image: {
-    maxWidth: "100%",
-    maxHeight: "100%",
-    width: "auto",
-    height: "auto",
-    objectFit: "contain",
-    display: "block",
-    transition: "transform 220ms ease, filter 220ms ease",
-
-    "&:hover": {
-      transform: "scale(1.025)",
-      filter: "brightness(1.08)",
-    },
-
   },
 
   itemTitle: {
-    marginTop: remValue(16),
-    textAlign: "center",
-    color: theme.colorScheme === "dark" ? "#f3ead8" : "#1a1815",
-    fontSize: remValue(22),
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+    fontSize: remValue(18),
     fontWeight: 600,
-    letterSpacing: "0.035em",
-    lineHeight: 1.32,
-    fontFamily:
-      '"Cormorant Garamond", "Noto Serif SC", "STSong", "Songti SC", serif',
-    textShadow: "0 1px 0 rgba(0, 0, 0, 0.14)",
+    letterSpacing: "-0.01em",
+    lineHeight: 1.35,
 
     [theme.fn.smallerThan("sm")]: {
-      marginTop: remValue(12),
-      fontSize: remValue(19),
-      lineHeight: 1.35,
+      fontSize: remValue(16),
     },
   },
-  itemMeta: {
-    marginTop: remValue(10),
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: remValue(20),
 
-    [theme.fn.smallerThan("sm")]: {
-      marginTop: remValue(6),
-    },
-  },
   itemPrice: {
-    color: "#d7bc7e",
-    lineHeight: 1.2,
-    textAlign: "center",
-    fontSize: remValue(14),
-    letterSpacing: "0.08em",
+    color: "#c4a255",
+    fontSize: remValue(15),
     fontWeight: 600,
+    letterSpacing: "0.04em",
 
     [theme.fn.smallerThan("sm")]: {
-      fontSize: remValue(13),
+      fontSize: remValue(14),
     },
   },
 }));
@@ -594,30 +554,18 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               className={classes.cardLink}
                             >
                               <Box
-                                className={classes.imageWrap}
-                                sx={(theme) => ({
-                                  ...buildArtworkImageSurfaceSx(item.image)(theme),
-                                  position: "relative",
-                                })}
-                              >
-                                <Box
-                                  component="img"
-                                  src={item.image}
-                                  alt={item.title}
-                                  className={classes.image}
-                                  sx={{ position: "relative", zIndex: 1 }}
-                                />
-                              </Box>
+                                component="img"
+                                src={item.image}
+                                alt={item.title}
+                                className={classes.cardImage}
+                              />
                               <Box className={classes.itemBody}>
                                 <Text className={classes.itemTitle}>{item.title}</Text>
-
-                                <Box className={classes.itemMeta}>
-                                  {shopMode && artwork?.isForSale && artwork?.price ? (
-                                    <Text className={classes.itemPrice}>
-                                      {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
-                                    </Text>
-                                  ) : null}
-                                </Box>
+                                {shopMode && artwork?.isForSale && artwork?.price ? (
+                                  <Text className={classes.itemPrice} mt={6}>
+                                    {artwork.currency === "CNY" ? "¥" : "$"}{artwork.price.toLocaleString()}
+                                  </Text>
+                                ) : null}
                               </Box>
                             </Box>
                           );
