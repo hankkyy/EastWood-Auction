@@ -15,7 +15,7 @@ const useStyles = createStyles((theme) => ({
   },
   bg: {
     // 使用中国古董图片作为背景
-    backgroundImage: `url(https://images.unsplash.com/photo-1590422749897-3d53b972d515?auto=format&fit=crop&w=1400&q=80)`,
+    backgroundImage: `url(https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&w=1400&q=80)`,
     minHeight: rem(650),
     backgroundAttachment: "fixed",
     backgroundPosition: "center",
