@@ -166,21 +166,18 @@ export default function AppFooter({ data }: FooterLinksProps) {
 
   const footerLabels: Record<string, string> = {
     "About Us": t("footer.about"),
-    Governance: t("footer.governance"),
-    "Museum Story": t("footer.museumStory"),
-    Jobs: t("footer.jobs"),
-    Press: t("footer.press"),
+    "Auction House Story": t("footer.ourStory"),
     "Contact Us": t("footer.contactUs"),
-    Visit: t("footer.visit"),
-    Map: t("footer.map"),
-    "Exhibitions and Events": t("footer.exhibitionsEvents"),
-    Accessibility: t("footer.accessibility"),
-    "Audio Guide": t("footer.audioGuide"),
+    Press: t("footer.press"),
+    Services: t("footer.services"),
+    "Consign & Sell": t("footer.consign"),
+    Appraisals: t("footer.appraisals"),
+    "Private Sales": t("footer.privateSales"),
     Resources: t("footer.resources"),
-    "Study Rooms": t("footer.studyRooms"),
-    "Library and Archive": t("footer.libraryArchive"),
     Blog: t("footer.blog"),
-    Community: t("footer.community"),
+    FAQ: t("footer.faq"),
+    "Privacy Policy": t("footer.privacy"),
+    "Terms of Use": t("footer.terms"),
   };
 
   const translateFooterLabel = (label: string) => footerLabels[label] ?? label;

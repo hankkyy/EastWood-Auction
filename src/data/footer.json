@@ -4,23 +4,53 @@
       "title": "About Us",
       "links": [
         {
-          "label": "Governance",
+          "label": "Auction House Story",
           "link": "#"
         },
         {
-          "label": "Museum Story",
-          "link": "#"
-        },
-        {
-          "label": "Jobs",
+          "label": "Contact Us",
           "link": "#"
         },
         {
           "label": "Press",
           "link": "#"
+        }
+      ]
+    },
+    {
+      "title": "Services",
+      "links": [
+        {
+          "label": "Consign & Sell",
+          "link": "#"
         },
         {
-          "label": "Contact Us",
+          "label": "Appraisals",
+          "link": "#"
+        },
+        {
+          "label": "Private Sales",
+          "link": "#"
+        }
+      ]
+    },
+    {
+      "title": "Resources",
+      "links": [
+        {
+          "label": "Blog",
+          "link": "#"
+        },
+        {
+          "label": "FAQ",
+          "link": "#"
+        },
+        {
+          "label": "Privacy Policy",
+          "link": "#"
+        },
+        {
+          "label": "Terms of Use",
           "link": "#"
         }
       ]
