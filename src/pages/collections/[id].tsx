@@ -554,7 +554,7 @@ export default function CollectionDetailPage() {
             {/* ===== 同类推荐 ===== */}
             {(() => {
               const sameCategory = items.filter(
-                (a) => a.category === item.category && a.id !== item.id
+                (a) => a.category === item.category && a.id !== item.id && !a.caseRecord
               ).slice(0, 4);
               if (sameCategory.length === 0) return null;
               return (

@@ -660,7 +660,7 @@ export default function CaseDetailPage() {
             {/* ===== 同类推荐 ===== */}
             {(() => {
               const sameCategory = items.filter(
-                (a) => a.category === item.category && a.id !== item.id
+                (a) => a.category === item.category && a.id !== item.id && a.caseRecord
               ).slice(0, 4);
               if (sameCategory.length === 0) return null;
               return (
@@ -702,7 +702,9 @@ export default function CaseDetailPage() {
                     {sameCategory.map((related) => {
                       const relatedTitle = locale === "zh" && related.titleZh
                         ? related.titleZh : related.title;
-                      const relatedHref = related.listingType === "product"
+                      const relatedHref = related.caseRecord
+                        ? `/cases/${related.id}`
+                        : related.listingType === "product"
                         ? `/shop/${related.id}`
                         : `/collections/${related.id}`;
                       return (
