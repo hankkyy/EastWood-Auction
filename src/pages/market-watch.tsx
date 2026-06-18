@@ -57,14 +57,10 @@ export default function MarketWatchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [jumpValue, setJumpValue] = useState<number | ''>('');
-  const gridRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (page > 1 && gridRef.current) {
-      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [page]);
+
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
+
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
@@ -162,7 +158,7 @@ export default function MarketWatchPage() {
                 {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
               </Text>
             ) : (
-              <Box ref={gridRef}>
+              <Box>
               <SimpleGrid
                 cols={3}
                 spacing="lg"
