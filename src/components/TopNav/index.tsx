@@ -88,14 +88,14 @@ const useStyles = createStyles((theme) => ({
     flex: "0 0 auto",
     objectFit: "cover",
     borderRadius: theme.radius.sm,
-    border: "1px solid rgba(216, 183, 109, 0.24)",
+    border: `1px solid rgba(0,0,0,0.08)`,
     [theme.fn.smallerThan("sm")]: {
       width: rem(32),
       height: rem(32),
     },
   },
   brandText: {
-    color: theme.white,
+    color: theme.colors.dark[9],
     fontSize: rem(28),
     fontWeight: 800,
     lineHeight: 1,

@@ -30,9 +30,9 @@ import { useI18n } from "@/i18n";
 const useStyles = createStyles((theme) => ({
   footer: {
     marginTop: rem(120),
-    backgroundColor: "#0f1216",
-    color: theme.colors.dark[0],
-    borderTop: `${rem(1)} solid rgba(216, 183, 109, 0.18)`,
+    backgroundColor: "#faf8f5",
+    color: theme.colors.dark[9],
+    borderTop: `${rem(1)} solid rgba(0,0,0,0.06)`,
   },
 
   container: {
