@@ -448,7 +448,8 @@ export const seedArtworks: Artwork[] = [
     image: "https://images.metmuseum.org/CRDImages/as/web-large/14_40_418_sf.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/14_40_418_sf.jpg"],
     description: "Qing Dynasty polychrome enamel vase featuring alternating landscape and floral reserves. The shaped panels show misty mo", descriptionZh: "清五彩开光山水花卉纹瓶，瓶腹开光内分绘山水图景和花卉纹。山水深远花卉繁茂，色彩对比鲜明，为18-19世纪外销瓷佳作。",
     listingType: "product", featureVector: [0.5, 0.2, 0.35, 0.62, 0.28, 0.52, 0.38, 0.35],
-    isForSale: true, price: 85000, currency: "USD",
+    isForSale: false,
+    caseRecord: {caseId: "CASE-2024-029", salePrice: "¥680,000", saleTime: "2024-03-15", salePlatform: "北京保利 (Poly Auction)", clientRegion: "北京", logisticsCost: "¥10,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥680,000", riskAdvice: "五彩外销瓷近年涨幅可观。此件为海外回流品相完好。"}, price: 85000, currency: "USD",
     collectionId: "POR-2024-029", isOfficial: true,
   },
   {
@@ -498,7 +499,8 @@ export const seedArtworks: Artwork[] = [
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP-14153-068.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP-14153-068.jpg"],
     description: "Important Qianlong-period nephrite jade basin, dated 1774. The shallow bowl is carved from a single block of fine white ", descriptionZh: "清乾隆三十九年白玉素面盆，以整块和田白玉挖制。器型端庄素面无纹，以玉质取胜。底有乾隆三十九年款。口径22厘米。",
     listingType: "product", featureVector: [0.5, 0.3, 0.25, 0.52, 0.38, 0.52, 0.28, 0.45],
-    isForSale: true, price: 380000, currency: "USD",
+    isForSale: false,
+    caseRecord: {caseId: "CASE-2024-034", salePrice: "¥2,800,000", saleTime: "2024-05-20", salePlatform: "香港苏富比 (Sotheby's HK)", clientRegion: "北京", logisticsCost: "¥10,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥2,800,000", riskAdvice: "乾隆白玉素面器以玉质取胜。此盆为清宫旧藏流传有序。"}, price: 380000, currency: "USD",
     collectionId: "JAD-2024-034", isOfficial: true,
   },
   {
@@ -537,7 +539,8 @@ export const seedArtworks: Artwork[] = [
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP702289 .jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP702289 .jpg"],
     description: "Qing Dynasty copper alloy vase of elegant baluster form with a rich dark patina. The simple, unadorned surface highlight", descriptionZh: "清铜瓶，器型修长呈胆瓶式。通体光素无纹，皮壳深沉温润。以铜质之美取胜，为清代文人书斋陈设器。高28厘米。",
     listingType: "product", featureVector: [0.4, 0.3, 0.35, 0.62, 0.38, 0.42, 0.38, 0.45],
-    isForSale: true, price: 55000, currency: "USD",
+    isForSale: false,
+    caseRecord: {caseId: "CASE-2024-038", salePrice: "¥180,000", saleTime: "2024-02-10", salePlatform: "中国嘉德 (China Guardian)", clientRegion: "北京", logisticsCost: "¥10,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥180,000", riskAdvice: "清代铜瓶以器型和皮壳为贵。此瓶器型优美皮壳温润。"}, price: 55000, currency: "USD",
     collectionId: "BRO-2024-038", isOfficial: true,
   },
   {
@@ -567,7 +570,8 @@ export const seedArtworks: Artwork[] = [
     image: "https://images.metmuseum.org/CRDImages/as/web-large/DP204906_CRD.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/DP204906_CRD.jpg"],
     description: "Delightful Qing Dynasty handscroll depicting an outing to Zhang Gong's Grotto, ca. 1700. Ink and color on paper showing ", descriptionZh: "清人画张公洞游记图卷，纸本设色。绘文人雅士游张公洞之景，山石奇崛洞壑幽深。约1700年作。",
     listingType: "product", featureVector: [0.2, 0.2, 0.35, 0.62, 0.28, 0.22, 0.38, 0.35],
-    isForSale: true, price: 160000, currency: "USD",
+    isForSale: false,
+    caseRecord: {caseId: "CASE-2024-041", salePrice: "¥2,500,000", saleTime: "2024-04-22", salePlatform: "北京保利 (Poly Auction)", clientRegion: "北京", logisticsCost: "¥10,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥2,500,000", riskAdvice: "清代山水手卷需注意纸本保存状态。此卷品相完好。"}, price: 160000, currency: "USD",
     collectionId: "CAL-2024-041", isOfficial: true,
   },
   {
@@ -664,7 +668,8 @@ export const seedArtworks: Artwork[] = [
     image: "https://images.metmuseum.org/CRDImages/as/web-large/29_110_49_O1.jpg", galleryImages: ["https://images.metmuseum.org/CRDImages/as/web-large/29_110_49_O1.jpg"],
     description: "Magnificent pair of Qing Dynasty cloisonné enamel vases with dragon handles. The gilt-bronze bodies are adorned with cha", descriptionZh: "清掐丝珐琅龙耳尊（一对之一），铜胎鎏金饰以掐丝珐琅和錾胎珐琅。双耳为鎏金龙形，富丽堂皇。高35厘米。",
     listingType: "product", featureVector: [0.2, 0.4, 0.15, 0.42, 0.48, 0.22, 0.18, 0.55],
-    isForSale: true, price: 280000, currency: "USD",
+    isForSale: false,
+    caseRecord: {caseId: "CASE-2024-051", salePrice: "¥1,500,000", saleTime: "2024-01-15", salePlatform: "香港佳士得 (Christie's HK)", clientRegion: "北京", logisticsCost: "¥10,000", purchaseChannel: "拍卖会竞拍", purchaseCost: "¥1,500,000", riskAdvice: "掐丝珐琅需注意釉面修补痕迹。此尊鎏金完好珐琅色彩鲜艳。"}, price: 280000, currency: "USD",
     collectionId: "MIS-2024-051", isOfficial: true,
   },
   {
