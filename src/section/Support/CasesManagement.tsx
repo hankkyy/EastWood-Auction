@@ -355,9 +355,9 @@ const CasesManagementSection = memo(function CasesManagementSection({
 
   const handleStartEdit = (artwork: Artwork) => {
     setEditingArtworkId(artwork.id);
-    setEditCaseName(artwork.title || ""); // ✅ 初始化案例名称
+    setEditCaseName(artwork.titleZh || artwork.title || ""); // 优先中文名
     setEditCategory(artwork.category || "misc");
-    setEditItemDetails(artwork.description || "");
+    setEditItemDetails(artwork.descriptionZh || artwork.description || "");
     
     // ✅ 初始化图片数组 - 优先使用 galleryImages,否则使用 image
     const images = artwork.galleryImages && artwork.galleryImages.length > 0
@@ -431,7 +431,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
         title: editCaseName, // ✅ 使用编辑后的案例名称
         category: editCategory || "misc",
         categoryZh: getCategoryTextZh(editCategory || "misc"),
-        description: editItemDetails || artwork.description,
+        description: editItemDetails || artwork.descriptionZh || artwork.description,
         image: editImages[editCoverIndex], // 封面照片
         galleryImages: editImages, // 所有照片
         caseRecord,
@@ -867,14 +867,14 @@ const CasesManagementSection = memo(function CasesManagementSection({
                           <Box
                             component="img"
                             src={artwork.image}
-                            alt={artwork.title}
+                            alt={artwork.titleZh || artwork.title}
                             sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                           />
                         </Box>
 
                         {/* ✅ 非编辑模式：显示基本信息（名称、编号）和操作按钮 */}
                         <Stack spacing="xs">
-                          <Text weight={600} size="lg">{artwork.title}</Text>
+                          <Text weight={600} size="lg">{artwork.titleZh || artwork.title}</Text>
                           
                           {artwork.caseRecord?.caseId && (
                             <Badge variant="outline" size="sm">
