@@ -30,9 +30,9 @@ import { useI18n } from "@/i18n";
 const useStyles = createStyles((theme) => ({
   footer: {
     marginTop: rem(120),
-    backgroundColor: "#f5f0e9",
-    color: theme.colors.dark[9],
-    borderTop: `${rem(1)} solid rgba(0,0,0,0.06)`,
+    backgroundColor: "transparent",
+    color: "inherit",
+    borderTop: `${rem(1)} solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
   },
 
   container: {
@@ -158,9 +158,9 @@ export default function AppFooter({ data }: FooterLinksProps) {
     p: theme.spacing.md,
     spacing: 6,
     sx: {
-      backgroundColor: theme.colors.dark[6],
-      border: `1px solid rgba(216, 183, 109, 0.18)`,
-      borderRadius: theme.radius.sm,
+      backgroundColor: theme.colorScheme === "dark" ? "rgba(255,255,255,0.04)" : "#fff",
+      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
+      borderRadius: 2,
     },
   };
 
