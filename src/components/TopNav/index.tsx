@@ -32,7 +32,9 @@ const useStyles = createStyles((theme) => ({
   header: {
     border: "none",
     padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
-    backgroundColor: "transparent",
+    backgroundColor: theme.colorScheme === "dark" ? "rgba(26,24,21,0.92)" : "transparent",
+    backdropFilter: theme.colorScheme === "dark" ? "blur(12px)" : "none",
+    borderBottom: theme.colorScheme === "dark" ? "1px solid rgba(196,162,85,0.08)" : "none",
     color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
   },
   link: {
@@ -41,9 +43,9 @@ const useStyles = createStyles((theme) => ({
 
     "&:hover, &[data-hovered]": {
       backgroundColor:
-        theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.dark[0],
+        theme.colorScheme === "dark" ? "rgba(196,162,85,0.12)" : theme.colors.dark[0],
       color:
-        theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9],
+        theme.colorScheme === "dark" ? "#c4a255" : theme.colors.dark[9],
     },
 
     "&:hover .mantine-Button-label, &[data-hovered] .mantine-Button-label": {
