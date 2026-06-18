@@ -112,13 +112,12 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
     <Modal
       opened={opened}
       onClose={onClose}
-      title={t("auth.modalTitle")}
       centered
       size="md"
       closeOnClickOutside={false} // 禁止点击外部关闭
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
-      styles={{
+      styles={(theme) => ({
         content: {
           borderRadius: isMobile ? 0 : 16,
           padding: 0,
@@ -126,9 +125,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
           overflowY: "auto",
         },
         header: {
-          marginBottom: 16,
+          marginBottom: 0,
+          paddingBottom: 0,
         },
-      }}
+        close: {
+          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+        },
+      })}
     >
       <Box
         sx={(theme) => ({
@@ -142,27 +145,33 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
         <Tabs.List grow mb="lg">
           <Tabs.Tab 
             value="login"
-            styles={{
+            styles={(theme) => ({
               tab: {
                 fontSize: 16,
                 fontWeight: 600,
                 padding: "12px 16px",
-                minHeight: 48, // 增大触摸区域
+                minHeight: 48,
+                color: theme.colorScheme === "dark"
+                  ? (activeTab === "login" ? theme.colors.dark[9] : theme.colors.dark[5])
+                  : (activeTab === "login" ? theme.colors.dark[0] : theme.colors.dark[4]),
               },
-            }}
+            })}
           >
             {t("auth.login")}
           </Tabs.Tab>
           <Tabs.Tab 
             value="register"
-            styles={{
+            styles={(theme) => ({
               tab: {
                 fontSize: 16,
                 fontWeight: 600,
                 padding: "12px 16px",
-                minHeight: 48, // 增大触摸区域
+                minHeight: 48,
+                color: theme.colorScheme === "dark"
+                  ? (activeTab === "register" ? theme.colors.dark[9] : theme.colors.dark[5])
+                  : (activeTab === "register" ? theme.colors.dark[0] : theme.colors.dark[4]),
               },
-            }}
+            })}
           >
             {t("auth.register")}
           </Tabs.Tab>
