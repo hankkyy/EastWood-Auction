@@ -36,4 +36,9 @@ export const theme: MantineThemeOverride = {
     fontFamily: "Georgia, 'Times New Roman', serif",
     fontWeight: 400,
   },
+  globalStyles: (theme) => ({
+    "h1, h2, h3, h4, h5, h6": {
+      letterSpacing: "-0.02em",
+    },
+  }),
 };
