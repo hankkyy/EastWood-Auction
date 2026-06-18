@@ -250,7 +250,7 @@ export default function ArtworkVisualSearchModal({
       title={locale === "zh" ? "拍照识图" : "Visual Search"}
       size="xl"
       centered
-      styles={{
+      styles={(theme) => ({
         content: {
           background:
             "linear-gradient(180deg, rgba(19, 23, 30, 0.98), rgba(13, 17, 24, 0.98))",
@@ -260,11 +260,10 @@ export default function ArtworkVisualSearchModal({
           background: "transparent",
         },
         title: {
-          color: "#f3e7c2",
+          color: theme.colorScheme === "dark" ? "#f3e7c2" : theme.colors.dark[0],
           fontWeight: 700,
-          ...(theme.colorScheme === "light" && { color: theme.colors.dark[0] }),
         },
-      }}
+      })}
     >
       <Stack spacing="lg">
         <Card
