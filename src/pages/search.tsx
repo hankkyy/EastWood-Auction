@@ -209,8 +209,8 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                       })}
                     >
                       {locale === "zh"
-                        ? "通过关键词检索藏品、商品和回流案例。拍照识图功能已暂时下线，后续可直接恢复。"
-                        : "Search collections, products, and return cases by keywords. Visual search is temporarily unavailable and can be restored later."}
+                        ? "通过关键词检索藏品、商品和回流案例。"
+                        : "Search collections, products, and return cases by keywords."}
                     </Text>
                   </div>
                 </Group>
