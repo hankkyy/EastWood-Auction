@@ -189,7 +189,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
             <Title order={2} color="red">{t("auth.loginRequired")}</Title>
-            <Text color="dimmed" align="center">
+            <Text align="center">
               {locale === "zh" 
                 ? `请先登录后才能${mode === "upload" ? (shopMode ? "上传商品" : "上传藏品") : (shopMode ? "管理商品" : "管理藏品")}。`
                 : `Please log in first to ${mode === "upload" ? (shopMode ? "upload products" : "upload collections") : (shopMode ? "manage products" : "manage collections")}.`}
@@ -1071,7 +1071,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                     ? (locale === "zh" ? "商品管理" : "Product Management")
                     : t("collections.managementTitle")}
                 </Title>
-                <Text color="dimmed">
+                <Text>
                   {isAdmin 
                     ? (shopMode 
                         ? (locale === "zh" ? "管理员模式：您可以上传和管理商店商品。" : "Admin mode: You can upload and manage shop products.")
