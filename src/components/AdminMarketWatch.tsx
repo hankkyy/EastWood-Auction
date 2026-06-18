@@ -243,18 +243,42 @@ export default function AdminMarketWatch() {
             value={formName}
             onChange={(e) => setFormName(e.currentTarget.value)}
             placeholder="e.g. 清代花瓶监控"
+            styles={(theme) => ({
+              label: {
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[1]
+                    : undefined,
+              },
+            })}
           />
           <TextInput
             label={locale === "zh" ? "搜索关键词（逗号分隔）" : "Keywords (comma-separated)"}
             value={formKeywords}
             onChange={(e) => setFormKeywords(e.currentTarget.value)}
             placeholder="Qing dynasty vase, 清代花瓶"
+            styles={(theme) => ({
+              label: {
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[1]
+                    : undefined,
+              },
+            })}
           />
           <TextInput
             label={locale === "zh" ? "eBay 分类 ID（逗号分隔）" : "eBay Category IDs"}
             value={formCategoryIds}
             onChange={(e) => setFormCategoryIds(e.currentTarget.value)}
             placeholder="37978 (optional)"
+            styles={(theme) => ({
+              label: {
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[1]
+                    : undefined,
+              },
+            })}
           />
           <Group grow>
             <NumberInput
@@ -262,12 +286,48 @@ export default function AdminMarketWatch() {
               value={formPriceMin}
               onChange={setFormPriceMin}
               placeholder="100"
+              styles={(theme) => ({
+                label: {
+                  color:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[1]
+                      : undefined,
+                },
+                input: {
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[5]
+                      : undefined,
+                  color:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[0]
+                      : undefined,
+                },
+              })}
             />
             <NumberInput
               label={locale === "zh" ? "最高价" : "Max Price"}
               value={formPriceMax}
               onChange={setFormPriceMax}
               placeholder="5000"
+              styles={(theme) => ({
+                label: {
+                  color:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[1]
+                      : undefined,
+                },
+                input: {
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[5]
+                      : undefined,
+                  color:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[0]
+                      : undefined,
+                },
+              })}
             />
           </Group>
           <MultiSelect
@@ -275,12 +335,28 @@ export default function AdminMarketWatch() {
             data={conditionOptions}
             value={formConditions}
             onChange={setFormConditions}
+            styles={(theme) => ({
+              label: {
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[1]
+                    : undefined,
+              },
+            })}
           />
           <MultiSelect
             label={locale === "zh" ? "上架类型" : "Listing Type"}
             data={listingTypeOptions}
             value={formListingTypes}
             onChange={setFormListingTypes}
+            styles={(theme) => ({
+              label: {
+                color:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[1]
+                    : undefined,
+              },
+            })}
           />
           <Button onClick={saveRule} mt="sm">
             {editingRule?.id
