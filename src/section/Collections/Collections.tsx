@@ -414,6 +414,26 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     ? (locale === "zh" ? "管理商品" : "Manage Products")
                     : (locale === "zh" ? "管理藏品" : "Manage Collections")}
                 </Button>
+
+                {/* 导入模拟数据按钮 */}
+                <Button
+                  onClick={async () => {
+                    if (!confirm(locale === "zh" ? "将导入 15 件古董模拟数据，确认？" : "Import 15 antique mock items?")) return;
+                    try {
+                      const res = await fetch("/api/seed", { method: "POST" });
+                      const data = await res.json();
+                      alert(data.results?.join("\n") || "Done");
+                      window.location.reload();
+                    } catch (e: any) {
+                      alert("Failed: " + e.message);
+                    }
+                  }}
+                  variant="light"
+                  color="yellow"
+                  size="sm"
+                >
+                  {locale === "zh" ? "导入模拟数据" : "Seed Mock Data"}
+                </Button>
               </Group>
             )}
 
