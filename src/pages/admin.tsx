@@ -235,7 +235,7 @@ export default function AdminPage() {
             <Group spacing="xs" mb="xs">
               <Text weight={700}>{formatDisplayName(profile, locale)}</Text>
               {isSelf && (
-                <Badge color="blue" variant="light">
+                <Badge color="yellow" variant="light">
                   {locale === "zh" ? "当前账号" : "Current account"}
                 </Badge>
               )}
@@ -425,12 +425,12 @@ export default function AdminPage() {
                   component={Link}
                   href="/inbox"
                   variant="filled"
-                  color="teal"
+                  color="violet"
                   fullWidth={isMobile}
                   sx={{
-                    boxShadow: "0 8px 18px rgba(18, 184, 134, 0.35)",
+                    boxShadow: "0 8px 18px rgba(196, 162, 85, 0.25)",
                     "&:hover": {
-                      boxShadow: "0 10px 22px rgba(18, 184, 134, 0.45)",
+                      boxShadow: "0 10px 22px rgba(196, 162, 85, 0.35)",
                     },
                   }}
                 >
@@ -498,7 +498,7 @@ export default function AdminPage() {
                       <IconUser size={20} />
                       <Title order={3}>{locale === "zh" ? "用户" : "Users"}</Title>
                     </Group>
-                    <Badge color="blue" variant="light">
+                    <Badge color="yellow" variant="light">
                       {userProfiles.length}
                     </Badge>
                   </Group>

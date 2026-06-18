@@ -206,7 +206,7 @@ export default function CollectionDetailPage() {
                 component={Link}
                 href="/collections"
                 variant="filled"
-                color="blue"
+                color="violet"
                 size={isMobile ? "sm" : "md"}
                 leftIcon={<IconChevronLeft size={18} />}
                 sx={{ 
@@ -277,7 +277,7 @@ export default function CollectionDetailPage() {
 
                 {item.isForSale && item.price ? (
                   <Group spacing="sm" align="center" noWrap={false}>
-                    <Badge color="green" variant="filled" size="lg">
+                    <Badge color="yellow" variant="filled" size="lg">
                       {t("collections.forSaleLabel")}
                     </Badge>
                     <Text 
@@ -293,7 +293,7 @@ export default function CollectionDetailPage() {
                     </Text>
                   </Group>
                 ) : (
-                  <Badge color="green" variant="filled" size="lg">
+                  <Badge color="gray" variant="filled" size="lg">
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
@@ -403,7 +403,7 @@ export default function CollectionDetailPage() {
                     <Badge
                       size="sm"
                       variant="filled"
-                      color="blue"
+                      color="yellow"
                     >
                       3D
                     </Badge>

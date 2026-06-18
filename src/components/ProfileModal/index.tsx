@@ -235,7 +235,7 @@ export default function ProfileModal({
 
         {/* 退出登录按钮 */}
         <Button
-          color="blue"
+          color="violet"
           variant="filled"
           onClick={() => {
             logout();

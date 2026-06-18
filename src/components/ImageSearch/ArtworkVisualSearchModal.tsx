@@ -220,7 +220,7 @@ export default function ArtworkVisualSearchModal({
 
       setResults(matchBody.matches ?? []);
       notifications.show({
-        color: "teal",
+        color: "#c4a255",
         title: locale === "zh" ? "识图完成" : "Visual search complete",
         message:
           locale === "zh"
@@ -506,7 +506,7 @@ export default function ArtworkVisualSearchModal({
                         />
                       </Box>
                       <Group position="apart" noWrap={false}>
-                        <Badge color={artwork.caseRecord ? "grape" : artwork.listingType === "product" ? "teal" : "blue"}>
+                        <Badge color={artwork.caseRecord ? "violet.4" : artwork.listingType === "product" ? "violet.5" : "yellow"}>
                           {getTypeLabel(locale, artwork)}
                         </Badge>
                         <Badge

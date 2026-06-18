@@ -242,7 +242,7 @@ export default function CaseDetailPage() {
                 component={Link} 
                 href="/cases" 
                 variant="filled"
-                color="blue"
+                color="violet"
                 size={isMobile ? "sm" : "md"}
                 leftIcon={<IconChevronLeft size={18} />}
                 sx={{ 
@@ -432,7 +432,7 @@ export default function CaseDetailPage() {
                     <Text weight={600} size="sm">
                       {locale === "zh" ? "3D 模型" : "3D Model"}
                     </Text>
-                    <Badge size="sm" variant="filled" color="blue">3D</Badge>
+                    <Badge size="sm" variant="filled" color="yellow">3D</Badge>
                   </Group>
                   <Model3DViewer
                     src={item.threeDModel.url}

@@ -618,13 +618,13 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             </Title>
             <Group noWrap={!isMobile}>
               {!isLoading && (
-                <Badge color="blue" size="lg">
+                <Badge color="violet" size="lg">
                   {collections.length} {t("collections.itemsCount")}
                 </Badge>
               )}
               <Button
                 variant="filled"
-                color="blue"
+                color="violet"
                 size="md"
                 onClick={onCancel || (() => router.back())}
                 leftIcon={<IconX size={18} />}
@@ -946,7 +946,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         <Group position="right">
                           <Button
                             variant="filled"
-                            color="blue"
+                            color="violet"
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1003,7 +1003,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         <Group position="right" spacing="xs">
                           <Button
                             variant="filled"
-                            color="blue"
+                            color="violet"
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1377,7 +1377,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
             <Group position="right">
               <Button
                 variant="filled"
-                color="blue"
+                color="violet"
                 size="md"
                 onClick={handleCancel}
                 leftIcon={<IconX size={18} />}

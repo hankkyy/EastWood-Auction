@@ -528,7 +528,7 @@ export default function InboxPage() {
         >
           <Button
             size="xs"
-            color={pendingState.update.isArchived ? "grape" : pendingState.update.isProcessed ? "teal" : "yellow"}
+            color={pendingState.update.isArchived ? "violet.4" : pendingState.update.isProcessed ? "violet.5" : "yellow"}
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
@@ -610,7 +610,7 @@ export default function InboxPage() {
           <>
         <Button
           size="xs"
-          color={inquiry.is_processed ? "yellow" : "teal"}
+          color={inquiry.is_processed ? "yellow" : "violet.5"}
           variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
@@ -639,7 +639,7 @@ export default function InboxPage() {
         </Button>
         <Button
           size="xs"
-          color="grape"
+          color="violet.4"
           variant="filled"
           loading={isUpdating}
           disabled={isUpdating}
@@ -674,7 +674,7 @@ export default function InboxPage() {
     const accentColor = inquiry.is_archived
       ? "rgba(186, 186, 186, 0.9)"
       : inquiry.is_processed
-        ? "rgba(32, 201, 151, 0.9)"
+        ? "rgba(155, 139, 110, 0.85)"
         : "rgba(216, 183, 109, 0.92)";
 
     if (isMobile) {
@@ -740,7 +740,7 @@ export default function InboxPage() {
               </Box>
               <Stack spacing={6} align="flex-end">
                 <Badge
-                  color={inquiry.is_archived ? "grape" : inquiry.is_processed ? "teal" : "yellow"}
+                  color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "yellow"}
                   variant={inquiry.is_archived ? "filled" : "light"}
                 >
                   {getInquiryStatusLabel(inquiry)}
@@ -869,7 +869,7 @@ export default function InboxPage() {
             <Text
               size="sm"
               weight={700}
-              color={inquiry.is_archived ? "#d0bfff" : inquiry.is_processed ? "teal.2" : "yellow.2"}
+              color={inquiry.is_archived ? "#b8a88a" : inquiry.is_processed ? "violet.5" : "yellow.2"}
               sx={{ whiteSpace: "nowrap", textAlign: "left" }}
             >
               {getInquiryStatusLabel(inquiry)}
@@ -950,17 +950,17 @@ export default function InboxPage() {
         borderColor: inquiry.is_archived
           ? "rgba(160, 160, 160, 0.35)"
           : inquiry.is_processed
-          ? "rgba(32, 201, 151, 0.35)"
+          ? "rgba(155, 139, 110, 0.35)"
           : "rgba(216, 183, 109, 0.28)",
         backgroundColor: inquiry.is_archived
           ? "rgba(160, 160, 160, 0.06)"
           : inquiry.is_processed
-          ? "rgba(32, 201, 151, 0.04)"
+          ? "rgba(155, 139, 110, 0.05)"
           : "rgba(255, 255, 255, 0.02)",
         boxShadow: inquiry.is_archived
           ? "0 10px 24px rgba(160, 160, 160, 0.08)"
           : inquiry.is_processed
-          ? "0 10px 24px rgba(32, 201, 151, 0.08)"
+          ? "0 10px 24px rgba(155, 139, 110, 0.08)"
           : "0 10px 24px rgba(0, 0, 0, 0.12)",
       }}
     >
@@ -983,7 +983,7 @@ export default function InboxPage() {
             </Text>
             <Group spacing="xs" noWrap={false}>
               <Badge
-                color={inquiry.is_archived ? "grape" : inquiry.is_processed ? "teal" : "yellow"}
+                color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "yellow"}
                 variant={inquiry.is_archived ? "filled" : "light"}
                 sx={(theme) =>
                   inquiry.is_archived
@@ -1205,7 +1205,7 @@ export default function InboxPage() {
                 >
                   <Button
                     size="sm"
-                    color="grape"
+                    color="violet.4"
                     variant="filled"
                     loading={statusUpdatingId === inquiry.id}
                     disabled={statusUpdatingId === inquiry.id}
@@ -1244,7 +1244,7 @@ export default function InboxPage() {
                   {!isAdmin ? (
                     <Button
                       size="sm"
-                      color="grape"
+                      color="violet.4"
                       variant="light"
                       loading={statusUpdatingId === inquiry.id}
                       disabled={statusUpdatingId === inquiry.id}
@@ -1316,10 +1316,10 @@ export default function InboxPage() {
                       <Badge color="yellow" variant="light" size="lg">
                         {locale === "zh" ? `未处理 ${pendingCount}` : `Pending ${pendingCount}`}
                       </Badge>
-                      <Badge color="teal" variant="light" size="lg">
+                      <Badge color="violet.5" variant="light" size="lg">
                         {locale === "zh" ? `已处理 ${processedCount}` : `Processed ${processedCount}`}
                       </Badge>
-                      <Badge color="grape" variant="light" size="lg">
+                      <Badge color="violet.4" variant="light" size="lg">
                         {locale === "zh" ? `已归档 ${archivedCount}` : `Archived ${archivedCount}`}
                       </Badge>
                     </>
@@ -1439,16 +1439,16 @@ export default function InboxPage() {
                           p="md"
                           withBorder
                           radius="md"
-                          sx={{
-                            borderColor: "rgba(32, 201, 151, 0.4)",
-                            backgroundColor: "rgba(32, 201, 151, 0.05)",
-                          }}
+                          sx={(theme) => ({
+                            borderColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.25)" : "rgba(155, 139, 110, 0.35)",
+                            backgroundColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.06)" : "rgba(155, 139, 110, 0.05)",
+                          })}
                         >
                           <Group position="apart" mb="sm">
-                            <Text weight={800} color="teal">
+                            <Text weight={800} sx={{ color: "#9b8b6e" }}>
                               {locale === "zh" ? "已处理会话" : "Processed conversations"}
                             </Text>
-                            <Badge color="teal" variant="light">
+                            <Badge sx={{ color: "#9b8b6e" }} variant="light">
                               {processedInquiries.length}
                             </Badge>
                           </Group>
@@ -1496,16 +1496,16 @@ export default function InboxPage() {
                         p="md"
                         withBorder
                         radius="md"
-                        sx={{
-                          borderColor: "rgba(59, 130, 246, 0.3)",
-                          backgroundColor: "rgba(59, 130, 246, 0.05)",
-                        }}
+                        sx={(theme) => ({
+                          borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "rgba(196, 162, 85, 0.25)",
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.04)" : "rgba(196, 162, 85, 0.04)",
+                        })}
                       >
                         <Group position="apart" mb="sm">
-                          <Text weight={800} color="blue.3">
+                          <Text weight={800} sx={{ color: "#c4a255" }}>
                             {locale === "zh" ? "我的咨询列表" : "My inquiries"}
                           </Text>
-                          <Badge color="blue" variant="light">
+                          <Badge color="yellow" variant="light">
                             {inquiries.length}
                           </Badge>
                         </Group>
@@ -1559,16 +1559,16 @@ export default function InboxPage() {
                           p="md"
                           withBorder
                           radius="md"
-                          sx={{
-                            borderColor: "rgba(32, 201, 151, 0.4)",
-                            backgroundColor: "rgba(32, 201, 151, 0.05)",
-                          }}
+                          sx={(theme) => ({
+                            borderColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.25)" : "rgba(155, 139, 110, 0.35)",
+                            backgroundColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.06)" : "rgba(155, 139, 110, 0.05)",
+                          })}
                         >
                           <Group position="apart" mb={4}>
-                            <Text weight={800} color="teal">
+                            <Text weight={800} color="violet.5">
                               {locale === "zh" ? "已处理归档" : "Processed archive"}
                             </Text>
-                            <Badge color="teal" variant="light">
+                            <Badge color="violet.5" variant="light">
                               {processedInquiries.length}
                             </Badge>
                           </Group>
@@ -1653,16 +1653,16 @@ export default function InboxPage() {
                           p="md"
                           withBorder
                           radius="md"
-                          sx={{
-                            borderColor: "rgba(59, 130, 246, 0.3)",
-                            backgroundColor: "rgba(59, 130, 246, 0.05)",
-                          }}
+                          sx={(theme) => ({
+                            borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "rgba(196, 162, 85, 0.25)",
+                            backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.04)" : "rgba(196, 162, 85, 0.04)",
+                          })}
                         >
                           <Group position="apart" mb={4}>
                             <Text weight={800} color="blue.3">
                               {locale === "zh" ? "我的咨询列表" : "My inquiries"}
                             </Text>
-                            <Badge color="blue" variant="light">
+                            <Badge color="yellow" variant="light">
                               {inquiries.length}
                             </Badge>
                           </Group>
