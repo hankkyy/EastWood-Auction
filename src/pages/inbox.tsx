@@ -543,7 +543,7 @@ export default function InboxPage() {
                       backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
                     },
                   }
-                : undefined
+                : {}
             }
             onClick={() => void updateInquiryStatus(inquiry.id, pendingState.update, pendingState.label)}
           >
@@ -632,7 +632,7 @@ export default function InboxPage() {
                     backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
                   },
                 }
-              : undefined
+              : {}
           }
         >
           {inquiry.is_processed ? t("inbox.markPending") : t("inbox.markProcessed")}
@@ -991,7 +991,7 @@ export default function InboxPage() {
                         backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.18)" : "#f6e7b0",
                         color: theme.colorScheme === "dark" ? "#c4a255" : "#4f3b12",
                       }
-                    : undefined
+                    : {}
                 }
               >
                 {getInquiryStatusLabel(inquiry)}
