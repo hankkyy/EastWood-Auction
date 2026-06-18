@@ -236,242 +236,390 @@ export default function CaseDetailPage() {
       </Head>
       <Wrapper>
         <AnimatedBox>
-          <Container py={isMobile ? 28 : 64} px={isMobile ? 16 : undefined}>
-            <Stack spacing={isMobile ? "lg" : "xl"}>
-              <Button 
-                component={Link} 
-                href="/cases" 
-                variant="filled"
-                color="violet"
-                size={isMobile ? "sm" : "md"}
-                leftIcon={<IconChevronLeft size={18} />}
-                sx={{ 
-                  alignSelf: "flex-start",
-                  fontWeight: 600,
-                  padding: isMobile ? "10px 16px" : '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
-                  },
-                  transition: 'all 0.2s ease',
+          <Container py={isMobile ? 28 : 60} px={isMobile ? 16 : undefined} size="lg">
+            {/* 返回按钮 */}
+            <Button
+              component={Link}
+              href="/cases"
+              variant="subtle"
+              size="sm"
+              leftIcon={<IconChevronLeft size={16} />}
+              mb="xl"
+              sx={(theme) => ({
+                color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                "&:hover": { backgroundColor: "transparent", color: "#c4a255" },
+              })}
+            >
+              {t("support.caseBack")}
+            </Button>
+
+            {/* 左右分栏主体 */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                gap: isMobile ? 32 : 48,
+                alignItems: "flex-start",
+              }}
+            >
+              {/* ===== 左栏：图片画廊 ===== */}
+              <Box
+                sx={{
+                  flex: isMobile ? "none" : "0 0 55%",
+                  width: isMobile ? "100%" : undefined,
+                  position: "sticky",
+                  top: 24,
                 }}
               >
-                {t("support.caseBack")}
-              </Button>
-
-              <Stack spacing={isMobile ? "sm" : "md"}>
-                {/* ✅ 案例类型徽章 - 区分平台上传和个人上传 */}
-                <Group spacing="xs">
-                  <Badge 
-                    size="lg"
-                    variant="light"
-                    sx={(theme) => artworkSourceBadgeSx(item.isOfficial, theme)}
-                  >
-                    {item.isOfficial === true 
-                      ? t("cases.platformUpload")
-                      : t("cases.personalUserUpload")}
-                  </Badge>
-                </Group>
-                <Title order={isMobile ? 3 : 1} sx={{ lineHeight: 1.18 }}>
-                  {title}
-                </Title>
-                {showInquiryButton && (
-                  <Button
-                    component={Link}
-                    href={inquiryHref}
-                    variant="outline"
-                    color="yellow"
-                    size="md"
-                    fullWidth={isMobile}
-                  >
-                    {t("support.caseInquiryButton")}
-                  </Button>
-                )}
-                {item.caseRecord?.caseId && (
-                  <Badge
-                    variant="light"
-                    size="lg"
-                    sx={(theme) => ({
-                      backgroundColor: theme.colorScheme === "dark"
-                        ? "rgba(246, 239, 227, 0.15)"
-                        : "rgba(0, 0, 0, 0.08)",
-                      color: theme.colorScheme === "dark" ? "#f6efe3" : theme.colors.dark[0],
-                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.25)" : "rgba(0, 0, 0, 0.12)"}`,
-                    })}
-                  >
-                    {t("image.caseId")}: {item.caseRecord.caseId}
-                  </Badge>
-                )}
-                {isAdmin && item.isOfficial !== true && uploaderEmail && (
-                  <Text size="sm" color="dimmed">
-                    {locale === "zh" ? "上传用户邮箱" : "Uploader email"}: {uploaderEmail}
-                  </Text>
-                )}
-              </Stack>
-
-              <Box sx={{ position: "relative" }}>
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={() => setLightboxOpened(true)}
-                  sx={{
-                    ...frameStyles(theme),
-                    height: 460,
-                    width: "100%",
-                    padding: 16,
-                    cursor: "zoom-in",
-                    border: "1px solid rgba(216, 183, 109, 0.18)",
-                    position: "relative",
-                  }}
-                >
+                <Stack spacing="md">
+                  {/* 主图 — 点击进入灯箱 */}
                   <Box
-                    role="img"
-                    aria-label={title}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      minHeight: 320,
-                      backgroundImage: `url("${activeImage}")`,
-                      backgroundSize: "contain",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                    }}
-                  />
-                </Box>
-
-                {gallery.length > 1 ? (
-                  <>
-                    <ActionIcon
-                      variant="filled"
-                      radius="xl"
-                      size={42}
-                      onClick={goToPrevious}
+                    sx={(theme) => ({
+                      background: theme.colorScheme === "dark" ? "#141210" : "#faf7f2",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      position: "relative",
+                      cursor: "zoom-in",
+                      boxShadow: theme.colorScheme === "dark"
+                        ? "0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)"
+                        : "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)",
+                    })}
+                    onClick={() => setLightboxOpened(true)}
+                  >
+                    <Box
+                      role="img"
+                      aria-label={title}
                       sx={{
-                        position: "absolute",
-                        left: 14,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        backgroundColor: "rgba(15, 18, 22, 0.78)",
-                        border: "1px solid rgba(216, 183, 109, 0.24)",
+                        width: "100%",
+                        height: isMobile ? "60vh" : "520px",
+                        maxHeight: isMobile ? "70vh" : "70vh",
+                        backgroundImage: `url("${activeImage}")`,
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        transition: "background-image 300ms ease",
                       }}
-                    >
-                      <IconChevronLeft size={22} />
-                    </ActionIcon>
-                    <ActionIcon
-                      variant="filled"
-                      radius="xl"
-                      size={42}
-                      onClick={goToNext}
-                      sx={{
-                        position: "absolute",
-                        right: 14,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        backgroundColor: "rgba(15, 18, 22, 0.78)",
-                        border: "1px solid rgba(216, 183, 109, 0.24)",
-                      }}
-                    >
-                      <IconChevronRight size={22} />
-                    </ActionIcon>
-                  </>
-                ) : null}
-              </Box>
-
-              {gallery.length > 1 ? (
-                <ScrollArea type="never" offsetScrollbars scrollbarSize={6}>
-                  <Group spacing="md" noWrap>
-                    {gallery.map((imageUrl, index) => {
-                      const isActive = imageUrl === activeImage;
-
-                      return (
-                        <Box
-                          key={`${imageUrl}-${index}`}
-                          component="button"
-                          type="button"
-                          onClick={() => setSelectedImage(imageUrl)}
+                    />
+                    {/* 左右翻页箭头 */}
+                    {gallery.length > 1 && (
+                      <>
+                        <ActionIcon
+                          variant="filled"
+                          radius="xl"
+                          size={40}
+                          onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
                           sx={{
-                            ...frameStyles(theme),
-                            height: 150,
-                            width: 170,
-                            flex: "0 0 auto",
-                            padding: 10,
-                            border: isActive ? "2px solid #d8b76d" : "1px solid rgba(216, 183, 109, 0.18)",
-                            boxShadow: isActive ? "0 0 0 1px rgba(216, 183, 109, 0.18) inset" : "none",
-                            cursor: "pointer",
-                            transition: "transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                              borderColor: "#d8b76d",
-                            },
+                            position: "absolute",
+                            left: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            backgroundColor: "rgba(15, 18, 22, 0.72)",
+                            "&:hover": { backgroundColor: "rgba(15, 18, 22, 0.88)" },
                           }}
                         >
-                          <Box
-                            role="img"
-                            aria-label={`${title}-${index + 1}`}
-                            sx={{
-                              width: "100%",
-                              height: "100%",
-                              backgroundImage: `url("${imageUrl}")`,
-                              backgroundSize: "contain",
-                              backgroundRepeat: "no-repeat",
-                              backgroundPosition: "center",
-                            }}
-                          />
-                        </Box>
-                      );
-                    })}
-                  </Group>
-                </ScrollArea>
-              ) : null}
+                          <IconChevronLeft size={20} />
+                        </ActionIcon>
+                        <ActionIcon
+                          variant="filled"
+                          radius="xl"
+                          size={40}
+                          onClick={(e) => { e.stopPropagation(); goToNext(); }}
+                          sx={{
+                            position: "absolute",
+                            right: 12,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            backgroundColor: "rgba(15, 18, 22, 0.72)",
+                            "&:hover": { backgroundColor: "rgba(15, 18, 22, 0.88)" },
+                          }}
+                        >
+                          <IconChevronRight size={20} />
+                        </ActionIcon>
+                      </>
+                    )}
+                    {gallery.length > 1 && (
+                      <Text
+                        size="xs"
+                        sx={{
+                          position: "absolute",
+                          bottom: 12,
+                          right: 14,
+                          background: "rgba(0,0,0,0.55)",
+                          color: "#fff",
+                          padding: "2px 10px",
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontFamily: "monospace",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        {gallery.indexOf(selectedImage || gallery[0]) + 1} / {gallery.length}
+                      </Text>
+                    )}
+                  </Box>
 
-              {/* 3D Model Viewer */}
-              {item.threeDModel && (
-                <Stack spacing="sm">
-                  <Group spacing="xs" align="center">
-                    <Text weight={600} size="sm">
-                      {locale === "zh" ? "3D 模型" : "3D Model"}
-                    </Text>
-                    <Badge size="sm" variant="filled" color="yellow">3D</Badge>
-                  </Group>
-                  <Model3DViewer
-                    src={item.threeDModel.url}
-                    poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
-                    alt={title}
-                    autoRotate
-                    ar
-                    height={320}
-                  />
+                  {/* 缩略图导航 */}
+                  {gallery.length > 1 && (
+                    <Group spacing="xs" position="center">
+                      <ActionIcon variant="light" size="sm" onClick={goToPrevious}>
+                        <IconChevronLeft size={14} />
+                      </ActionIcon>
+                      <ScrollArea type="hover" offsetScrollbars>
+                        <Group spacing={6} noWrap>
+                          {gallery.map((imageUrl, index) => {
+                            const isActive = imageUrl === activeImage;
+                            return (
+                              <Box
+                                key={index}
+                                onClick={() => setSelectedImage(imageUrl)}
+                                sx={(theme) => ({
+                                  width: 64,
+                                  height: 56,
+                                  borderRadius: 4,
+                                  overflow: "hidden",
+                                  cursor: "pointer",
+                                  border: isActive ? "2px solid #c4a255" : "1px solid rgba(216,183,109,0.15)",
+                                  opacity: isActive ? 1 : 0.55,
+                                  transition: "all 200ms ease",
+                                  "&:hover": {
+                                    opacity: 1,
+                                    borderColor: "#c4a255",
+                                  },
+                                })}
+                              >
+                                <Box
+                                  role="img"
+                                  aria-label={`Photo ${index + 1}`}
+                                  sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    backgroundImage: `url("${imageUrl}")`,
+                                    backgroundSize: "cover",
+                                    backgroundPosition: "center",
+                                  }}
+                                />
+                              </Box>
+                            );
+                          })}
+                        </Group>
+                      </ScrollArea>
+                      <ActionIcon variant="light" size="sm" onClick={goToNext}>
+                        <IconChevronRight size={14} />
+                      </ActionIcon>
+                    </Group>
+                  )}
+
+                  {/* 3D 模型 */}
+                  {item.threeDModel && (
+                    <Box>
+                      <Group spacing="xs" mb="xs">
+                        <Text weight={600} size="sm">
+                          {locale === "zh" ? "3D 模型" : "3D Model"}
+                        </Text>
+                        <Badge size="sm" variant="filled" color="yellow">3D</Badge>
+                      </Group>
+                      <Model3DViewer
+                        src={item.threeDModel.url}
+                        poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
+                        alt={title}
+                        autoRotate
+                        ar
+                        height={isMobile ? 280 : 340}
+                      />
+                    </Box>
+                  )}
                 </Stack>
-              )}
-
-              {/* ✅ 案例详情描述 - 放在图片展示下方 */}
-              {description && (
-                <Box p="lg" sx={(theme) => ({ backgroundColor: theme.colorScheme === "dark" ? "#1e1c19" : "#fff", borderRadius: 2, boxShadow: theme.colorScheme === "dark" ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)" : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" })}>
-                  <Title order={4} mb="md">{t("support.caseDetails")}</Title>
-                  <Text size="lg" sx={(theme) => ({ color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0] })}>{description}</Text>
-                </Box>
-              )}
-
-              <Box p="lg" sx={(theme) => ({ backgroundColor: theme.colorScheme === "dark" ? "#1e1c19" : "#fff", borderRadius: 2, boxShadow: theme.colorScheme === "dark" ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)" : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" })}>
-                <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
-                  <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
-                  <Text><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
-                  <Text><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
-                  <Text><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
-                  <Text><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>
-                  <Text><strong>{t("image.caseClientRegion")}:</strong> {item.caseRecord.clientRegion}</Text>
-                  <Text><strong>{t("image.caseLogisticsCost")}:</strong> {item.caseRecord.logisticsCost}</Text>
-                  <Text><strong>{t("image.casePurchaseChannel")}:</strong> {item.caseRecord.purchaseChannel}</Text>
-                  <Text><strong>{t("image.casePurchaseCost")}:</strong> {item.caseRecord.purchaseCost}</Text>
-                </SimpleGrid>
-                <Text mt="md"><strong>{t("image.caseRiskAdvice")}:</strong> {item.caseRecord.riskAdvice}</Text>
               </Box>
-            </Stack>
+
+              {/* ===== 右栏：案例详情 ===== */}
+              <Box
+                sx={{
+                  flex: 1,
+                  width: isMobile ? "100%" : undefined,
+                  minWidth: 0,
+                }}
+              >
+                <Stack spacing="xl">
+                  {/* 标题区域 */}
+                  <Stack spacing="sm">
+                    <Group spacing="xs">
+                      <Badge
+                        size="lg"
+                        variant="light"
+                        sx={(theme) => artworkSourceBadgeSx(item.isOfficial, theme)}
+                      >
+                        {item.isOfficial === true
+                          ? t("cases.platformUpload")
+                          : t("cases.personalUserUpload")}
+                      </Badge>
+                      {caseCategoryLabel && (
+                        <Badge size="lg" variant="light" color="yellow">
+                          {caseCategoryLabel}
+                        </Badge>
+                      )}
+                    </Group>
+
+                    <Title
+                      order={isMobile ? 3 : 2}
+                      sx={(theme) => ({
+                        fontFamily: '"Playfair Display", Georgia, serif',
+                        fontWeight: 600,
+                        fontSize: isMobile ? 28 : 38,
+                        lineHeight: 1.18,
+                        letterSpacing: "-0.02em",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#1a1815",
+                      })}
+                    >
+                      {title}
+                    </Title>
+
+                    {item.caseRecord?.caseId && (
+                      <Badge
+                        variant="light"
+                        size="lg"
+                        sx={(theme) => ({
+                          backgroundColor: theme.colorScheme === "dark"
+                            ? "rgba(246, 239, 227, 0.12)"
+                            : "rgba(0, 0, 0, 0.06)",
+                          color: theme.colorScheme === "dark" ? "#d4c8b0" : theme.colors.dark[0],
+                          border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.18)" : "rgba(0, 0, 0, 0.1)"}`
+                        })}
+                      >
+                        {t("image.caseId")}: {item.caseRecord.caseId}
+                      </Badge>
+                    )}
+
+                    {isAdmin && item.isOfficial !== true && uploaderEmail && (
+                      <Text size="sm" color="dimmed">
+                        {locale === "zh" ? "上传用户" : "Uploader"}: {uploaderEmail}
+                      </Text>
+                    )}
+                  </Stack>
+
+                  {/* 装饰分割线 */}
+                  <Box
+                    sx={(theme) => ({
+                      height: 1,
+                      background: theme.colorScheme === "dark"
+                        ? "linear-gradient(90deg, rgba(196,162,85,0.3), rgba(196,162,85,0.05))"
+                        : "linear-gradient(90deg, rgba(180,140,100,0.3), rgba(180,140,100,0.05))",
+                      width: "60%",
+                    })}
+                  />
+
+                  {/* 咨询按钮 */}
+                  {showInquiryButton && (
+                    <Button
+                      component={Link}
+                      href={inquiryHref}
+                      variant="filled"
+                      size="md"
+                      fullWidth={isMobile}
+                      sx={{
+                        backgroundColor: "#c4a255",
+                        color: "#1a1815",
+                        fontWeight: 600,
+                        fontSize: 15,
+                        "&:hover": {
+                          backgroundColor: "#b8943e",
+                        },
+                      }}
+                    >
+                      {t("support.caseInquiryButton")}
+                    </Button>
+                  )}
+
+                  {/* 案例描述 */}
+                  {description && (
+                    <Box
+                      sx={(theme) => ({
+                        padding: isMobile ? 16 : 24,
+                        borderRadius: 4,
+                        background: theme.colorScheme === "dark"
+                          ? "linear-gradient(135deg, rgba(196,162,85,0.04), rgba(196,162,85,0.01))"
+                          : "linear-gradient(135deg, rgba(180,140,100,0.04), rgba(180,140,100,0.01))",
+                        border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.1)" : "rgba(180,140,100,0.12)"}`,
+                        position: "relative",
+                        "&::before": {
+                          content: '""',
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          width: 3,
+                          height: "100%",
+                          background: "linear-gradient(180deg, #c4a255, transparent)",
+                          borderRadius: "4px 0 0 4px",
+                        },
+                      })}
+                    >
+                      <Text
+                        weight={600}
+                        size="sm"
+                        mb="sm"
+                        sx={{
+                          color: "#c4a255",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontSize: 11,
+                        }}
+                      >
+                        {t("support.caseDetails")}
+                      </Text>
+                      <Text
+                        size="md"
+                        sx={(theme) => ({
+                          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                          lineHeight: 1.8,
+                        })}
+                      >
+                        {description}
+                      </Text>
+                    </Box>
+                  )}
+
+                  {/* 案例档案详情表 */}
+                  <Box
+                    sx={(theme) => ({
+                      padding: isMobile ? 16 : 24,
+                      borderRadius: 4,
+                      background: theme.colorScheme === "dark"
+                        ? "rgba(30,28,25,0.6)"
+                        : "rgba(250,247,242,0.8)",
+                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.08)" : "rgba(0,0,0,0.06)"}`,
+                    })}
+                  >
+                    <Text
+                      weight={600}
+                      size="sm"
+                      mb="md"
+                      sx={{
+                        color: "#c4a255",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontSize: 11,
+                      }}
+                    >
+                      {locale === "zh" ? "档案信息" : "Case Record"}
+                    </Text>
+                    <SimpleGrid cols={2} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
+                      <Text size="sm"><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
+                      <Text size="sm"><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
+                      <Text size="sm"><strong>{t("image.caseSaleTime")}:</strong> {item.caseRecord.saleTime}</Text>
+                      <Text size="sm"><strong>{t("image.caseSalePrice")}:</strong> {item.caseRecord.salePrice}</Text>
+                      <Text size="sm"><strong>{t("image.casePlatform")}:</strong> {item.caseRecord.salePlatform}</Text>
+                      <Text size="sm"><strong>{t("image.caseClientRegion")}:</strong> {item.caseRecord.clientRegion}</Text>
+                      <Text size="sm"><strong>{t("image.caseLogisticsCost")}:</strong> {item.caseRecord.logisticsCost}</Text>
+                      <Text size="sm"><strong>{t("image.casePurchaseChannel")}:</strong> {item.caseRecord.purchaseChannel}</Text>
+                      <Text size="sm"><strong>{t("image.casePurchaseCost")}:</strong> {item.caseRecord.purchaseCost}</Text>
+                    </SimpleGrid>
+                    <Text size="sm" mt="sm"><strong>{t("image.caseRiskAdvice")}:</strong> {item.caseRecord.riskAdvice}</Text>
+                  </Box>
+                </Stack>
+              </Box>
+            </Box>
           </Container>
         </AnimatedBox>
       </Wrapper>
-
       <Modal
         opened={lightboxOpened}
         onClose={() => setLightboxOpened(false)}
