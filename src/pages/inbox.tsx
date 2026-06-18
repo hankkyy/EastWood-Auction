@@ -533,14 +533,14 @@ export default function InboxPage() {
             loading={isUpdating}
             disabled={isUpdating}
             fullWidth={isMobile}
-            sx={
+            sx={(theme) =>
               !pendingState.update.isArchived && !pendingState.update.isProcessed
                 ? {
-                    backgroundColor: "rgba(255, 224, 102, 0.28)",
-                    color: "#fff3bf",
-                    border: "1px solid rgba(255, 224, 102, 0.48)",
+                    backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.22)" : "#f6e7b0",
+                    color: theme.colorScheme === "dark" ? "#d4b96a" : "#4f3b12",
+                    border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.35)" : "rgba(180, 158, 120, 0.3)"}`,
                     "&:hover": {
-                      backgroundColor: "rgba(255, 224, 102, 0.4)",
+                      backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
                     },
                   }
                 : undefined
@@ -555,12 +555,12 @@ export default function InboxPage() {
             variant="light"
             disabled={isUpdating}
             fullWidth={isMobile}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.12)",
-              color: "#f8f9fa",
-              border: "1px solid rgba(255, 255, 255, 0.22)",
+            sx={(theme) => ({
+              backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.08)" : "rgba(180, 158, 120, 0.1)",
+              color: theme.colorScheme === "dark" ? theme.colors.dark[5] : theme.colors.dark[3],
+              border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.15)" : "rgba(180, 158, 120, 0.2)"}`,
               "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.14)" : "rgba(180, 158, 120, 0.18)",
               },
             }}
             onClick={() => setStatusConfirmState(null)}
@@ -622,14 +622,14 @@ export default function InboxPage() {
               inquiry.is_processed ? t("inbox.confirmPending") : t("inbox.confirmProcessed")
             )
           }
-          sx={
+          sx={(theme) =>
             inquiry.is_processed
               ? {
-                  backgroundColor: "rgba(255, 224, 102, 0.28)",
-                  color: "#fff3bf",
-                  border: "1px solid rgba(255, 224, 102, 0.48)",
+                  backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.22)" : "#f6e7b0",
+                  color: theme.colorScheme === "dark" ? "#d4b96a" : "#4f3b12",
+                  border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.35)" : "rgba(180, 158, 120, 0.3)"}`,
                   "&:hover": {
-                    backgroundColor: "rgba(255, 224, 102, 0.4)",
+                    backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.34)" : "#f2dc8f",
                   },
                 }
               : undefined
@@ -644,11 +644,11 @@ export default function InboxPage() {
           loading={isUpdating}
           disabled={isUpdating}
           fullWidth={isMobile}
-          sx={{
-            backgroundColor: "#d0bfff",
-            color: "#2b1648",
+          sx={(theme) => ({
+            backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.12)" : "#f6e7b0",
+            color: theme.colorScheme === "dark" ? "#c4a255" : "#4f3b12",
             "&:hover": {
-              backgroundColor: "#bda3ff",
+              backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.2)" : "#f2dc8f",
             },
           }}
           onClick={() =>
@@ -985,11 +985,11 @@ export default function InboxPage() {
               <Badge
                 color={inquiry.is_archived ? "grape" : inquiry.is_processed ? "teal" : "yellow"}
                 variant={inquiry.is_archived ? "filled" : "light"}
-                sx={
+                sx={(theme) =>
                   inquiry.is_archived
                     ? {
-                        backgroundColor: "#d0bfff",
-                        color: "#2b1648",
+                        backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.18)" : "#f6e7b0",
+                        color: theme.colorScheme === "dark" ? "#c4a255" : "#4f3b12",
                       }
                     : undefined
                 }
