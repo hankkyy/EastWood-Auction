@@ -118,20 +118,25 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       closeOnClickOutside={false} // 禁止点击外部关闭
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
-      styles={(theme) => ({
+      styles={{
         content: {
           borderRadius: isMobile ? 0 : 16,
-          padding: isMobile ? 16 : 24,
+          padding: 0,
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
-          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : undefined,
-          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : undefined,
         },
         header: {
           marginBottom: 16,
         },
-      })}
+      }}
     >
+      <Box
+        sx={(theme) => ({
+          padding: isMobile ? 16 : 24,
+          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9",
+          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+        })}
+      >
       <Stack spacing="md">
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
         <Tabs.List grow mb="lg">
@@ -317,6 +322,7 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
         </Tabs.Panel>
       </Tabs>
       </Stack>
+      </Box>
     </Modal>
   );
 }

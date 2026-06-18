@@ -9,6 +9,7 @@ import {
   Avatar,
   Divider,
   Badge,
+  Box,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useAuth, type AuthUser } from "@/hooks/useAuth";
@@ -108,17 +109,22 @@ export default function ProfileModal({
       size="md"
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
-      styles={(theme) => ({
+      styles={{
         content: {
           borderRadius: isMobile ? 0 : 16,
-          padding: isMobile ? 16 : 24,
+          padding: 0,
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
-          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : undefined,
-          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : undefined,
         },
-      })}
+      }}
     >
+      <Box
+        sx={(theme) => ({
+          padding: isMobile ? 16 : 24,
+          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9",
+          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+        })}
+      >
       <Stack spacing="lg">
         {/* 用户信息卡片 */}
         <Group position="apart" align="flex-start" noWrap>
@@ -259,6 +265,7 @@ export default function ProfileModal({
           {t("auth.logout")}
         </Button>
       </Stack>
+      </Box>
     </Modal>
   );
 }
