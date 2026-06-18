@@ -1,4 +1,5 @@
 import Head from "next/head";
+<<<<<<< HEAD
 import { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -11,6 +12,22 @@ import {
   Select,
   TextInput,
   Stack,
+=======
+import { useEffect, useState, useCallback, useRef } from "react";
+import {
+  Box,
+  Container,
+  Group,
+  NumberInput,
+  Pagination,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+  Badge,
+>>>>>>> development
   Anchor,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
@@ -55,6 +72,17 @@ export default function MarketWatchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+<<<<<<< HEAD
+=======
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (page > 1 && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
+>>>>>>> development
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
@@ -65,7 +93,11 @@ export default function MarketWatchPage() {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
+<<<<<<< HEAD
     params.set("limit", "24");
+=======
+    params.set("limit", "15");
+>>>>>>> development
     params.set("sort", sort);
     if (search) params.set("search", search);
     if (minPrice) params.set("min_price", minPrice);
@@ -152,11 +184,19 @@ export default function MarketWatchPage() {
                 {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
               </Text>
             ) : (
+<<<<<<< HEAD
               <SimpleGrid
                 cols={4}
                 spacing="lg"
                 breakpoints={[
                   { maxWidth: "lg", cols: 3, spacing: "md" },
+=======
+              <Box ref={gridRef}>
+              <SimpleGrid
+                cols={3}
+                spacing="lg"
+                breakpoints={[
+>>>>>>> development
                   { maxWidth: "md", cols: 2, spacing: "sm" },
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
@@ -248,6 +288,7 @@ export default function MarketWatchPage() {
                   </Anchor>
                 ))}
               </SimpleGrid>
+<<<<<<< HEAD
             )}
 
             {/* Pagination */}
@@ -273,6 +314,53 @@ export default function MarketWatchPage() {
                     {i + 1}
                   </Box>
                 ))}
+=======
+              </Box>
+            )}
+
+            {/* Pagination */}
+            {total > 15 && (
+              <Group position="center" mt="md" spacing="sm">
+                <Pagination
+                  value={page}
+                  onChange={setPage}
+                  total={Math.ceil(total / 15)}
+                  size="sm"
+                  radius="md"
+                  styles={(theme) => ({
+                    control: {
+                      borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.15)" : "rgba(180,158,120,0.2)",
+                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                      "&[data-active]": { background: "#c4a255", borderColor: "#c4a255", color: "#fff" },
+                    },
+                  })}
+                />
+                <NumberInput
+                  value={jumpValue}
+                  onChange={setJumpValue}
+                  placeholder={String(page)}
+                  min={1}
+                  max={Math.ceil(total / 15)}
+                  size="sm"
+                  styles={{ input: { width: 60, textAlign: "center" } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 15)) {
+                      setPage(jumpValue); setJumpValue('');
+                    }
+                  }}
+                  rightSection={
+                    <Text size="xs" color="dimmed" sx={{ cursor: "pointer", userSelect: "none" }}
+                      onClick={() => {
+                        if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 15)) {
+                          setPage(jumpValue); setJumpValue('');
+                        }
+                      }}>→</Text>
+                  }
+                />
+                <Text size="xs" color="dimmed">
+                  / {Math.ceil(total / 15)} {locale === "zh" ? "页" : "pages"}
+                </Text>
+>>>>>>> development
               </Group>
             )}
           </Stack>

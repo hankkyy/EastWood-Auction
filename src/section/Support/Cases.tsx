@@ -17,6 +17,8 @@ import {
   Button,
   Container,
   Group,
+  NumberInput,
+  Pagination,
   Paper,
   Select,
   SimpleGrid,
@@ -62,7 +64,18 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   
   // 管理状态
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [showManageMode, setShowManageMode] = useState(false); // ✅ 新增管理模式状态
+  const [showManageMode, setShowManageMode] = useState(false);
+  const [page, setPage] = useState(1);
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const ITEMS_PER_PAGE = 15;
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (page > 1 && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
+ // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {
@@ -204,6 +217,14 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       return true;
     });
   }, [items]);
+
+  // Pagination
+  const totalPages = Math.ceil(cases.length / ITEMS_PER_PAGE);
+  const safePage = Math.min(page, Math.max(1, totalPages || 1));
+  const visibleCases = useMemo(
+    () => cases.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE),
+    [cases, safePage]
+  );
 
   const visibleItems = useMemo(() => {
     return items.filter((item) => {
@@ -396,8 +417,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   {t("cases.manageCasesButton")}
                 </Button>
 
+<<<<<<< HEAD
                 {/* 导入模拟数据 — 仅管理员 */}
                 {isAdmin && (
+=======
+                {/* 导入模拟数据 — 仅管理员 + 仅开发环境 */}
+                {isAdmin && process.env.NODE_ENV === "development" && (
+>>>>>>> development
                   <Button
                     onClick={async () => {
                       if (!confirm(locale === "zh" ? "将导入 15 件古董模拟数据，确认？" : "Import 15 antique mock items?")) return;
@@ -780,6 +806,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             }
           </Alert>
         ) : !showManageMode && !showUploadForm && (
+          <Box ref={gridRef}>
           <SimpleGrid 
             cols={3}
             spacing={56}
@@ -790,11 +817,16 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             sx={{ 
               paddingLeft: 48,
               paddingRight: 48,
+<<<<<<< HEAD
               marginTop: 64, // ✅ 增加顶部间距
               marginBottom: 64,
                       "& *, & .mantine-Text-root": {
                         color: "inherit !important" as any,
                       },
+=======
+              marginTop: 64,
+              marginBottom: totalPages > 1 ? 24 : 64,
+>>>>>>> development
 
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
@@ -803,9 +835,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               },
             }}
           >
-            {cases.map((item) => {
+            {visibleCases.map((item) => {
               const caseRecord = item.caseRecord;
-              if (!caseRecord) return null;
 
               const itemTitle = locale === "zh" && item.titleZh ? item.titleZh : item.title;
 
@@ -833,7 +864,11 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
                       "& *, & .mantine-Text-root": {
+<<<<<<< HEAD
                         color: "inherit !important" as any,
+=======
+                        color: "inherit",
+>>>>>>> development
                       },
 
                     "@media (max-width: 48em)": {
@@ -883,6 +918,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               );
             })}
           </SimpleGrid>
+          </Box>
         )}
       </Stack>
     </Container>

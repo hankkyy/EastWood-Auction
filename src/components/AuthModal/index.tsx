@@ -8,6 +8,8 @@ import {
   Stack,
   Text,
   Box,
+  CloseButton,
+  Group,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -114,7 +116,8 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
       onClose={onClose}
       centered
       size="md"
-      closeOnClickOutside={false} // 禁止点击外部关闭
+      withCloseButton={false}
+      closeOnClickOutside={false}
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
       styles={(theme) => ({
@@ -124,6 +127,7 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
         },
+<<<<<<< HEAD
         header: {
           marginBottom: 0,
           paddingBottom: 0,
@@ -131,15 +135,34 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
         close: {
           color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
         },
+=======
+        header: { display: "none" },
+>>>>>>> development
       })}
     >
       <Box
         sx={(theme) => ({
           padding: isMobile ? 16 : 24,
+<<<<<<< HEAD
+=======
+          paddingTop: 12,
+>>>>>>> development
           backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9",
           color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
         })}
       >
+<<<<<<< HEAD
+=======
+      <Group position="right" mb="xs">
+        <CloseButton
+          onClick={onClose}
+          size="md"
+          sx={(theme) => ({
+            color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+          })}
+        />
+      </Group>
+>>>>>>> development
       <Stack spacing="md">
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
         <Tabs.List grow mb="lg">

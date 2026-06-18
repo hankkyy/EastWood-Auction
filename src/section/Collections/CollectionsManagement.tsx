@@ -415,8 +415,8 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
   const handleStartEdit = (artwork: Artwork) => {
     setEditingArtworkId(artwork.id);
     setEditCollectionId(artwork.collectionId || "");
-    setEditItemName(artwork.title || "");
-    setEditItemDetails(artwork.description || "");
+    setEditItemName(artwork.titleZh || artwork.title || "");
+    setEditItemDetails(artwork.descriptionZh || artwork.description || "");
     setEditCategory(artwork.category || "misc");
     
     // 初始化图片状态 - 使用 galleryImages 字段
@@ -515,7 +515,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
       const updatedArtwork: Artwork = {
         ...artwork,
         title: editItemName.trim(),
-        description: editItemDetails || artwork.description,
+        description: editItemDetails || artwork.descriptionZh || artwork.description,
         category: editCategory,
         collectionId: editCollectionId || artwork.collectionId,
         image: finalImages[0] || artwork.image, // 封面照片(数组第一个)
@@ -697,7 +697,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                         <Box
                           component="img"
                           src={artwork.image}
-                          alt={artwork.title}
+                          alt={artwork.titleZh || artwork.title}
                           sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                         />
                       </Box>
@@ -728,7 +728,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             <Box
                               component="img"
                               src={editImages[editCoverIndex] || editImages[0] || artwork.image}
-                              alt={artwork.title}
+                              alt={artwork.titleZh || artwork.title}
                               sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                             />
                           </Box>
@@ -983,7 +983,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       <>
                         {/* ✅ 非编辑模式：显示基本信息（名称、编号、价格）和操作按钮 */}
                         <Stack spacing="xs">
-                          <Text weight={600} size="lg">{artwork.title}</Text>
+                          <Text weight={600} size="lg">{artwork.titleZh || artwork.title}</Text>
                           
                           {artwork.collectionId && (
                             <Badge variant="outline" size="sm">
