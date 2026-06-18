@@ -562,7 +562,7 @@ export default function InboxPage() {
               "&:hover": {
                 backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.14)" : "rgba(180, 158, 120, 0.18)",
               },
-            }}
+            })}
             onClick={() => setStatusConfirmState(null)}
           >
             {locale === "zh" ? "取消" : "Cancel"}
