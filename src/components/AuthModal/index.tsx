@@ -127,32 +127,17 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
         },
-<<<<<<< HEAD
-        header: {
-          marginBottom: 0,
-          paddingBottom: 0,
-        },
-        close: {
-          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
-        },
-=======
         header: { display: "none" },
->>>>>>> development
       })}
     >
       <Box
         sx={(theme) => ({
           padding: isMobile ? 16 : 24,
-<<<<<<< HEAD
-=======
           paddingTop: 12,
->>>>>>> development
           backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9",
           color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
         })}
       >
-<<<<<<< HEAD
-=======
       <Group position="right" mb="xs">
         <CloseButton
           onClick={onClose}
@@ -162,7 +147,6 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
           })}
         />
       </Group>
->>>>>>> development
       <Stack spacing="md">
       <Tabs value={activeTab} onTabChange={(tab) => setActiveTab(tab as "login" | "register")}>
         <Tabs.List grow mb="lg">

@@ -1,18 +1,4 @@
 import Head from "next/head";
-<<<<<<< HEAD
-import { useEffect, useState, useCallback } from "react";
-import {
-  Box,
-  Container,
-  SimpleGrid,
-  Text,
-  Title,
-  Badge,
-  Group,
-  Select,
-  TextInput,
-  Stack,
-=======
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Box,
@@ -27,7 +13,6 @@ import {
   TextInput,
   Title,
   Badge,
->>>>>>> development
   Anchor,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
@@ -72,8 +57,6 @@ export default function MarketWatchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-<<<<<<< HEAD
-=======
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +65,6 @@ export default function MarketWatchPage() {
       gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [page]);
->>>>>>> development
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
@@ -93,11 +75,7 @@ export default function MarketWatchPage() {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
-<<<<<<< HEAD
-    params.set("limit", "24");
-=======
     params.set("limit", "15");
->>>>>>> development
     params.set("sort", sort);
     if (search) params.set("search", search);
     if (minPrice) params.set("min_price", minPrice);
@@ -184,19 +162,11 @@ export default function MarketWatchPage() {
                 {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
               </Text>
             ) : (
-<<<<<<< HEAD
-              <SimpleGrid
-                cols={4}
-                spacing="lg"
-                breakpoints={[
-                  { maxWidth: "lg", cols: 3, spacing: "md" },
-=======
               <Box ref={gridRef}>
               <SimpleGrid
                 cols={3}
                 spacing="lg"
                 breakpoints={[
->>>>>>> development
                   { maxWidth: "md", cols: 2, spacing: "sm" },
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
@@ -288,33 +258,6 @@ export default function MarketWatchPage() {
                   </Anchor>
                 ))}
               </SimpleGrid>
-<<<<<<< HEAD
-            )}
-
-            {/* Pagination */}
-            {total > 24 && (
-              <Group position="center" mt="md">
-                {Array.from({ length: Math.min(Math.ceil(total / 24), 10) }, (_, i) => (
-                  <Box
-                    key={i}
-                    onClick={() => setPage(i + 1)}
-                    sx={(theme) => ({
-                      width: 32, height: 32,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      borderRadius: 2, cursor: "pointer",
-                      fontSize: 14,
-                      background: page === i + 1
-                        ? (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0])
-                        : "transparent",
-                      color: page === i + 1
-                        ? (theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9])
-                        : (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0]),
-                    })}
-                  >
-                    {i + 1}
-                  </Box>
-                ))}
-=======
               </Box>
             )}
 
@@ -360,7 +303,6 @@ export default function MarketWatchPage() {
                 <Text size="xs" color="dimmed">
                   / {Math.ceil(total / 15)} {locale === "zh" ? "页" : "pages"}
                 </Text>
->>>>>>> development
               </Group>
             )}
           </Stack>

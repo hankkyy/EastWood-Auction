@@ -266,9 +266,6 @@ export const seedArtworks: Artwork[] = [
     isForSale: true, price: 125000, currency: "USD",
     collectionId: "POR-2024-004", isOfficial: true,
   },
-<<<<<<< HEAD
-];
-=======
 
   // Met Museum: Small covered wine pot, Kangxi (1662-1722), famille verte enamels (ID 461221)
   {
@@ -717,4 +714,3 @@ export const seedArtworks: Artwork[] = [
 
 
 export default seedArtworks;
->>>>>>> development

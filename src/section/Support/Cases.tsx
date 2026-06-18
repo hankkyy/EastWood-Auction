@@ -417,13 +417,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   {t("cases.manageCasesButton")}
                 </Button>
 
-<<<<<<< HEAD
-                {/* 导入模拟数据 — 仅管理员 */}
-                {isAdmin && (
-=======
                 {/* 导入模拟数据 — 仅管理员 + 仅开发环境 */}
                 {isAdmin && process.env.NODE_ENV === "development" && (
->>>>>>> development
                   <Button
                     onClick={async () => {
                       if (!confirm(locale === "zh" ? "将导入 15 件古董模拟数据，确认？" : "Import 15 antique mock items?")) return;
@@ -817,16 +812,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             sx={{ 
               paddingLeft: 48,
               paddingRight: 48,
-<<<<<<< HEAD
-              marginTop: 64, // ✅ 增加顶部间距
-              marginBottom: 64,
-                      "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
-                      },
-=======
               marginTop: 64,
               marginBottom: totalPages > 1 ? 24 : 64,
->>>>>>> development
 
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
@@ -864,11 +851,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
                       "& *, & .mantine-Text-root": {
-<<<<<<< HEAD
-                        color: "inherit !important" as any,
-=======
                         color: "inherit",
->>>>>>> development
                       },
 
                     "@media (max-width: 48em)": {
