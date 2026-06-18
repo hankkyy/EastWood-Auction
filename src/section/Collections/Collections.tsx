@@ -125,10 +125,17 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       paddingRight: remValue(4),
       paddingBottom: remValue(22),
       borderColor: "transparent",
+      transition: "color 220ms ease, border-color 220ms ease, transform 180ms ease",
 
       "&[data-active]": {
         color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
         borderBottomColor: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+      },
+
+      "&:hover:not([data-active])": {
+        color: "#c4a255",
+        borderBottomColor: "rgba(196, 162, 85, 0.35)",
+        transform: "translateY(-1px)",
       },
 
       [theme.fn.smallerThan("sm")]: {
