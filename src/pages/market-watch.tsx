@@ -3,14 +3,16 @@ import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Container,
+  Group,
+  NumberInput,
+  Pagination,
+  Select,
   SimpleGrid,
+  Stack,
   Text,
+  TextInput,
   Title,
   Badge,
-  Group,
-  Select,
-  TextInput,
-  Stack,
   Anchor,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
@@ -55,6 +57,7 @@ export default function MarketWatchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
@@ -65,7 +68,7 @@ export default function MarketWatchPage() {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
-    params.set("limit", "24");
+    params.set("limit", "9");
     params.set("sort", sort);
     if (search) params.set("search", search);
     if (minPrice) params.set("min_price", minPrice);
@@ -153,10 +156,9 @@ export default function MarketWatchPage() {
               </Text>
             ) : (
               <SimpleGrid
-                cols={4}
+                cols={3}
                 spacing="lg"
                 breakpoints={[
-                  { maxWidth: "lg", cols: 3, spacing: "md" },
                   { maxWidth: "md", cols: 2, spacing: "sm" },
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
@@ -251,28 +253,47 @@ export default function MarketWatchPage() {
             )}
 
             {/* Pagination */}
-            {total > 24 && (
-              <Group position="center" mt="md">
-                {Array.from({ length: Math.min(Math.ceil(total / 24), 10) }, (_, i) => (
-                  <Box
-                    key={i}
-                    onClick={() => setPage(i + 1)}
-                    sx={(theme) => ({
-                      width: 32, height: 32,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      borderRadius: 2, cursor: "pointer",
-                      fontSize: 14,
-                      background: page === i + 1
-                        ? (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0])
-                        : "transparent",
-                      color: page === i + 1
-                        ? (theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9])
-                        : (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0]),
-                    })}
-                  >
-                    {i + 1}
-                  </Box>
-                ))}
+            {total > 9 && (
+              <Group position="center" mt="md" spacing="sm">
+                <Pagination
+                  value={page}
+                  onChange={setPage}
+                  total={Math.ceil(total / 9)}
+                  size="sm"
+                  radius="md"
+                  styles={(theme) => ({
+                    control: {
+                      borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.15)" : "rgba(180,158,120,0.2)",
+                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                      "&[data-active]": { background: "#c4a255", borderColor: "#c4a255", color: "#fff" },
+                    },
+                  })}
+                />
+                <NumberInput
+                  value={jumpValue}
+                  onChange={setJumpValue}
+                  placeholder={String(page)}
+                  min={1}
+                  max={Math.ceil(total / 9)}
+                  size="sm"
+                  styles={{ input: { width: 60, textAlign: "center" } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 9)) {
+                      setPage(jumpValue); setJumpValue('');
+                    }
+                  }}
+                  rightSection={
+                    <Text size="xs" color="dimmed" sx={{ cursor: "pointer", userSelect: "none" }}
+                      onClick={() => {
+                        if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 9)) {
+                          setPage(jumpValue); setJumpValue('');
+                        }
+                      }}>GO</Text>
+                  }
+                />
+                <Text size="xs" color="dimmed">
+                  / {Math.ceil(total / 9)} {locale === "zh" ? "页" : "pages"}
+                </Text>
               </Group>
             )}
           </Stack>

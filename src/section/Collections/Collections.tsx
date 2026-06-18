@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Box, Button, Container, createStyles, Group, Overlay, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
+import { Box, Button, Container, createStyles, Group, NumberInput, Overlay, Pagination, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
@@ -271,6 +271,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [knowledgeBaseItems, setKnowledgeBaseItems] = useState<Artwork[]>(initialData);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
+  const [page, setPage] = useState(1);
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const ITEMS_PER_PAGE = 9;
 
   const refreshKnowledgeBase = useCallback(async () => {
     try {
@@ -523,7 +526,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
             {/* 藏品列表 - 仅在非管理/上传模式下显示 */}
             {!showManageMode && !showUploadForm && (
-              <Tabs defaultValue="all" className={classes.tabs} variant="outline">
+              <Tabs defaultValue="all" className={classes.tabs} variant="outline" onTabChange={() => { setPage(1); setJumpValue(''); }}>
                 <Tabs.List>
                   {categories.map((category) => (
                     <Tabs.Tab key={category.value} value={category.value}>
@@ -533,16 +536,25 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                 </Tabs.List>
 
                 {categories.map((category) => {
-                  const visibleItems =
+                  const allItems =
                     category.value === "all"
                       ? cards
                       : cards.filter((item) => item.category === category.value);
+                  const totalPages = Math.ceil(allItems.length / ITEMS_PER_PAGE);
+                  const safePage = Math.min(page, Math.max(1, totalPages));
+                  const visibleItems = allItems.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
                   return (
                     <Tabs.Panel key={category.value} value={category.value} pt="xl">
+                      {allItems.length === 0 ? (
+                        <Text align="center" color="dimmed" py={40}>
+                          {locale === "zh" ? "暂无藏品" : "No items yet"}
+                        </Text>
+                      ) : (
+                        <>
                       <SimpleGrid
                         cols={3}
-                        spacing={56} // ✅ 增加左右间距（从 48 改为 56）
+                        spacing={56}
                         breakpoints={[
                           { maxWidth: "md", cols: 2, spacing: "lg" },
                           { maxWidth: "sm", cols: 1, spacing: "md" },
@@ -550,7 +562,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                         className={classes.gridPanel}
                       >
                         {visibleItems.map((item) => {
-                          // 获取原始 artwork 数据以检查 galleryImages
                           const artwork = knowledgeBaseItems.find(a => a.id === item.key);
                           return (
                             <Box
@@ -577,6 +588,59 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                           );
                         })}
                       </SimpleGrid>
+                      {totalPages > 1 && (
+                        <Group position="center" mt={40} spacing="sm">
+                          <Pagination
+                            value={safePage}
+                            onChange={setPage}
+                            total={totalPages}
+                            size="sm"
+                            radius="md"
+                            styles={(theme) => ({
+                              control: {
+                                borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.15)" : "rgba(180,158,120,0.2)",
+                                color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                                "&[data-active]": {
+                                  background: "#c4a255",
+                                  borderColor: "#c4a255",
+                                  color: "#fff",
+                                },
+                              },
+                            })}
+                          />
+                          <NumberInput
+                            value={jumpValue}
+                            onChange={setJumpValue}
+                            placeholder={String(safePage)}
+                            min={1}
+                            max={totalPages}
+                            size="sm"
+                            styles={{ input: { width: 60, textAlign: "center" } }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= totalPages) {
+                                setPage(jumpValue);
+                                setJumpValue('');
+                              }
+                            }}
+                            rightSection={
+                              <Text size="xs" color="dimmed" sx={{ cursor: "pointer", userSelect: "none" }}
+                                onClick={() => {
+                                  if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= totalPages) {
+                                    setPage(jumpValue);
+                                    setJumpValue('');
+                                  }
+                                }}>
+                                GO
+                              </Text>
+                            }
+                          />
+                          <Text size="xs" color="dimmed">
+                            / {totalPages} {locale === "zh" ? "页" : "pages"}
+                          </Text>
+                        </Group>
+                      )}
+                        </>
+                      )}
                     </Tabs.Panel>
                   );
                 })}

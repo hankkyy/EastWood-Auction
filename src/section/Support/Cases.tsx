@@ -17,6 +17,8 @@ import {
   Button,
   Container,
   Group,
+  NumberInput,
+  Pagination,
   Paper,
   Select,
   SimpleGrid,
@@ -62,7 +64,11 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   
   // 管理状态
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [showManageMode, setShowManageMode] = useState(false); // ✅ 新增管理模式状态
+  const [showManageMode, setShowManageMode] = useState(false);
+  const [page, setPage] = useState(1);
+  const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const ITEMS_PER_PAGE = 9;
+ // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {
@@ -204,6 +210,14 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       return true;
     });
   }, [items]);
+
+  // Pagination
+  const totalPages = Math.ceil(cases.length / ITEMS_PER_PAGE);
+  const safePage = Math.min(page, Math.max(1, totalPages || 1));
+  const visibleCases = useMemo(
+    () => cases.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE),
+    [cases, safePage]
+  );
 
   const visibleItems = useMemo(() => {
     return items.filter((item) => {
@@ -791,7 +805,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               paddingLeft: 48,
               paddingRight: 48,
               marginTop: 64,
-              marginBottom: 64,
+              marginBottom: totalPages > 1 ? 24 : 64,
 
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
@@ -800,9 +814,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               },
             }}
           >
-            {cases.map((item) => {
+            {visibleCases.map((item) => {
               const caseRecord = item.caseRecord;
-              if (!caseRecord) return null;
 
               const itemTitle = locale === "zh" && item.titleZh ? item.titleZh : item.title;
 
