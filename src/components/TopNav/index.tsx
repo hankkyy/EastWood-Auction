@@ -39,25 +39,37 @@ const useStyles = createStyles((theme) => ({
     color: theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.dark[4],
     [theme.fn.smallerThan("sm")]: {},
 
-    ...theme.fn.hover({
+    "&:hover, &[data-hovered]": {
       backgroundColor:
         theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.dark[0],
       color:
         theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9],
-    }),
+    },
+
+    "&:hover .mantine-Button-label, &[data-hovered] .mantine-Button-label": {
+      color:
+        theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9],
+    },
   },
   activeLink: {
     color: theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
     backgroundColor: "transparent",
     borderBottom: `1px solid ${theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0]}`,
 
-    ...theme.fn.hover({
+    "&:hover, &[data-hovered]": {
       borderRadius: 2,
       backgroundColor:
         theme.colorScheme === "dark"
           ? "rgba(196,162,85,0.12)"
           : "rgba(180,150,100,0.06)",
-    }),
+      color:
+        theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
+    },
+
+    "&:hover .mantine-Button-label, &[data-hovered] .mantine-Button-label": {
+      color:
+        theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
+    },
 
     [theme.fn.smallerThan("md")]: {
       color: theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
