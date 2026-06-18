@@ -639,7 +639,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                                     setJumpValue('');
                                   }
                                 }}>
-                                GO
+                                →
                               </Text>
                             }
                           />
