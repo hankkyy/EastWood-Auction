@@ -111,10 +111,8 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const mockdata = [
-  {
-    labelKey: "nav.exhibitions",
-    link: "/exhibitions",
-  },
+  // Auctions hidden — not ready for launch
+  // { labelKey: "nav.exhibitions", link: "/exhibitions" },
   {
     labelKey: "nav.collections",
     link: "/collections",

@@ -48,11 +48,12 @@ struct NativeMoreView: View {
                     // Explore
                     sectionHeader(title: language.text("more.contentModules"))
                     VStack(spacing: 8) {
-                        exploreNav(language.text("more.exhibitions"), "sparkles",
-                                   subtitle: language.text("more.exhibitions.subtitle"),
-                                   accent: EastwoodTheme.gold) {
-                            NativeExhibitionsView(artworks: artworks)
-                        }
+                        // 拍卖隐藏 — 暂未上线
+                        // exploreNav(language.text("more.exhibitions"), "sparkles",
+                        //            subtitle: language.text("more.exhibitions.subtitle"),
+                        //            accent: EastwoodTheme.gold) {
+                        //     NativeExhibitionsView(artworks: artworks)
+                        // }
                         exploreNav(language.text("more.visit"), "map",
                                    subtitle: language.text("more.visit.subtitle"),
                                    accent: EastwoodTheme.collectionsAccent) {
