@@ -102,7 +102,7 @@ export default function SearchModal({ opened, close }: IProps) {
                     <Text size="lg" weight={700}>
                       {t("search.imageTitle")}
                     </Text>
-                    <Text size="sm" color="dark.1">
+                    <Text size="sm" color="dimmed">
                       {t("search.imageDescription")}
                     </Text>
                   </div>

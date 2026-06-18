@@ -571,7 +571,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         }}
                       >
                         <IconPlus size={32} color="#d8b76d" />
-                        <Text size="sm" color="dark.1" mt="xs">
+                        <Text size="sm" color="dimmed" mt="xs">
                           {t("cases.addImages")}
                         </Text>
                       </Box>
@@ -583,7 +583,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   <Stack spacing="sm" align="center">
                     <IconPhoto size={44} color="#d8b76d" />
                     <Text weight={600}>{t("cases.noPreviewImages")}</Text>
-                    <Text size="sm" color="dark.1">{t("cases.uploadCaseImages")}</Text>
+                    <Text size="sm" color="dimmed">{t("cases.uploadCaseImages")}</Text>
                   </Stack>
                 </Box>
               )}

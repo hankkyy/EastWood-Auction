@@ -776,7 +776,7 @@ export default function ImageSearchExperience() {
               <Group position="apart" align="center">
                 <div>
                   <Title order={2}>{t("image.referenceTitle")}</Title>
-                  <Text color="dark.1">
+                  <Text color="dimmed">
                     {fileName ?? t("image.uploadHelp")}
                   </Text>
                 </div>
@@ -806,7 +806,7 @@ export default function ImageSearchExperience() {
                   <Stack spacing="sm" className={classes.emptyPreview}>
                     <IconPhotoSearch size={44} color={theme.colors.violet[7]} />
                     <Text weight={600}>{t("image.emptyTitle")}</Text>
-                    <Text size="sm" color="dark.1">
+                    <Text size="sm" color="dimmed">
                       {t("image.emptyDescription")}
                     </Text>
                   </Stack>
@@ -814,7 +814,7 @@ export default function ImageSearchExperience() {
               </Box>
 
               <Group position="apart">
-                <Text size="sm" color="dark.1">
+                <Text size="sm" color="dimmed">
                   {strongestInsight
                     ? `${t("image.dominantSignal")}: ${getFeatureInsightText(
                         strongestInsight.label
@@ -874,7 +874,7 @@ export default function ImageSearchExperience() {
                             </Text>
                           </Group>
                           <Progress value={insight.value} color="violet.7" />
-                          <Text size="xs" color="dark.1">
+                          <Text size="xs" color="dimmed">
                             {getFeatureInsightText(insight.label).description}
                           </Text>
                         </Stack>
@@ -883,7 +883,7 @@ export default function ImageSearchExperience() {
                   </SimpleGrid>
                 ) : (
                   <Paper p="md" className={classes.insightCard}>
-                <Text size="sm" color="dark.1">
+                <Text size="sm" color="dimmed">
                       {t("image.analysisEmpty")}
                     </Text>
                   </Paper>
@@ -909,7 +909,7 @@ export default function ImageSearchExperience() {
                 <Group spacing="xs">
                   <IconSparkles size={18} color={theme.colors.violet[7]} />
                   <Text weight={700}>{t("image.bestMatch")}</Text>
-                  <Text color="dark.1">
+                  <Text color="dimmed">
                     {getArtworkTitle(results[0].artwork, locale)} · {results[0].score}% {t("image.similarity")}
                   </Text>
                 </Group>
@@ -939,12 +939,12 @@ export default function ImageSearchExperience() {
                             </Badge>
                           ) : null}
                         </Group>
-                        <Text size="sm" color="dark.1">
+                        <Text size="sm" color="dimmed">
                           {getArtworkPeriod(artwork, locale)}
                         </Text>
                       </Group>
                       <Title order={3}>{getArtworkTitle(artwork, locale)}</Title>
-                      <Text size="sm" color="dark.1">
+                      <Text size="sm" color="dimmed">
                         {getArtworkDescription(artwork, locale)}
                       </Text>
                       <Box>
@@ -967,7 +967,7 @@ export default function ImageSearchExperience() {
                 <Text weight={700}>
                   {locale === "zh" ? "没有找到可靠匹配" : "No reliable match found"}
                 </Text>
-                <Text size="sm" color="dark.1" mt="xs">
+                <Text size="sm" color="dimmed" mt="xs">
                   {locale === "zh"
                     ? "这张图片与当前知识库中的藏品差异较大，系统已主动拒绝低置信度结果，避免把不相关照片硬匹配成藏品。"
                     : "This image appears too different from the current catalog. Low-confidence matches were intentionally rejected instead of forcing an unrelated result."}
