@@ -1022,14 +1022,14 @@ export default function InboxPage() {
                     </Text>
                     <Text
                       size="sm"
-                      color="dimmed"
-                      sx={{
+                      sx={(theme) => ({
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                         minWidth: 0,
                         lineHeight: 1.6,
                         whiteSpace: "normal",
                         overflowWrap: "anywhere",
                         wordBreak: "normal",
-                      }}
+                      })}
                     >
                       {item.value}
                     </Text>
@@ -1053,13 +1053,14 @@ export default function InboxPage() {
               </Text>
               <Text
                 size="sm"
-                sx={{
+                sx={(theme) => ({
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   minWidth: 0,
                   lineHeight: 1.6,
                   whiteSpace: "normal",
                   overflowWrap: "anywhere",
                   wordBreak: "normal",
-                }}
+                })}
               >
                 {inquiry.contact_phone}
               </Text>
@@ -1078,13 +1079,14 @@ export default function InboxPage() {
               </Text>
               <Text
                 size="sm"
-                sx={{
+                sx={(theme) => ({
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   minWidth: 0,
                   lineHeight: 1.6,
                   whiteSpace: "normal",
                   overflowWrap: "anywhere",
                   wordBreak: "normal",
-                }}
+                })}
               >
                 {inquiry.contact_email}
               </Text>
