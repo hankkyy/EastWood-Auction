@@ -440,13 +440,13 @@ export default function AdminPage() {
                   component={Link}
                   href="/"
                   variant="filled"
-                  color="orange"
+                  color="violet"
                   fullWidth={isMobile}
                   sx={{
                     color: "#111",
-                    boxShadow: "0 8px 18px rgba(245, 159, 0, 0.35)",
+                    boxShadow: "0 8px 18px rgba(196, 162, 85, 0.25)",
                     "&:hover": {
-                      boxShadow: "0 10px 22px rgba(245, 159, 0, 0.45)",
+                      boxShadow: "0 10px 22px rgba(196, 162, 85, 0.35)",
                     },
                   }}
                 >
