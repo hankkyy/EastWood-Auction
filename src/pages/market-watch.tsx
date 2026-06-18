@@ -57,6 +57,10 @@ export default function MarketWatchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const gridRef = useRef<HTMLDivElement>(null);
 
