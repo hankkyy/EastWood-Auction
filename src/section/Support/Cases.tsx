@@ -67,7 +67,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [showManageMode, setShowManageMode] = useState(false);
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
-  const ITEMS_PER_PAGE = 18;
+  const ITEMS_PER_PAGE = 15;
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

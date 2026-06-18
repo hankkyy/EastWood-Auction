@@ -273,7 +273,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
-  const ITEMS_PER_PAGE = 18;
+  const ITEMS_PER_PAGE = 15;
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Scroll to top of grid when page changes
