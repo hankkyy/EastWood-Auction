@@ -21,21 +21,24 @@ import {
   Stack,
   Text,
   Title,
+  useMantineTheme,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 
-const frameStyles = {
-  background: "#fff",
+const frameStyles = (theme: any) => ({
+  background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
   borderRadius: 2,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   overflow: "hidden",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-};
+  boxShadow: theme.colorScheme === "dark"
+    ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)"
+    : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
+} as const);
 
 const getCaseCategoryLabel = (locale: "zh" | "en", rawCategory?: string, rawCategoryZh?: string) => {
   const raw = `${rawCategoryZh ?? ""} ${rawCategory ?? ""}`.trim().toLowerCase();
@@ -60,6 +63,7 @@ export default function CaseDetailPage() {
   const router = useRouter();
   const { locale, t } = useI18n();
   const { isAdmin } = useAuth();
+  const theme = useMantineTheme();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [items, setItems] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -310,7 +314,7 @@ export default function CaseDetailPage() {
                   type="button"
                   onClick={() => setLightboxOpened(true)}
                   sx={{
-                    ...frameStyles,
+                    ...frameStyles(theme),
                     height: 460,
                     width: "100%",
                     padding: 16,
@@ -385,7 +389,7 @@ export default function CaseDetailPage() {
                           type="button"
                           onClick={() => setSelectedImage(imageUrl)}
                           sx={{
-                            ...frameStyles,
+                            ...frameStyles(theme),
                             height: 150,
                             width: 170,
                             flex: "0 0 auto",
@@ -483,7 +487,7 @@ export default function CaseDetailPage() {
           <Box sx={{ position: "relative", flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Box
               sx={{
-                ...frameStyles,
+                ...frameStyles(theme),
                 minHeight: 620,
                 padding: 20,
                 border: "1px solid rgba(216, 183, 109, 0.18)",
@@ -592,7 +596,7 @@ export default function CaseDetailPage() {
                       type="button"
                       onClick={() => setSelectedImage(imageUrl)}
                       sx={{
-                        ...frameStyles,
+                        ...frameStyles(theme),
                         height: 110,
                         width: 130,
                         flex: "0 0 auto",
