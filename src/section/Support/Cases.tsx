@@ -68,6 +68,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const ITEMS_PER_PAGE = 15;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
