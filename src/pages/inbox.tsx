@@ -727,13 +727,13 @@ export default function InboxPage() {
                 </Text>
                 <Text
                   size="sm"
-                  color="dimmed"
                   mt={4}
-                  sx={{
+                  sx={(theme) => ({
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                     lineHeight: 1.6,
                     whiteSpace: "normal",
                     overflowWrap: "anywhere",
-                  }}
+                  })}
                 >
                   {isAdmin ? formatInquiryPreviewEmail(inquiry) : formatInquiryPreviewOwner(inquiry)}
                 </Text>
@@ -846,8 +846,10 @@ export default function InboxPage() {
             <>
               <Text
                 size="md"
-                color="dimmed"
-                sx={{ minWidth: 0, paddingLeft: 8 }}
+                sx={(theme) => ({ 
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  minWidth: 0, paddingLeft: 8 
+                })}
                 lineClamp={1}
                 title={formatInquiryPreviewEmail(inquiry)}
               >
