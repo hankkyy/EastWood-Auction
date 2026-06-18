@@ -559,18 +559,18 @@ export default function TopNav() {
         </ScrollArea>
       </Drawer>
 
-      {/* 认证模态框 */}
-      <AuthModal opened={authModalOpened} onClose={closeAuthModal} />
+      {/* 认证模态框 — 仅在打开时挂载，避免标题泄露到页面内容 */}  
+      {authModalOpened && <AuthModal opened={authModalOpened} onClose={closeAuthModal} />}
       
       {/* 个人资料模态框 */}
-      <ProfileModal
+      {profileModalOpened && <ProfileModal
         opened={profileModalOpened}
         onClose={closeProfileModal}
         userOverride={user}
         isAdminOverride={isAdmin}
         roleLoadingOverride={roleLoading}
         logoutOverride={logout}
-      />
+      />}
     </Box>
   );
 }
