@@ -213,13 +213,13 @@ export default function ShopDetailPage() {
                 sx={(theme) => ({
                   color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   textDecoration: "none",
-                  opacity: 0.6,
+                  opacity: 0.7,
                   "&:hover": { opacity: 1, color: "#c4a255" },
                 })}
               >
                 {locale === "zh" ? "首页" : "Home"}
               </Text>
-              <Text size="sm" sx={{ opacity: 0.35 }}>∕</Text>
+              <Text size="sm" sx={{ opacity: 0.5 }}>∕</Text>
               <Text
                 component={Link}
                 href="/shop"
@@ -227,13 +227,13 @@ export default function ShopDetailPage() {
                 sx={(theme) => ({
                   color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   textDecoration: "none",
-                  opacity: 0.6,
+                  opacity: 0.7,
                   "&:hover": { opacity: 1, color: "#c4a255" },
                 })}
               >
                 {locale === "zh" ? "古董商店" : "Shop"}
               </Text>
-              <Text size="sm" sx={{ opacity: 0.35 }}>∕</Text>
+              <Text size="sm" sx={{ opacity: 0.5 }}>∕</Text>
               <Text size="sm" sx={{ opacity: 0.8, fontWeight: 500 }}>
                 {title.length > 40 ? title.slice(0, 40) + "…" : title}
               </Text>
@@ -441,7 +441,7 @@ export default function ShopDetailPage() {
                     <SimpleGrid cols={2} spacing="sm"
                       breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                       <Box>
-                        <Text size="xs" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
+                        <Text size="sm" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
                           {locale === "zh" ? "年代" : "Period"}
                         </Text>
                         <Text size="sm" weight={500}>
@@ -449,7 +449,7 @@ export default function ShopDetailPage() {
                         </Text>
                       </Box>
                       <Box>
-                        <Text size="xs" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
+                        <Text size="sm" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
                           {locale === "zh" ? "分类" : "Category"}
                         </Text>
                         <Text size="sm" weight={500}>
@@ -458,7 +458,7 @@ export default function ShopDetailPage() {
                       </Box>
                       {item.collectionId && (
                         <Box>
-                          <Text size="xs" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
+                          <Text size="sm" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
                             {locale === "zh" ? "藏品编号" : "Collection ID"}
                           </Text>
                           <Text size="sm" weight={500} sx={{ fontFamily: "monospace", fontSize: 13 }}>
@@ -468,7 +468,7 @@ export default function ShopDetailPage() {
                       )}
                       {item.period && (
                         <Box>
-                          <Text size="xs" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
+                          <Text size="sm" sx={{ color: "#c4a255", textTransform: "uppercase", letterSpacing: "0.06em", mb: 2 }}>
                             {locale === "zh" ? "来源" : "Source"}
                           </Text>
                           <Text size="sm" weight={500}>
@@ -487,7 +487,7 @@ export default function ShopDetailPage() {
                         ? "linear-gradient(90deg, transparent, rgba(196,162,85,0.25))"
                         : "linear-gradient(90deg, transparent, rgba(180,140,100,0.25))",
                     })} />
-                    <Text size="xs" sx={{ color: "#c4a255", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
+                    <Text size="sm" sx={{ color: "#c4a255", letterSpacing: "0.15em", whiteSpace: "nowrap" }}>
                       ✦
                     </Text>
                     <Box sx={(theme) => ({
