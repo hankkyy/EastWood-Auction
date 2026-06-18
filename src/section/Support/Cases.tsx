@@ -8,7 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import type { Artwork, ArtworkCaseRecord } from "@/data/artworks";
-import { artworkCardShellBackground, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
+import { primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 import { useRouter } from "next/router"; // ✅ 导入 useRouter
 import {
   Alert,
@@ -790,45 +790,24 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   component={Link}
                   href={`/cases/${item.id}`}
                   padding={14}
-                  radius={20}
+                  radius={12}
                   sx={(theme) => ({
-                    background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
-                    border: cardBorder(theme),
+                    background: "transparent",
+                    border: "1px solid transparent",
                     textDecoration: "none",
                     color: "inherit",
                     transition: "transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 280ms ease, box-shadow 320ms ease",
-                    boxShadow: cardShadow(theme),
-                    position: "relative",
-                    overflow: "hidden",
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: 20,
-                      boxShadow: cardInnerRim(theme),
-                      pointerEvents: "none",
-                      zIndex: 2,
-                    },
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      inset: 0,
-                      borderRadius: 20,
-                      background:
-                        theme.colorScheme === "dark"
-                          ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
-                          : "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.06) 0%, transparent 60%)",
-                      pointerEvents: "none",
-                      zIndex: 1,
-                    },
+                    boxShadow: "none",
                     "&:hover": {
-                      transform: "translateY(-6px)",
-                      border: cardBorderHover(theme),
-                      boxShadow: cardShadowHover(theme),
+                      transform: "translateY(-4px)",
+                      borderColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.25)" : "rgba(180, 158, 120, 0.25)",
+                      boxShadow: theme.colorScheme === "dark"
+                        ? "0 4px 16px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.18)"
+                        : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
                     "@media (max-width: 48em)": {
                       padding: 12,
-                      borderRadius: 18,
+                      borderRadius: 10,
                     },
                   })}
                 >
