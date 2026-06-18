@@ -292,11 +292,13 @@ export default function CaseDetailPage() {
                   <Badge
                     variant="light"
                     size="lg"
-                    sx={{
-                      backgroundColor: "rgba(246, 239, 227, 0.15)",
-                      color: "#f6efe3",
-                      border: "1px solid rgba(246, 239, 227, 0.25)",
-                    }}
+                    sx={(theme) => ({
+                      backgroundColor: theme.colorScheme === "dark"
+                        ? "rgba(246, 239, 227, 0.15)"
+                        : "rgba(0, 0, 0, 0.08)",
+                      color: theme.colorScheme === "dark" ? "#f6efe3" : theme.colors.dark[0],
+                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.25)" : "rgba(0, 0, 0, 0.12)"}`,
+                    })}
                   >
                     {t("image.caseId")}: {item.caseRecord.caseId}
                   </Badge>
@@ -445,13 +447,13 @@ export default function CaseDetailPage() {
 
               {/* ✅ 案例详情描述 - 放在图片展示下方 */}
               {description && (
-                <Box p="lg" sx={{ backgroundColor: "#fff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" }}>
+                <Box p="lg" sx={(theme) => ({ backgroundColor: theme.colorScheme === "dark" ? "#1e1c19" : "#fff", borderRadius: 2, boxShadow: theme.colorScheme === "dark" ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)" : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" })}>
                   <Title order={4} mb="md">{t("support.caseDetails")}</Title>
-                  <Text size="lg" color="dark.9">{description}</Text>
+                  <Text size="lg" sx={(theme) => ({ color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0] })}>{description}</Text>
                 </Box>
               )}
 
-              <Box p="lg" sx={{ backgroundColor: "#fff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" }}>
+              <Box p="lg" sx={(theme) => ({ backgroundColor: theme.colorScheme === "dark" ? "#1e1c19" : "#fff", borderRadius: 2, boxShadow: theme.colorScheme === "dark" ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)" : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" })}>
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
                   <Text><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
