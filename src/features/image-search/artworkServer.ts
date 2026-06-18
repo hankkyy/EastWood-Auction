@@ -51,12 +51,13 @@ export const fetchKnowledgeBaseServer = async (): Promise<Artwork[]> => {
     });
 
     const result = toSerializable(artworks);
-    // 如果 Supabase 返回空数据，回退到本地种子数据
-    if (result.length === 0) {
-      console.log("[artworkServer] Supabase returned 0 artworks, using seed data");
-      return seedArtworks;
-    }
-    return result;
+    // 始终合并种子数据（去重）
+    const seedIds = new Set(seedArtworks.map((s) => s.id));
+    const existingIds = new Set(result.map((r: Artwork) => r.id));
+    const newSeeds = seedArtworks.filter((s) => !existingIds.has(s.id));
+    const merged = [...result, ...newSeeds];
+    console.log(`[artworkServer] Supabase: ${result.length}, Seeds added: ${newSeeds.length}, Total: ${merged.length}`);
+    return merged;
   } catch (error) {
     console.warn("[artworkServer] Supabase fetch failed, using seed data:", (error as Error).message);
     return seedArtworks;
