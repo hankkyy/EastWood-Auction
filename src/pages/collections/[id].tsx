@@ -299,8 +299,8 @@ export default function CollectionDetailPage() {
 
               {/* 主图展示 */}
               <Box
-                sx={{
-                  background: "#fff",
+                sx={(theme) => ({
+                  background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
                   borderRadius: 2,
                   display: "flex",
                   alignItems: "center",
@@ -309,7 +309,7 @@ export default function CollectionDetailPage() {
                   minHeight: isMobile ? 280 : 400,
                   padding: isMobile ? 10 : 0,
                   boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-                }}
+                })}
               >
                 <Box
                   role="img"
@@ -427,12 +427,12 @@ export default function CollectionDetailPage() {
               {description && (
                 <Stack
                   spacing="sm"
-                  sx={{
+                  sx={(theme) => ({
                     padding: isMobile ? 16 : 20,
                     borderRadius: 2,
-                    background: "#fff",
+                    background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
                     boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-                  }}
+                  })}
                 >
                   <Title order={4}>{t("collections.detailDescription")}</Title>
                   <Text size="md" color="dark.1" style={{ whiteSpace: "pre-wrap" }}>
