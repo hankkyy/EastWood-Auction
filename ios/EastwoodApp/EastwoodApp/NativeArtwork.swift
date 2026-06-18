@@ -1,5 +1,16 @@
 import Foundation
 
+struct Native3DModel: Decodable, Hashable {
+    let url: String
+    let format: String            // "usdz" or "glb"
+    let thumbnailUrl: String
+    let posterUrl: String
+    let fileSize: Int
+    let vertexCount: Int?
+    let faceCount: Int?
+    let scanDate: String?
+}
+
 struct NativeArtwork: Identifiable, Decodable, Hashable {
     let id: String
     let title: String
@@ -21,6 +32,7 @@ struct NativeArtwork: Identifiable, Decodable, Hashable {
     let collectionId: String?
     let uploadedBy: String?
     let isOfficial: Bool?
+    let threeDModel: Native3DModel?
 
     var localizedTitle: String {
         let zh = titleZh?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""

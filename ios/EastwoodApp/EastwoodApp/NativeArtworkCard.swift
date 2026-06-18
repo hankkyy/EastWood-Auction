@@ -63,6 +63,17 @@ struct NativeArtworkCompactCard: View {
                         priceSticker
                     }
                     Spacer()
+                    if artwork.threeDModel != nil {
+                        HStack(spacing: 2) {
+                            Image(systemName: "view.3d")
+                                .font(.system(size: 7, weight: .bold))
+                            Text("3D")
+                                .font(.system(size: 8, weight: .bold))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6).padding(.vertical, 3)
+                        .background(Color.blue.opacity(0.85), in: Capsule())
+                    }
                     if isCase {
                         Text(language.text("artwork.case"))
                             .font(.system(size: 9, weight: .bold))
@@ -169,6 +180,9 @@ struct NativeArtworkCard: View {
                         }
                         if isCase {
                             tagChip(language.text("artwork.case"), color: EastwoodTheme.casesAccent)
+                        }
+                        if artwork.threeDModel != nil {
+                            tagChip("3D", color: .blue)
                         }
                         tagChip(artwork.displayCategory(in: language.language), color: .white.opacity(0.25))
                     }
@@ -291,6 +305,7 @@ struct NativeArtworkListRow: View {
                 HStack(spacing: 4) {
                     if isCase { miniTag(language.text("artwork.case"), EastwoodTheme.casesAccent) }
                     if artwork.isForSale == true { miniTag(language.text("artwork.forSale"), EastwoodTheme.redAccent) }
+                    if artwork.threeDModel != nil { miniTag("3D", .blue) }
                 }
             }
             Spacer()

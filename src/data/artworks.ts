@@ -41,6 +41,17 @@ export type ArtworkCaseRecord = {
   riskAdvice: string;
 };
 
+export type ThreeDModel = {
+  url: string;            // USDZ/GLB 模型文件 URL
+  format: 'usdz' | 'glb'; // 模型格式
+  thumbnailUrl: string;   // 3D 预览缩略图
+  posterUrl: string;      // 封面视角图
+  fileSize: number;       // 文件大小 (bytes)
+  vertexCount?: number;   // 顶点数
+  faceCount?: number;     // 面数
+  scanDate?: string;      // 扫描日期 (ISO 8601)
+};
+
 export type Artwork = {
   id: string;
   title: string;
@@ -65,6 +76,7 @@ export type Artwork = {
   currency?: 'USD' | 'CNY'; // 货币单位
   collectionId?: string; // 藏品编号（唯一标识）
   isOfficial?: boolean; // 是否为平台上传（管理员上传）
+  threeDModel?: ThreeDModel; // LiDAR 3D 扫描模型
 };
 
 export const artworks: Artwork[] = [];
