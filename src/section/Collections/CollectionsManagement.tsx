@@ -610,6 +610,16 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
     return (
       <OuterWrapper embedded={embedded}>
         <Stack spacing="xl">
+          {adminError && (
+            <Alert color="red" title={t("collections.importFailed")}>
+              {adminError}
+            </Alert>
+          )}
+          {manageMessage && (
+            <Alert color="green" title={t("cases.success")}>
+              {manageMessage}
+            </Alert>
+          )}
           <Group position="apart" align={isMobile ? "stretch" : "center"} noWrap={!isMobile}>
             <Title order={3}>
               {shopMode 
@@ -891,16 +901,18 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           onClick={(e) => e.stopPropagation()}
                         />
                         
-                        {/* 编辑时的可售字段 */}
-                        <Checkbox
-                          label={t("collections.editForSale")}
-                          checked={editIsForSale}
-                          onChange={(event) => {
-                            event.stopPropagation();
-                            setEditIsForSale(event.currentTarget.checked);
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                        {/* ✅ 编辑时的可售字段 - 商店模式隐藏 Checkbox（强制为 true） */}
+                        {!shopMode && (
+                          <Checkbox
+                            label={t("collections.editForSale")}
+                            checked={editIsForSale}
+                            onChange={(event) => {
+                              event.stopPropagation();
+                              setEditIsForSale(event.currentTarget.checked);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        )}
 
                         {editIsForSale && (
                           <SimpleGrid
