@@ -68,6 +68,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const ITEMS_PER_PAGE = 18;
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (page > 1 && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
  // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
@@ -794,6 +801,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             }
           </Alert>
         ) : !showManageMode && !showUploadForm && (
+          <Box ref={gridRef}>
           <SimpleGrid 
             cols={3}
             spacing={56}
@@ -893,6 +901,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               );
             })}
           </SimpleGrid>
+          </Box>
         )}
       </Stack>
     </Container>

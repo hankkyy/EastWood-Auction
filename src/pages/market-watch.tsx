@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Box,
   Container,
@@ -58,6 +58,13 @@ export default function MarketWatchPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (page > 1 && gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
@@ -155,6 +162,7 @@ export default function MarketWatchPage() {
                 {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
               </Text>
             ) : (
+              <Box ref={gridRef}>
               <SimpleGrid
                 cols={3}
                 spacing="lg"
@@ -250,6 +258,7 @@ export default function MarketWatchPage() {
                   </Anchor>
                 ))}
               </SimpleGrid>
+              </Box>
             )}
 
             {/* Pagination */}
