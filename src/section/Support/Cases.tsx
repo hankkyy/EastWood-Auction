@@ -401,7 +401,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             {(showUploadForm || showManageMode) && (
               <Button
                 variant="filled"
-                color="blue"
+                color="violet"
                 size="md"
                 onClick={() => {
                   setShowUploadForm(false);
@@ -687,7 +687,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               <Group position="right">
                 <Button
                   variant="filled"
-                  color="blue"
+                  color="violet"
                   size="md"
                   onClick={resetForm}
                   leftIcon={<IconX size={18} />}

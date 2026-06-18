@@ -449,7 +449,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   <Group position="right">
                     <Button
                       variant="filled"
-                      color="blue"
+                      color="violet"
                       size="md"
                       onClick={() => {
                         setShowUploadForm(false);

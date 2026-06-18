@@ -790,7 +790,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 <Group position="right">
                   <Button
                     variant="filled"
-                    color="blue"
+                    color="violet"
                     size="sm"
                     onClick={resetEditForm}
                     leftIcon={<IconX size={16} />}
@@ -826,7 +826,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                   {locale === "zh" ? "管理案例" : "Manage Cases"}
                 </Title>
                 {!isLoading && (
-                  <Badge color="blue" size="lg">
+                  <Badge color="yellow" size="lg">
                     {cases.length} {t("cases.casesCount")}
                   </Badge>
                 )}
@@ -894,7 +894,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                         >
                           <Button
                             variant="filled"
-                            color="blue"
+                            color="violet"
                             size="sm"
                             onClick={() => handleStartEdit(artwork)}
                             leftIcon={<IconEdit size={16} />}
@@ -1239,7 +1239,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
             <Group position="right">
               <Button
                 variant="filled"
-                color="blue"
+                color="violet"
                 size="md"
                 onClick={resetEditForm}
                 leftIcon={<IconX size={18} />}
@@ -1258,7 +1258,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
               </Button>
               <Button
                 variant="filled"
-                color="blue"
+                color="violet"
                 size="md"
                 onClick={onCancel || (() => router.back())}
                 leftIcon={<IconX size={18} />}

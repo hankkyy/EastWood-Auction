@@ -206,7 +206,7 @@ export default function ShopDetailPage() {
                 component={Link}
                 href="/shop"
                 variant="filled"
-                color="blue"
+                color="violet"
                 size={isMobile ? "sm" : "md"}
                 leftIcon={<IconChevronLeft size={18} />}
                 sx={{ 
@@ -277,7 +277,7 @@ export default function ShopDetailPage() {
 
                 {item.isForSale && item.price ? (
                   <Group spacing="sm" align="center" noWrap={false}>
-                    <Badge color="green" variant="filled" size="lg">
+                    <Badge color="yellow" variant="filled" size="lg">
                       {t("collections.forSaleLabel")}
                     </Badge>
                     <Text 
@@ -293,7 +293,7 @@ export default function ShopDetailPage() {
                     </Text>
                   </Group>
                 ) : (
-                  <Badge color="green" variant="filled" size="lg">
+                  <Badge color="gray" variant="filled" size="lg">
                     {t("collections.notForSaleLabel")}
                   </Badge>
                 )}
@@ -400,7 +400,7 @@ export default function ShopDetailPage() {
                     <Text weight={600} size="sm">
                       {locale === "zh" ? "3D 模型" : "3D Model"}
                     </Text>
-                    <Badge size="sm" variant="filled" color="blue">3D</Badge>
+                    <Badge size="sm" variant="filled" color="yellow">3D</Badge>
                   </Group>
                   <Model3DViewer
                     src={item.threeDModel.url}

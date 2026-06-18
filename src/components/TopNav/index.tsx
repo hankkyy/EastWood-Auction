@@ -354,7 +354,7 @@ export default function TopNav() {
             </Button>
           )}
           <Button
-            color="blue"
+            color="violet"
             variant="filled"
             fullWidth
             onClick={() => void logout()}
@@ -403,12 +403,12 @@ export default function TopNav() {
           )}
           <Menu.Divider />
           <Menu.Item 
-            color="blue" 
+            color="violet" 
             onClick={() => logout()}
             sx={{
               fontWeight: 600,
               '&:hover': {
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                backgroundColor: 'rgba(196, 162, 85, 0.15)',
               },
             }}
           >

@@ -296,7 +296,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                         />
                       </Box>
                       <Group position="apart" noWrap={false} align="flex-start">
-                        <Badge color={itemType === "case" ? "grape" : itemType === "product" ? "teal" : "blue"}>
+                        <Badge color={itemType === "case" ? "violet.4" : itemType === "product" ? "violet.5" : "yellow"}>
                           {typeLabel}
                         </Badge>
                         {item.collectionId ? (
