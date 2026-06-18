@@ -128,6 +128,10 @@ const mockdata = [
     labelKey: "nav.search",
     link: "/search",
   },
+  {
+    labelKey: "nav.marketWatch",
+    link: "/market-watch",
+  },
 ] as const;
 
 export default function TopNav() {
