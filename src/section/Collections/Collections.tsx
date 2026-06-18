@@ -6,7 +6,7 @@ import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase
 import type { Artwork } from "@/data/artworks";
 import { primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { IconDatabaseImport, IconLayoutList, IconX } from "@tabler/icons-react";
+import { IconDatabaseImport, IconEye, IconLayoutList, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
 import CollectionsManagementSection from "./CollectionsManagement";
 import { useRouter } from "next/router";
@@ -180,6 +180,9 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       boxShadow: theme.colorScheme === "dark"
         ? "0 4px 16px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.18)"
         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
+      "&:hover .card-image-overlay": {
+        backgroundColor: "rgba(0,0,0,0.45)",
+      },
     },
 
     [theme.fn.smallerThan("sm")]: {
@@ -198,6 +201,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     width: "100%",
     height: remValue(320),
     objectFit: "cover",
+    objectPosition: "center 15%",
     display: "block",
 
     [theme.fn.smallerThan("md")]: {
@@ -207,6 +211,25 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     [theme.fn.smallerThan("sm")]: {
       height: remValue(220),
     },
+  },
+
+  cardImageWrapper: {
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  cardImageOverlay: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: remValue(4),
+    backgroundColor: "rgba(0,0,0,0)",
+    transition: "background-color 300ms ease",
+    zIndex: 2,
+    pointerEvents: "none",
   },
 
   itemTitle: {
@@ -532,12 +555,20 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                               href={item.href}
                               className={classes.cardLink}
                             >
-                              <Box
-                                component="img"
-                                src={item.image}
-                                alt={item.title}
-                                className={classes.cardImage}
-                              />
+                              <Box className={classes.cardImageWrapper}>
+                                <Box
+                                  component="img"
+                                  src={item.image}
+                                  alt={item.title}
+                                  className={classes.cardImage}
+                                />
+                                <Box className={`${classes.cardImageOverlay} card-image-overlay`}>
+                                  <IconEye size={22} color="#fff" style={{ opacity: 0.9 }} />
+                                  <Text size="xs" color="white" weight={500}>
+                                    {locale === "zh" ? "查看详情" : "View Details"}
+                                  </Text>
+                                </Box>
+                              </Box>
                               <Box className={classes.itemBody}>
                                 <Text className={classes.itemTitle}>{item.title}</Text>
                                 {shopMode && artwork?.isForSale && artwork?.price ? (
