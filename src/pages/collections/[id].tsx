@@ -258,11 +258,13 @@ export default function CollectionDetailPage() {
                   <Badge 
                     variant="light" 
                     size="lg"
-                    sx={{
-                      backgroundColor: "rgba(246, 239, 227, 0.15)",
-                      color: "#f6efe3",
-                      border: "1px solid rgba(246, 239, 227, 0.25)"
-                    }}
+                    sx={(theme) => ({
+                      backgroundColor: theme.colorScheme === "dark"
+                        ? "rgba(246, 239, 227, 0.15)"
+                        : "rgba(0, 0, 0, 0.08)",
+                      color: theme.colorScheme === "dark" ? "#f6efe3" : theme.colors.dark[0],
+                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.25)" : "rgba(0, 0, 0, 0.12)"}`
+                    })}
                   >
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>
@@ -281,10 +283,10 @@ export default function CollectionDetailPage() {
                     <Text 
                       size="lg" 
                       weight={700} 
-                      sx={{ 
-                        color: "#d7bc7e",
+                      sx={(theme) => ({ 
+                        color: theme.colorScheme === "dark" ? "#d7bc7e" : "#8a6a20",
                         lineHeight: 1.2
-                      }}
+                      })}
                     >
                       {item.currency === "CNY" ? "¥" : "$"}
                       {item.price.toLocaleString()}
@@ -381,7 +383,7 @@ export default function CollectionDetailPage() {
                               backgroundSize: "contain",
                               backgroundRepeat: "no-repeat",
                               backgroundPosition: "center",
-                              backgroundColor: "rgba(34, 39, 47, 0.5)"
+                              backgroundColor: "rgba(34, 39, 47, 0.25)"
                             }}
                           />
                         </Box>
@@ -435,7 +437,7 @@ export default function CollectionDetailPage() {
                   })}
                 >
                   <Title order={4}>{t("collections.detailDescription")}</Title>
-                  <Text size="md" color="dark.1" style={{ whiteSpace: "pre-wrap" }}>
+                  <Text size="md" sx={(theme) => ({ color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0], whiteSpace: "pre-wrap" })}>
                     {description}
                   </Text>
                 </Stack>

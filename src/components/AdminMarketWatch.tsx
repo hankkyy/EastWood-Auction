@@ -190,11 +190,13 @@ export default function AdminMarketWatch() {
             <Paper
               key={rule.id}
               p="sm"
-              sx={{
-                background: "#fff",
+              sx={(theme) => ({
+                background: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fff",
                 borderRadius: 2,
-                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-              }}
+                boxShadow: theme.colorScheme === "dark"
+                  ? "0 1px 2px rgba(0,0,0,0.20)"
+                  : "0 1px 2px rgba(0,0,0,0.04)",
+              })}
             >
               <Group position="apart">
                 <Box>

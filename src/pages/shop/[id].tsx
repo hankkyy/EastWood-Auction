@@ -283,10 +283,10 @@ export default function ShopDetailPage() {
                     <Text 
                       size="lg" 
                       weight={700} 
-                      sx={{ 
-                        color: "#d7bc7e",
+                      sx={(theme) => ({ 
+                        color: theme.colorScheme === "dark" ? "#d7bc7e" : "#8a6a20",
                         lineHeight: 1.2
-                      }}
+                      })}
                     >
                       {item.currency === "CNY" ? "¥" : "$"}
                       {item.price.toLocaleString()}

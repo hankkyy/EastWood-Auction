@@ -262,6 +262,7 @@ export default function ArtworkVisualSearchModal({
         title: {
           color: "#f3e7c2",
           fontWeight: 700,
+          ...(theme.colorScheme === "light" && { color: theme.colors.dark[0] }),
         },
       }}
     >
