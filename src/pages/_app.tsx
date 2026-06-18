@@ -65,7 +65,6 @@ export default function App({ Component, pageProps }: AppProps) {
         withGlobalStyles
         withNormalizeCSS
         theme={theme}
-        colorScheme={colorScheme}
       >
         <I18nProvider>
           <RouterTransition />
