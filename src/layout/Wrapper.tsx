@@ -16,7 +16,7 @@ export default function Wrapper({ children }: IProps) {
       initial={false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.24, ease: "easeOut" }}
-      style={{ backgroundColor: "#faf8f5", color: "#1a1a1a", minHeight: "100vh" }}
+      style={{ backgroundColor: "#f5f0e9", color: "#1a1a1a", minHeight: "100vh" }}
     >
       <Box
         sx={{
@@ -26,7 +26,7 @@ export default function Wrapper({ children }: IProps) {
           width: "100%",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          backgroundColor: "rgba(250,248,245,0.85)",
+          backgroundColor: "rgba(245,240,233,0.86)",
           borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >

@@ -19,7 +19,7 @@ export default function Document() {
         />
 
         {/* PWA 支持（不包含 viewport） */}
-        <meta name="theme-color" content="#faf8f5" />
+        <meta name="theme-color" content="#f5f0e9" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="format-detection" content="telephone=no" />

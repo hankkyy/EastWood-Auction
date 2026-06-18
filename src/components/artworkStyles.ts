@@ -1,6 +1,6 @@
 export const artworkCardShellBackground = `#ffffff`;
 
-export const artworkImageSurfaceBackground = `#faf8f5`;
+export const artworkImageSurfaceBackground = `#f5f0e9`;
 
 export const buildArtworkImageSurfaceSx = (_imageUrl: string) => ({
   background: artworkImageSurfaceBackground,
