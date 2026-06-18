@@ -30,7 +30,7 @@ import { useI18n } from "@/i18n";
 const useStyles = createStyles((theme) => ({
   footer: {
     marginTop: rem(120),
-    backgroundColor: "#faf8f5",
+    backgroundColor: "#f5f0e9",
     color: theme.colors.dark[9],
     borderTop: `${rem(1)} solid rgba(0,0,0,0.06)`,
   },

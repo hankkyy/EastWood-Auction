@@ -5,19 +5,19 @@ export const theme: MantineThemeOverride = {
   primaryColor: "violet",
   primaryShade: 9,
   black: "#1a1a1a",
-  white: "#faf8f5",
+  white: "#fffdf9",
   colors: {
     violet: [
-      "#faf8f5",
-      "#f2ede5",
-      "#e8e0d5",
-      "#d4c8b0",
-      "#b8a88a",
-      "#9b8b6e",
-      "#7a6e56",
-      "#d8b76d",
-      "#c4a255",
-      "#b8943e",
+      "#f5f0e9",   // 0 — page bg / card surface
+      "#f0e9df",   // 1
+      "#e8dfd2",   // 2
+      "#d4c8b0",   // 3
+      "#b8a88a",   // 4
+      "#9b8b6e",   // 5
+      "#7a6e56",   // 6
+      "#c4a255",   // 7 — gold accent
+      "#b8943e",   // 8
+      "#a07d30",   // 9
     ],
     dark: [
       "#1a1a1a",
@@ -29,7 +29,7 @@ export const theme: MantineThemeOverride = {
       "#c4c4c4",
       "#d9d9d9",
       "#ebebeb",
-      "#faf8f5",
+      "#f5f0e9",
     ],
   },
   headings: {
