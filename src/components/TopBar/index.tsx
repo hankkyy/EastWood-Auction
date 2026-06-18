@@ -23,9 +23,9 @@ const useStyles = createStyles((theme) => ({
     justifyContent: "flex-end",
     alignItems: "center",
     padding: `${theme.spacing.xs} ${theme.spacing.xl}`,
-    backgroundColor: "#0f1216",
-    color: theme.colors.dark[0],
-    borderBottom: `1px solid rgba(216, 183, 109, 0.18)`,
+    backgroundColor: "transparent",
+    color: theme.colors.dark[9],
+    borderBottom: "none",
 
     [theme.fn.smallerThan("sm")]: {
       padding: `${theme.spacing.xs} ${theme.spacing.sm}`,

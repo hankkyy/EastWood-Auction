@@ -24,7 +24,10 @@ export default function Wrapper({ children }: IProps) {
           top: 0,
           zIndex: 2,
           width: "100%",
-          boxShadow: "0 12px 40px rgba(0, 0, 0, 0.36)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          backgroundColor: "rgba(250,248,245,0.85)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <TopBar />

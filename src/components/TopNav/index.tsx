@@ -32,27 +32,26 @@ const useStyles = createStyles((theme) => ({
   header: {
     border: "none",
     padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
-    backgroundColor: "rgba(15, 18, 22, 0.96)",
-    color: theme.white,
-    backdropFilter: "blur(12px)",
+    backgroundColor: "transparent",
+    color: theme.colors.dark[9],
   },
   link: {
-    color: theme.colors.dark[0],
+    color: theme.colors.dark[7],
     [theme.fn.smallerThan("sm")]: {},
 
     ...theme.fn.hover({
-      backgroundColor: theme.colors.dark[6],
+      backgroundColor: theme.colors.dark[0],
       color: theme.colors.violet[7],
     }),
   },
   activeLink: {
     color: theme.colors.violet[7],
-    backgroundColor: "rgba(216, 183, 109, 0.12)",
-    borderBottom: `2px solid ${theme.colors.violet[7]}`,
+    backgroundColor: "transparent",
+    borderBottom: `1px solid ${theme.colors.violet[7]}`,
 
     ...theme.fn.hover({
-      borderRadius: theme.radius.sm,
-      backgroundColor: "rgba(216, 183, 109, 0.16)",
+      borderRadius: 2,
+      backgroundColor: "rgba(180,150,100,0.06)",
     }),
 
     [theme.fn.smallerThan("md")]: {
