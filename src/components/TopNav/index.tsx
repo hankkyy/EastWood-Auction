@@ -32,7 +32,7 @@ const useStyles = createStyles((theme) => ({
   header: {
     border: "none",
     padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
-    backgroundColor: theme.colorScheme === "dark" ? "rgba(26,24,21,0.92)" : "transparent",
+    backgroundColor: theme.colorScheme === "dark" ? "#1a1815" : "transparent",
     backdropFilter: theme.colorScheme === "dark" ? "blur(12px)" : "none",
     borderBottom: theme.colorScheme === "dark" ? "1px solid rgba(196,162,85,0.08)" : "none",
     color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
