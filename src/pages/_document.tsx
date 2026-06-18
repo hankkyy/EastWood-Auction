@@ -12,8 +12,14 @@ export default function Document() {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         
+        {/* Playfair Display — Sotheby's/Christie's serif DNA */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+          rel="stylesheet"
+        />
+
         {/* PWA 支持（不包含 viewport） */}
-        <meta name="theme-color" content="#0f1216" />
+        <meta name="theme-color" content="#faf8f5" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="format-detection" content="telephone=no" />

@@ -33,7 +33,7 @@ export const theme: MantineThemeOverride = {
     ],
   },
   headings: {
-    fontFamily: "Georgia, 'Times New Roman', serif",
+    fontFamily: "\"Playfair Display\", Georgia, 'Times New Roman', serif",
     fontWeight: 400,
   },
   globalStyles: (theme) => ({

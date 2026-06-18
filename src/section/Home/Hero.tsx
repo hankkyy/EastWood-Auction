@@ -37,7 +37,7 @@ const useStyles = createStyles((theme) => ({
     padding: rem(32),
   },
   title: {
-    fontFamily: "Georgia, 'Times New Roman', serif",
+    fontFamily: "\"Playfair Display\", Georgia, 'Times New Roman', serif",
     fontSize: rem(48),
     fontWeight: 300,
     color: "#fff",
