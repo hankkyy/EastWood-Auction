@@ -8,7 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import type { Artwork, ArtworkCaseRecord } from "@/data/artworks";
-import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
+import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
 import { useRouter } from "next/router"; // ✅ 导入 useRouter
 import {
   Alert,
@@ -791,13 +791,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   href={`/cases/${item.id}`}
                   padding="md"
                   radius="lg"
-                  sx={{
-                    background: artworkCardShellBackground,
-                    border: "1px solid rgba(216, 183, 109, 0.14)",
+                  sx={(theme) => ({
+                    background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
+                    border: cardBorder(theme),
                     textDecoration: "none",
                     color: "inherit",
-                    transition: "transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease",
-                    boxShadow: "0 20px 44px rgba(6, 8, 12, 0.22)",
+                    transition: "transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 280ms ease, box-shadow 320ms ease",
+                    boxShadow: cardShadow(theme),
                     position: "relative",
                     overflow: "hidden",
                     padding: 14,
@@ -805,24 +805,37 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       padding: 12,
                       borderRadius: 22,
                     },
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: 18,
+                      boxShadow: cardInnerRim(theme),
+                      pointerEvents: "none",
+                      zIndex: 2,
+                    },
                     "&::after": {
                       content: '""',
                       position: "absolute",
                       inset: 0,
                       borderRadius: 18,
-                      boxShadow: "inset 0 1px 0 rgba(255, 248, 236, 0.04)",
+                      background:
+                        theme.colorScheme === "dark"
+                          ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
+                          : "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.06) 0%, transparent 60%)",
                       pointerEvents: "none",
+                      zIndex: 1,
                     },
                     "&:hover": {
-                      transform: "translateY(-4px)",
-                      borderColor: "rgba(216, 183, 109, 0.22)",
-                      boxShadow: "0 24px 52px rgba(6, 8, 12, 0.26)",
+                      transform: "translateY(-6px)",
+                      border: cardBorderHover(theme),
+                      boxShadow: cardShadowHover(theme),
                     },
-                  }}
+                  })}
                 >
                   <Box
-                    sx={{
-                      ...buildArtworkImageSurfaceSx(item.image),
+                    sx={(theme) => ({
+                      ...buildArtworkImageSurfaceSx(item.image)(theme),
                       height: 430,
                       display: "flex",
                       alignItems: "center",
@@ -840,7 +853,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         padding: 12,
                         borderRadius: 14,
                       },
-                    }}
+                    })}
                   >
                     <Box
                       component="img"
@@ -866,8 +879,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       order={3}
                       size="h3"
                       align="center"
-                      sx={{
-                        color: "#f3ead8",
+                      sx={(theme) => ({
+                        color: theme.colorScheme === "dark" ? "#f3ead8" : "#1a1815",
                         letterSpacing: "0.035em",
                         fontWeight: 600,
                         lineHeight: 1.32,
@@ -880,7 +893,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                           marginTop: 12,
                           fontSize: 19,
                         },
-                      }}
+                      })}
                     >
                       {itemTitle}
                     </Title>

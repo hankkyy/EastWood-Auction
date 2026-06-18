@@ -685,24 +685,31 @@ export default function InboxPage() {
           withBorder
           radius="md"
           onClick={() => setSelectedInquiryId(isSelected ? null : inquiry.id)}
-          sx={{
+          sx={(theme) => ({
             cursor: "pointer",
             borderColor: isSelected
               ? accentColor
               : isUnread
-                ? "rgba(255, 255, 255, 0.2)"
-                : "rgba(255, 255, 255, 0.1)",
-            backgroundColor: isSelected
-              ? "rgba(255, 255, 255, 0.04)"
-              : isUnread
-                ? "rgba(255, 255, 255, 0.07)"
-                : "rgba(255, 255, 255, 0.02)",
+                ? (theme.colorScheme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.10)")
+                : (theme.colorScheme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.06)"),
+            background:
+              theme.colorScheme === "dark"
+                ? isSelected
+                  ? "rgba(255, 255, 255, 0.04)"
+                  : isUnread
+                    ? "rgba(255, 255, 255, 0.07)"
+                    : "rgba(255, 255, 255, 0.02)"
+                : isSelected
+                  ? "rgba(196, 162, 85, 0.06)"
+                  : isUnread
+                    ? "rgba(196, 162, 85, 0.04)"
+                    : "linear-gradient(175deg, #fbf8f2 0%, #f7f2e9 40%, #f2e9d8 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139,119,80,0.025) 3px, rgba(139,119,80,0.025) 6px)",
             boxShadow: isSelected
-              ? "0 12px 28px rgba(0, 0, 0, 0.18)"
-              : "0 8px 20px rgba(0, 0, 0, 0.12)",
+              ? (theme.colorScheme === "dark" ? "0 12px 28px rgba(0, 0, 0, 0.18)" : "0 4px 16px rgba(0,0,0,0.06)")
+              : (theme.colorScheme === "dark" ? "0 8px 20px rgba(0, 0, 0, 0.12)" : "0 1px 3px rgba(0,0,0,0.04)"),
             transition: "all 160ms ease",
             touchAction: "pan-y",
-          }}
+          })}
         >
           <Stack spacing="sm">
             <Group position="apart" align="flex-start" noWrap={false}>
@@ -781,23 +788,33 @@ export default function InboxPage() {
         py="xs"
         radius={0}
         onClick={() => setSelectedInquiryId(inquiry.id)}
-        sx={{
+        sx={(theme) => ({
           cursor: "pointer",
           border: "none",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"}`,
           borderLeft: `3px solid ${isUnread && !isSelected ? accentColor : "transparent"}`,
-          backgroundColor: isUnread && !isSelected
-            ? "rgba(255, 255, 255, 0.075)"
-            : isSelected
-              ? "rgba(255, 255, 255, 0.025)"
-              : "rgba(255, 255, 255, 0.012)",
+          background:
+            theme.colorScheme === "dark"
+              ? isUnread && !isSelected
+                ? "rgba(255, 255, 255, 0.075)"
+                : isSelected
+                  ? "rgba(255, 255, 255, 0.025)"
+                  : "rgba(255, 255, 255, 0.012)"
+              : isUnread && !isSelected
+                ? "rgba(196, 162, 85, 0.06)"
+                : isSelected
+                  ? "rgba(196, 162, 85, 0.04)"
+                  : "linear-gradient(175deg, #fbf8f2 0%, #f7f2e9 40%, #f2e9d8 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139,119,80,0.025) 3px, rgba(139,119,80,0.025) 6px)",
           opacity: isUnread && !isSelected ? 1 : isSelected ? 0.62 : 0.72,
           transition: "all 140ms ease",
           "&:hover": {
-            backgroundColor: "rgba(255, 255, 255, 0.09)",
+            background:
+              theme.colorScheme === "dark"
+                ? "rgba(255, 255, 255, 0.09)"
+                : "rgba(196, 162, 85, 0.10)",
             opacity: 1,
           },
-        }}
+        })}
       >
         <Box
           sx={{

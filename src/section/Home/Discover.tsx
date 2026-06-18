@@ -17,13 +17,54 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import {
+  artworkCardShellBackground,
+  cardTextureOverlay,
+  cardShadow,
+  cardShadowHover,
+  cardInnerRim,
+  cardBorder,
+  cardBorderHover,
+} from "@/components/artworkStyles";
 
 const useStyles = createStyles((theme) => ({
   card: {
-    backgroundColor: theme.colors.violet[0],
+    background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
+    border: cardBorder(theme),
+    boxShadow: cardShadow(theme),
+    borderRadius: 20,
+    overflow: "hidden",
+    position: "relative",
+    transition:
+      "transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 280ms ease, box-shadow 320ms ease",
 
-    "&:hover, &:focus": {
-      transition: "all ease 200ms",
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      borderRadius: 20,
+      boxShadow: cardInnerRim(theme),
+      pointerEvents: "none",
+      zIndex: 2,
+    },
+
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      borderRadius: 20,
+      background:
+        theme.colorScheme === "dark"
+          ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
+          : "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.06) 0%, transparent 60%)",
+      pointerEvents: "none",
+      zIndex: 1,
+    },
+
+    "&:hover": {
+      transform: "translateY(-6px)",
+      border: cardBorderHover(theme),
+      boxShadow: cardShadowHover(theme),
     },
   },
 }));
@@ -52,7 +93,7 @@ export default function DiscoverSection() {
         <Text size="lg">{t("home.discoverSubtitle")}</Text>
       </Box>
       <Paper className={classes.card} p={smallerThan ? 8 : 6}>
-        <Grid sx={{ alignItems: "center" }}>
+        <Grid sx={{ alignItems: "center", position: "relative", zIndex: 3 }}>
           <Grid.Col lg={6} p={0}>
             <Image
               src="https://images.unsplash.com/photo-1610494940231-a07875fb25fc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
@@ -65,17 +106,11 @@ export default function DiscoverSection() {
           <Grid.Col lg={6} p={0}>
             <Stack align="start" p={smallerThan ? "md" : "lg"}>
               <Title size={24}>{t("home.discoverFeatureTitle")}</Title>
-              <Text>
-                {t("home.discoverFeatureP1")}
-              </Text>
-              <Text>
-                {t("home.discoverFeatureP2")}
-              </Text>
-              <Text>
-                {t("home.discoverFeatureP3")}
-              </Text>
-              <Button 
-                {...buttonProps} 
+              <Text>{t("home.discoverFeatureP1")}</Text>
+              <Text>{t("home.discoverFeatureP2")}</Text>
+              <Text>{t("home.discoverFeatureP3")}</Text>
+              <Button
+                {...buttonProps}
                 size={smallerThan ? "sm" : "md"}
                 onClick={handleDiscoverMore}
               >
@@ -97,25 +132,22 @@ export default function DiscoverSection() {
       >
         {Array.from({ length: 4 }).map((_, i) => (
           <Paper key={`news-item-${i}`} className={classes.card} p="md">
-            <Text size="lg" weight={600} mb="md">
-              {t("home.newsTitle")}
-            </Text>
-            <Text mb="md">
-              {t("home.newsText")}
-            </Text>
-            <Button 
-              {...buttonProps}
-              onClick={handleDiscoverMore}
-            >
-              {t("home.readMore")}
-            </Button>
+            <Box sx={{ position: "relative", zIndex: 3 }}>
+              <Text size="lg" weight={600} mb="md">
+                {t("home.newsTitle")}
+              </Text>
+              <Text mb="md">{t("home.newsText")}</Text>
+              <Button {...buttonProps} onClick={handleDiscoverMore}>
+                {t("home.readMore")}
+              </Button>
+            </Box>
           </Paper>
         ))}
       </SimpleGrid>
       <Center mt={smallerThan ? 36 : "xl"}>
-        <Button 
-          size="xl" 
-          variant="outline" 
+        <Button
+          size="xl"
+          variant="outline"
           fullWidth={smallerThan}
           onClick={handleDiscoverMore}
         >

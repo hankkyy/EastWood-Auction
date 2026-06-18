@@ -241,14 +241,18 @@ export default function MarketWatchPage() {
                   <Box
                     key={i}
                     onClick={() => setPage(i + 1)}
-                    sx={{
+                    sx={(theme) => ({
                       width: 32, height: 32,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       borderRadius: 2, cursor: "pointer",
                       fontSize: 14,
-                      background: page === i + 1 ? "#1a1a1a" : "transparent",
-                      color: page === i + 1 ? "#fff" : "#1a1a1a",
-                    }}
+                      background: page === i + 1
+                        ? (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0])
+                        : "transparent",
+                      color: page === i + 1
+                        ? (theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9])
+                        : (theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0]),
+                    })}
                   >
                     {i + 1}
                   </Box>

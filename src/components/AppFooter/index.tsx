@@ -106,7 +106,7 @@ const useStyles = createStyles((theme) => ({
     fontSize: theme.fontSizes.lg,
     fontWeight: 700,
     marginBottom: `calc(${theme.spacing.xs} / 2)`,
-    color: theme.white,
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
   },
 
   afterFooter: {
@@ -116,7 +116,7 @@ const useStyles = createStyles((theme) => ({
     marginTop: theme.spacing.xl,
     paddingTop: theme.spacing.xl,
     paddingBottom: theme.spacing.xl,
-    borderTop: `${rem(1)} solid rgba(216, 183, 109, 0.18)`,
+    borderTop: `${rem(1)} solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
 
     [theme.fn.smallerThan("sm")]: {
       flexDirection: "column",

@@ -258,11 +258,13 @@ export default function ShopDetailPage() {
                   <Badge 
                     variant="light" 
                     size="lg"
-                    sx={{
-                      backgroundColor: "rgba(246, 239, 227, 0.15)",
-                      color: "#f6efe3",
-                      border: "1px solid rgba(246, 239, 227, 0.25)"
-                    }}
+                    sx={(theme) => ({
+                      backgroundColor: theme.colorScheme === "dark"
+                        ? "rgba(246, 239, 227, 0.15)"
+                        : "rgba(0, 0, 0, 0.08)",
+                      color: theme.colorScheme === "dark" ? "#f6efe3" : theme.colors.dark[0],
+                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.25)" : "rgba(0, 0, 0, 0.12)"}`
+                    })}
                   >
                     {t("collections.collectionIdLabel")}: {item.collectionId}
                   </Badge>

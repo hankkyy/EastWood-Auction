@@ -23,10 +23,21 @@ export default function WelcomeSection() {
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
   const paperProps: PaperProps = {
-    withBorder: true,
     p: "lg",
     sx: {
-      backgroundColor: theme.colors.violet[0],
+      background:
+        theme.colorScheme === "dark"
+          ? "linear-gradient(175deg, #2a2620 0%, #25221d 40%, #1f1c17 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 6px)"
+          : "linear-gradient(175deg, #fbf8f2 0%, #f7f2e9 40%, #f2e9d8 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139,119,80,0.025) 3px, rgba(139,119,80,0.025) 6px)",
+      boxShadow:
+        theme.colorScheme === "dark"
+          ? "0 1px 3px rgba(0,0,0,0.20), 0 6px 20px rgba(0,0,0,0.22)"
+          : "0 1px 3px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.05)",
+      borderRadius: 16,
+      border:
+        theme.colorScheme === "dark"
+          ? "1px solid rgba(196, 162, 85, 0.10)"
+          : "1px solid rgba(180, 158, 120, 0.15)",
     },
   };
 
