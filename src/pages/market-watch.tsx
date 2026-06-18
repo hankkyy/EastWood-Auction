@@ -167,10 +167,14 @@ export default function MarketWatchPage() {
                     target="_blank"
                     rel="noopener"
                     underline={false}
+                    sx={(theme) => ({
+                      display: "block",
+                      textDecoration: "none",
+                    })}
                   >
                     <Box
-                      sx={{
-                        background: "#fff",
+                      sx={(theme) => ({
+                        background: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fff",
                         borderRadius: 2,
                         overflow: "hidden",
                         boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04)",
@@ -179,7 +183,7 @@ export default function MarketWatchPage() {
                           boxShadow: "0 4px 8px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.06)",
                           transform: "translateY(-2px)",
                         },
-                      }}
+                      })}
                     >
                       {/* Image */}
                       <Box

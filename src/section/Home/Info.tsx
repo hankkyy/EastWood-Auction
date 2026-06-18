@@ -16,17 +16,25 @@ import {
 import { IconShieldCheck, IconMessageCircle, IconTruck } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import {
+  artworkCardShellBackground,
+  cardTextureOverlay,
+  cardBorder,
+} from "@/components/artworkStyles";
 
 const { Col } = Grid;
 
 const useStyles = createStyles((theme) => ({
   card: {
     minHeight: 142,
-    backgroundColor: "#fff",
+    background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
+    border: cardBorder(theme),
     padding: theme.spacing.md,
     display: "flex",
     alignItems: "center",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
+    boxShadow: theme.colorScheme === "dark"
+      ? "0 2px 4px rgba(0,0,0,0.20), 0 12px 24px rgba(0,0,0,0.22)"
+      : "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
     borderRadius: 2,
   },
 }));
@@ -47,7 +55,7 @@ export default function InfoSection() {
       <Grid>
         <Col md={6} lg={7}>
           <Image
-            src="https://images.unsplash.com/photo-1603974372334-1c0c7e4e3b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=735&q=80"
+            src="https://images.unsplash.com/photo-1590422749897-3d53b972d515?auto=format&fit=crop&w=735&q=80"
             alt=""
             height={smallerThan ? 320 : 500}
             fit="cover"

@@ -190,7 +190,11 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     <Text
                       size="sm"
                       weight={600}
-                      color={locale === "zh" ? "#f3e7c2" : undefined}
+                      sx={(theme) =>
+                        locale === "zh"
+                          ? { color: theme.colorScheme === "dark" ? "#f3e7c2" : "#5a4a2a" }
+                          : {}
+                      }
                     >
                       {locale === "zh" ? "关键词搜索" : "Keyword search"}
                     </Text>
@@ -311,11 +315,11 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                       <Group spacing="xs" noWrap={false}>
                         <Badge
                           variant="filled"
-                          sx={{
+                          sx={(theme) => ({
                             backgroundColor: "rgba(216, 183, 109, 0.28)",
-                            color: "#f8edd2",
+                            color: theme.colorScheme === "dark" ? "#f8edd2" : "#4a3510",
                             border: "1px solid rgba(216, 183, 109, 0.55)",
-                          }}
+                          })}
                         >
                           {getCategoryLabelByKey(
                             getCanonicalCategory(item),

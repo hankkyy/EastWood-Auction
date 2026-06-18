@@ -33,29 +33,34 @@ const useStyles = createStyles((theme) => ({
     border: "none",
     padding: `${theme.spacing.sm} ${theme.spacing.xl}`,
     backgroundColor: "transparent",
-    color: theme.colors.dark[9],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
   },
   link: {
-    color: theme.colors.dark[7],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.dark[4],
     [theme.fn.smallerThan("sm")]: {},
 
     ...theme.fn.hover({
-      backgroundColor: theme.colors.dark[0],
-      color: theme.colors.violet[7],
+      backgroundColor:
+        theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.colors.dark[0],
+      color:
+        theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.dark[9],
     }),
   },
   activeLink: {
-    color: theme.colors.violet[7],
+    color: theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
     backgroundColor: "transparent",
-    borderBottom: `1px solid ${theme.colors.violet[7]}`,
+    borderBottom: `1px solid ${theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0]}`,
 
     ...theme.fn.hover({
       borderRadius: 2,
-      backgroundColor: "rgba(180,150,100,0.06)",
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? "rgba(196,162,85,0.12)"
+          : "rgba(180,150,100,0.06)",
     }),
 
     [theme.fn.smallerThan("md")]: {
-      color: theme.colors.violet[7],
+      color: theme.colorScheme === "dark" ? theme.colors.violet[7] : theme.colors.dark[0],
     },
   },
   hiddenMobile: {
@@ -88,14 +93,14 @@ const useStyles = createStyles((theme) => ({
     flex: "0 0 auto",
     objectFit: "cover",
     borderRadius: theme.radius.sm,
-    border: `1px solid rgba(0,0,0,0.08)`,
+    border: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
     [theme.fn.smallerThan("sm")]: {
       width: rem(32),
       height: rem(32),
     },
   },
   brandText: {
-    color: theme.colors.dark[9],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
     fontSize: rem(28),
     fontWeight: 800,
     lineHeight: 1,
