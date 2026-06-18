@@ -22,10 +22,10 @@ export const theme: MantineThemeOverride = {
     dark: [
       "#1a1815",   // 0 — darkest (bg in dark mode)
       "#25221d",   // 1 — surface in dark mode
-      "#6b6356",   // 2 — dimmed text (brightened from #36322a for readability)
+      "#8a8375",   // 2 — dimmed text (4.8:1 contrast on #1a1815)
       "#4a453b",   // 3
       "#625c50",   // 4
-      "#8a8375",   // 5
+      "#9a9388",   // 5
       "#a59e90",   // 6
       "#c4bfb3",   // 7
       "#e0dcd4",   // 8
