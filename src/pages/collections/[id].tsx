@@ -546,7 +546,7 @@ export default function CollectionDetailPage() {
             </Group>
           )}
           
-          <Text color="dark.1" size="sm" mt="xs" sx={{ opacity: 0.7 }}>
+          <Text color="dark.1" size="sm" mt="xs" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 1 : 0.7 })}>
             {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
           </Text>
         </Stack>

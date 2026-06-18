@@ -580,7 +580,7 @@ export default function CaseDetailPage() {
           </Box>
 
           {gallery.length > 1 && (
-            <Text color="dark.1" size="sm" align="center" sx={{ opacity: 0.7, marginBottom: 8 }}>
+            <Text color="dark.1" size="sm" align="center" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 1 : 0.7, marginBottom: 8 })}>
               {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
             </Text>
           )}
