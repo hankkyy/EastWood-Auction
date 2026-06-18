@@ -771,6 +771,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               paddingRight: 48,
               marginTop: 64, // ✅ 增加顶部间距
               marginBottom: 64,
+                      "& *, & .mantine-Text-root": {
+                        color: "inherit !important" as any,
+                      },
+
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
                 paddingRight: 0,
@@ -805,6 +809,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         ? "0 4px 16px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.18)"
                         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
+                      "& *, & .mantine-Text-root": {
+                        color: "inherit !important" as any,
+                      },
+
                     "@media (max-width: 48em)": {
                       padding: 12,
                       borderRadius: 10,
@@ -821,6 +829,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       objectFit: "cover",
                       display: "block",
                       "@media (max-width: 62em)": { height: 220 },
+                      "& *, & .mantine-Text-root": {
+                        color: "inherit !important" as any,
+                      },
+
                       "@media (max-width: 48em)": { height: 200 },
                     })}
                   />
