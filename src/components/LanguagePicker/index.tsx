@@ -36,10 +36,10 @@ const useStyles = createStyles((theme, { opened }: { opened: boolean }) => ({
     padding: `.35rem .6rem`,
     borderRadius: theme.radius.sm,
     transition: "background-color 150ms ease",
-    color: theme.colors.dark[0],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
 
     "&:hover": {
-      backgroundColor: theme.colors.dark[6],
+      backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[4] : theme.colors.gold[2],
     },
   },
 

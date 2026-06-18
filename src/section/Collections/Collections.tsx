@@ -4,7 +4,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
 import type { Artwork } from "@/data/artworks";
-import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
+import { artworkCardShellBackground, buildArtworkImageSurfaceSx, primaryActionButtonSx, secondaryActionButtonSx, cardTextureOverlay, cardShadow, cardShadowHover, cardInnerRim, cardBorder, cardBorderHover } from "@/components/artworkStyles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IconDatabaseImport, IconLayoutList, IconX } from "@tabler/icons-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -83,8 +83,8 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     },
   },
   contentWrapper: {
-    backgroundColor: "#181a1b",
-    color: theme.colors.dark[0],
+    backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.gold[0],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
     paddingTop: remValue(72),
     paddingBottom: remValue(96),
 
@@ -98,7 +98,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
 
     ".mantine-Tabs-tabsList": {
       justifyContent: "center",
-      borderBottom: "1px solid rgba(246, 239, 227, 0.22)",
+      borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.22)" : "rgba(0,0,0,0.12)"}`,
       gap: remValue(24),
 
       [theme.fn.smallerThan("sm")]: {
@@ -118,7 +118,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     },
 
     ".mantine-Tabs-tab": {
-      color: "rgba(246, 239, 227, 0.68)",
+      color: theme.colorScheme === "dark" ? "rgba(246, 239, 227, 0.68)" : theme.colors.dark[4],
       fontSize: remValue(22),
       fontWeight: 700,
       paddingLeft: remValue(4),
@@ -127,8 +127,8 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       borderColor: "transparent",
 
       "&[data-active]": {
-        color: theme.colors.dark[0],
-        borderBottomColor: theme.colors.dark[0],
+        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+        borderBottomColor: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
       },
 
       [theme.fn.smallerThan("sm")]: {
@@ -168,27 +168,41 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     cursor: "pointer",
     padding: remValue(14),
     borderRadius: remValue(26),
-    background: artworkCardShellBackground,
-    border: "1px solid rgba(216, 183, 109, 0.14)",
-    boxShadow: "0 20px 44px rgba(6, 8, 12, 0.22)",
-    transition: "transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease",
+    background: `${artworkCardShellBackground(theme)}, ${cardTextureOverlay(theme)}`,
+    border: cardBorder(theme),
+    boxShadow: cardShadow(theme),
+    transition: "transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 280ms ease, box-shadow 320ms ease",
     position: "relative",
     overflow: "hidden",
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      borderRadius: remValue(26),
+      boxShadow: cardInnerRim(theme),
+      pointerEvents: "none",
+      zIndex: 2,
+    },
 
     "&::after": {
       content: '""',
       position: "absolute",
       inset: 0,
       borderRadius: remValue(26),
-      boxShadow: "inset 0 1px 0 rgba(255, 248, 236, 0.04)",
+      background:
+        theme.colorScheme === "dark"
+          ? "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.04) 0%, transparent 60%)"
+          : "radial-gradient(ellipse at 30% 20%, rgba(196,162,85,0.06) 0%, transparent 60%)",
       pointerEvents: "none",
+      zIndex: 1,
     },
 
     "&:hover": {
       opacity: 1,
-      transform: "translateY(-4px)",
-      borderColor: "rgba(216, 183, 109, 0.22)",
-      boxShadow: "0 24px 52px rgba(6, 8, 12, 0.26)",
+      transform: "translateY(-6px)",
+      border: cardBorderHover(theme),
+      boxShadow: cardShadowHover(theme),
     },
 
     [theme.fn.smallerThan("sm")]: {
@@ -239,9 +253,9 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
   },
 
   itemTitle: {
-    marginTop: remValue(16), // ✅ 减小上边距（从 18 改为 16）
+    marginTop: remValue(16),
     textAlign: "center",
-    color: "#f3ead8",
+    color: theme.colorScheme === "dark" ? "#f3ead8" : "#1a1815",
     fontSize: remValue(22),
     fontWeight: 600,
     letterSpacing: "0.035em",
@@ -581,10 +595,10 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                             >
                               <Box
                                 className={classes.imageWrap}
-                                sx={{
-                                  ...buildArtworkImageSurfaceSx(item.image),
+                                sx={(theme) => ({
+                                  ...buildArtworkImageSurfaceSx(item.image)(theme),
                                   position: "relative",
-                                }}
+                                })}
                               >
                                 <Box
                                   component="img"

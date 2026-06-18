@@ -25,7 +25,7 @@ const useStyles = createStyles((theme) => ({
     alignItems: "center",
     padding: `${theme.spacing.xs} ${theme.spacing.xl}`,
     backgroundColor: "transparent",
-    color: theme.colors.dark[9],
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
     borderBottom: "none",
 
     [theme.fn.smallerThan("sm")]: {
@@ -211,12 +211,13 @@ function ThemeToggle() {
 
   return (
     <ActionIcon
-      variant="subtle"
-      color="gray"
+      variant="light"
+      color={isDark ? "yellow" : "gray"}
       onClick={() => toggleColorScheme()}
       title={isDark ? "Switch to light" : "Switch to dark"}
+      size="lg"
     >
-      {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
+      {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
     </ActionIcon>
   );
 }

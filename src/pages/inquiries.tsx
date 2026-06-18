@@ -296,28 +296,58 @@ export default function InquiriesPage() {
               withBorder
               radius="md"
               p="lg"
-              sx={
+              sx={(theme) =>
                 !user
                   ? {
-                      backgroundColor: "rgba(32, 38, 46, 0.85)",
-                      borderColor: "rgba(216, 183, 109, 0.22)",
+                      background:
+                        theme.colorScheme === "dark"
+                          ? "linear-gradient(175deg, #2a2620 0%, #25221d 40%, #1f1c17 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 6px)"
+                          : "linear-gradient(175deg, #fbf8f2 0%, #f7f2e9 40%, #f2e9d8 100%), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(139,119,80,0.025) 3px, rgba(139,119,80,0.025) 6px)",
+                      borderColor:
+                        theme.colorScheme === "dark"
+                          ? "rgba(196, 162, 85, 0.14)"
+                          : "rgba(180, 158, 120, 0.18)",
                       "& .mantine-Input-input:disabled, & .mantine-Textarea-input:disabled": {
-                        backgroundColor: "rgba(16, 20, 26, 0.92)",
-                        borderColor: "rgba(216, 183, 109, 0.28)",
-                        color: "#f6efe3",
+                        backgroundColor:
+                          theme.colorScheme === "dark"
+                            ? "rgba(26, 24, 21, 0.7)"
+                            : "rgba(245, 240, 233, 0.6)",
+                        borderColor:
+                          theme.colorScheme === "dark"
+                            ? "rgba(196, 162, 85, 0.22)"
+                            : "rgba(180, 158, 120, 0.22)",
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[9]
+                            : theme.colors.dark[0],
                         opacity: 1,
-                        WebkitTextFillColor: "#f6efe3",
+                        WebkitTextFillColor:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[9]
+                            : theme.colors.dark[0],
                       },
                       "& .mantine-Input-input:disabled::placeholder, & .mantine-Textarea-input:disabled::placeholder": {
-                        color: "rgba(246, 239, 227, 0.52)",
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[5]
+                            : theme.colors.dark[4],
                       },
                       "& .mantine-Checkbox-input:disabled": {
-                        backgroundColor: "rgba(16, 20, 26, 0.92)",
-                        borderColor: "rgba(216, 183, 109, 0.32)",
+                        backgroundColor:
+                          theme.colorScheme === "dark"
+                            ? "rgba(26, 24, 21, 0.7)"
+                            : "rgba(245, 240, 233, 0.6)",
+                        borderColor:
+                          theme.colorScheme === "dark"
+                            ? "rgba(196, 162, 85, 0.26)"
+                            : "rgba(180, 158, 120, 0.26)",
                         opacity: 1,
                       },
                       "& .mantine-Checkbox-label": {
-                        color: "#f6efe3",
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[9]
+                            : theme.colors.dark[0],
                       },
                     }
                   : undefined

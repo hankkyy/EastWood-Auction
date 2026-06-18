@@ -33,13 +33,10 @@ if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
 }
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
-
-  // Initialize from localStorage → system preference
-  useEffect(() => {
-    const stored = getStoredScheme();
-    setColorScheme(stored ?? getSystemScheme());
-  }, []);
+  const [colorScheme, setColorScheme] = useState<ColorScheme>(() => {
+    // Read from localStorage or system preference BEFORE first render — no flash
+    return getStoredScheme() ?? getSystemScheme();
+  });
 
   // Listen for system changes (only when no manual preference is set)
   useEffect(() => {
@@ -64,7 +61,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <MantineProvider
         withGlobalStyles
         withNormalizeCSS
-        theme={theme}
+        theme={{ ...theme, colorScheme }}
       >
         <I18nProvider>
           <RouterTransition />
