@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -12,7 +13,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { IconClock, IconMap2, IconTicket } from "@tabler/icons-react";
+import { IconShieldCheck, IconMessageCircle, IconTruck } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 
@@ -21,10 +22,12 @@ const { Col } = Grid;
 const useStyles = createStyles((theme) => ({
   card: {
     minHeight: 142,
-    backgroundColor: theme.colors.violet[0],
+    backgroundColor: "#fff",
     padding: theme.spacing.md,
     display: "flex",
     alignItems: "center",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
+    borderRadius: 2,
   },
 }));
 
@@ -32,6 +35,7 @@ export default function InfoSection() {
   const { classes } = useStyles();
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { t } = useI18n();
+  const router = useRouter();
 
   const iconSize = smallerThan ? 32 : 48;
 
@@ -43,42 +47,48 @@ export default function InfoSection() {
       <Grid>
         <Col md={6} lg={7}>
           <Image
-            src="https://images.unsplash.com/photo-1513038630932-13873b1a7f29?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=735&q=80"
+            src="https://images.unsplash.com/photo-1603974372334-1c0c7e4e3b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=735&q=80"
             alt=""
             height={smallerThan ? 320 : 500}
             fit="cover"
-            radius="sm"
+            radius={2}
           />
         </Col>
         <Col md={6} lg={5}>
           <Stack>
             <Paper className={classes.card}>
               <Flex gap="md">
-                <Box sx={{ width: iconSize, height: iconSize }}>
-                  <IconClock size={iconSize} />
+                <Box sx={{ width: iconSize, height: iconSize, color: "#c4a255" }}>
+                  <IconShieldCheck size={iconSize} />
                 </Box>
                 <Stack spacing="sm">
-                  <Text size="lg" weight={500}>
-                    {t("home.openingTimes")}
+                  <Text size="lg" weight={400}>
+                    {t("home.featureAuthTitle")}
                   </Text>
-                  <Text>{t("home.openingFrom")}</Text>
-                  <Text>{t("home.openingWeekday")}</Text>
+                  <Text size="sm" color="dimmed">
+                    {t("home.featureAuthDesc")}
+                  </Text>
                 </Stack>
               </Flex>
             </Paper>
             <Paper className={classes.card}>
               <Flex gap="md">
-                <Box sx={{ width: iconSize, height: iconSize }}>
-                  <IconTicket size={iconSize} />
+                <Box sx={{ width: iconSize, height: iconSize, color: "#c4a255" }}>
+                  <IconMessageCircle size={iconSize} />
                 </Box>
                 <Stack spacing="sm" align="flex-start">
-                  <Text size="lg" weight={500}>
-                    {t("home.bookOnline")}
+                  <Text size="lg" weight={400}>
+                    {t("home.featureConsignTitle")}
                   </Text>
-                  <Text>
-                    {t("home.bookDescription")}
+                  <Text size="sm" color="dimmed">
+                    {t("home.featureConsignDesc")}
                   </Text>
-                  <Button size="md" fullWidth={smallerThan}>
+                  <Button
+                    size="md"
+                    fullWidth={smallerThan}
+                    variant="outline"
+                    onClick={() => router.push("/inquiries")}
+                  >
                     {t("home.bookButton")}
                   </Button>
                 </Stack>
@@ -86,15 +96,16 @@ export default function InfoSection() {
             </Paper>
             <Paper className={classes.card}>
               <Flex gap="md">
-                <Box sx={{ width: iconSize, height: iconSize }}>
-                  <IconMap2 size={iconSize} />
+                <Box sx={{ width: iconSize, height: iconSize, color: "#c4a255" }}>
+                  <IconTruck size={iconSize} />
                 </Box>
                 <Stack spacing="sm">
-                  <Text size="lg" weight={500}>
-                    {t("home.whereVisit")}
+                  <Text size="lg" weight={400}>
+                    {t("home.featureShippingTitle")}
                   </Text>
-                  <Text>{t("home.addressLineOne")}</Text>
-                  <Text>{t("home.addressLineTwo")}</Text>
+                  <Text size="sm" color="dimmed">
+                    {t("home.featureShippingDesc")}
+                  </Text>
                 </Stack>
               </Flex>
             </Paper>
