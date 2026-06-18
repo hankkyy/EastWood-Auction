@@ -225,7 +225,19 @@ export default function InquiriesPage() {
             </div>
 
             {authReady && !user ? (
-              <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.loginRequiredTitle")}>
+              <Alert icon={<IconAlertCircle size={16} />}
+                title={t("inquiry.loginRequiredTitle")}
+                sx={(theme) => ({
+                  backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.1)" : "rgba(196,162,85,0.06)",
+                  borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.3)" : "rgba(180,158,120,0.3)",
+                  "& .mantine-Alert-title": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                  "& .mantine-Alert-message": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                })}
+              >
                 <Stack spacing="sm">
                   <Text>{t("inquiry.loginRequiredMessage")}</Text>
                   <Group
@@ -240,16 +252,16 @@ export default function InquiriesPage() {
                     </Button>
                     <Button
                       variant="filled"
-                      color="yellow"
                       onClick={() => router.push("/")}
                       fullWidth={isMobile}
-                      sx={{
-                        backgroundColor: "#f6e7b0",
-                        color: "#4f3b12",
+                      sx={(theme) => ({
+                        backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "#f6e7b0",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                        border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.35)" : "transparent"}`,
                         "&:hover": {
-                          backgroundColor: "#f2dc8f",
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.28)" : "#f2dc8f",
                         },
-                      }}
+                      })}
                     >
                       {locale === "zh" ? "返回首页" : "Back Home"}
                     </Button>
@@ -259,7 +271,19 @@ export default function InquiriesPage() {
             ) : null}
 
             {authReady && user && isAdmin ? (
-              <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inquiry.adminBlockedTitle")}>
+              <Alert icon={<IconAlertCircle size={16} />}
+                title={t("inquiry.adminBlockedTitle")}
+                sx={(theme) => ({
+                  backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.1)" : "rgba(196,162,85,0.06)",
+                  borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.3)" : "rgba(180,158,120,0.3)",
+                  "& .mantine-Alert-title": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                  "& .mantine-Alert-message": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                })}
+              >
                 <Stack spacing="sm">
                   <Text>{t("inquiry.adminBlockedMessage")}</Text>
                   <Group
@@ -274,16 +298,16 @@ export default function InquiriesPage() {
                     </Button>
                     <Button
                       variant="filled"
-                      color="yellow"
                       onClick={() => router.push("/")}
                       fullWidth={isMobile}
-                      sx={{
-                        backgroundColor: "#f6e7b0",
-                        color: "#4f3b12",
+                      sx={(theme) => ({
+                        backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "#f6e7b0",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                        border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.35)" : "transparent"}`,
                         "&:hover": {
-                          backgroundColor: "#f2dc8f",
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.28)" : "#f2dc8f",
                         },
-                      }}
+                      })}
                     >
                       {locale === "zh" ? "返回首页" : "Back Home"}
                     </Button>
