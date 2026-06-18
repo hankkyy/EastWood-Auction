@@ -853,7 +853,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     }}
                   >
                     <Text
-                      size="lg"
+                      size="xl"
                       weight={600}
                       sx={(theme) => ({
                         color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
