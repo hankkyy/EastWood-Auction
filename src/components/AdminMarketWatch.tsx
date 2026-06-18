@@ -206,7 +206,12 @@ export default function AdminMarketWatch() {
         throw new Error(data.error || "Sync failed.");
       }
 
-      setSyncMsg(data.message || "Done");
+      // Show per-rule errors if any
+      const errors = (data.results || []).filter((r: any) => r.error).map((r: any) => `${r.rule_name}: ${r.error}`);
+      const msg = errors.length > 0
+        ? `${data.message} (${errors.join("; ")})`
+        : data.message || "Done";
+      setSyncMsg(msg);
       void fetchRules();
     } catch (err: any) {
       setSyncMsg("");
