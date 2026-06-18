@@ -125,15 +125,8 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    if (!isSupabaseConfigured()) {
-      return res.status(503).json({
-        error: "Supabase is not configured. Cloud persistence is required.",
-      });
-    }
-
     try {
       const artworksWithUploader = await fetchKnowledgeBaseServer();
-
       return res.status(200).json({
         artworks: artworksWithUploader,
         mode: "cloud",
