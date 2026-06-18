@@ -30,7 +30,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "清乾隆粉彩百花不落地碗，外壁满绘各色花卉，包括牡丹、菊花、荷花、梅花等，色彩艳丽，层次分明。采用乾隆时期典型的粉彩工艺。底书'大清乾隆年制'六字篆书款。口径20.5厘米，品相完美，无冲无修。",
     listingType: "collection",
     featureVector: [0.28, 0.12, 0.15, 0.72, 0.35, 0.08, 0.02, 0.28],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "POR-2024-002", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2023-042", salePrice: "¥1,850,000", saleTime: "2023-11-15",
@@ -78,7 +78,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "清中期碧玉雕缠枝莲纹朝冠耳炉，选用深绿色碧玉料，色泽沉稳凝重。炉身饰缠枝莲纹和灵芝纹，三足以兽面装饰，双耳为朝冠式。通高32厘米，配有紫檀木底座。",
     listingType: "collection",
     featureVector: [0.08, 0.18, 0.05, 0.35, 0.28, 0.12, 0.08, 0.15],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "JAD-2024-002", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2024-015", salePrice: "HK$3,200,000", saleTime: "2024-05-28",
@@ -112,7 +112,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "明佚名行书赤壁赋卷，全卷以行书书写苏轼前后赤壁赋全文，笔法遒劲，深得米芾'风樯阵马'之意趣。纸本手卷。全长约480厘米，高32厘米。",
     listingType: "collection",
     featureVector: [0.25, 0.18, 0.10, 0.38, 0.05, 0.32, 0.18, 0.62],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "CAL-2024-002", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2022-089", salePrice: "¥520,000", saleTime: "2022-09-20",
@@ -146,7 +146,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "汉代四神规矩纹铜镜，镜背以规矩纹（TLV纹）为骨架，间饰青龙、白虎、朱雀、玄武四神兽图案。镜面局部保留'水银沁'银白色包浆，光可鉴人。直径16.8厘米，重720克。",
     listingType: "collection",
     featureVector: [0.10, 0.15, 0.08, 0.45, 0.12, 0.10, 0.05, 0.22],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "BRO-2024-002", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2024-031", salePrice: "¥280,000", saleTime: "2024-03-12",
@@ -180,7 +180,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "明嘉靖剔红山水人物纹圆盒，盒面以多层朱红大漆剔刻出山水人物图景：庭院中两高士对坐品茗，旁有童子煮茶。底部刻'大明嘉靖年制'六字款。直径22厘米。明代剔红工艺繁复，为帝王贵族专属之物。",
     listingType: "collection",
     featureVector: [0.18, 0.08, 0.05, 0.32, 0.42, 0.05, 0.08, 0.22],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "MIS-2024-002", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2023-156", salePrice: "¥780,000", saleTime: "2023-12-08",
@@ -214,7 +214,7 @@ export const seedArtworks: Artwork[] = [
     descriptionZh: "清乾隆掐丝珐琅缠枝莲纹三足炉，器型雄浑饱满。炉身以深蓝色珐琅为地，掐丝填彩饰缠枝莲花纹，色彩包括松石绿、宝蓝、朱红、明黄、月白等，富丽堂皇。铜丝镀金。通高42厘米。",
     listingType: "collection",
     featureVector: [0.25, 0.08, 0.35, 0.62, 0.55, 0.02, 0.05, 0.15],
-    isForSale: false, price: undefined, currency: undefined,
+    isForSale: false,
     collectionId: "MIS-2024-004", isOfficial: true,
     caseRecord: {
       caseId: "CASE-2024-042", salePrice: "¥1,200,000", saleTime: "2024-06-15",
