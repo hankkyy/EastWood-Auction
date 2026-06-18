@@ -75,11 +75,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [page]);
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
-  // ✅ 新增管理模式状态
+ // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
   useEffect(() => {
@@ -905,46 +901,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               );
             })}
           </SimpleGrid>
-              {totalPages > 1 && (
-                <Group position="center" mt={24} mb={64} spacing="sm">
-                  <Pagination
-                    value={safePage}
-                    onChange={setPage}
-                    total={totalPages}
-                    size="sm"
-                    radius="md"
-                    styles={(theme) => ({
-                      control: {
-                        borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.15)" : "rgba(180,158,120,0.2)",
-                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
-                        "&[data-active]": { background: "#c4a255", borderColor: "#c4a255", color: "#fff" },
-                      },
-                    })}
-                  />
-                  <NumberInput
-                    value={jumpValue}
-                    onChange={setJumpValue}
-                    placeholder={String(safePage)}
-                    min={1} max={totalPages}
-                    size="sm"
-                    styles={{ input: { width: 60, textAlign: "center" } }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= totalPages) {
-                        setPage(jumpValue); setJumpValue('');
-                      }
-                    }}
-                    rightSection={
-                      <Text size="xs" color="dimmed" sx={{ cursor: "pointer", userSelect: "none" }}
-                        onClick={() => {
-                          if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= totalPages) {
-                            setPage(jumpValue); setJumpValue('');
-                          }
-                        }}>→</Text>
-                    }
-                  />
-                  <Text size="xs" color="dimmed">/ {totalPages} {locale === "zh" ? "页" : "pages"}</Text>
-                </Group>
-              )}
           </Box>
         )}
       </Stack>

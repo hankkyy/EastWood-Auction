@@ -275,17 +275,9 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const ITEMS_PER_PAGE = 15;
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [page]);
-  const gridRef = useRef<HTMLDivElement>(null);
+
 
   // Scroll to top of grid when page changes
-  useEffect(() => {
-    if (page > 1 && gridRef.current) {
-      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [page]);
 
   const refreshKnowledgeBase = useCallback(async () => {
     try {
@@ -558,7 +550,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
                   return (
                     <Tabs.Panel key={category.value} value={category.value} pt="xl">
-                      <Box ref={gridRef}>
+                      <Box>
                       {allItems.length === 0 ? (
                         <Text align="center" color="dimmed" py={40}>
                           {locale === "zh" ? "暂无藏品" : "No items yet"}
