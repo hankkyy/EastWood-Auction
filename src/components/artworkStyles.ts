@@ -1,10 +1,6 @@
-export const artworkCardShellBackground = `
-  linear-gradient(180deg, rgba(36, 31, 27, 0.98), rgba(24, 24, 26, 0.99))
-`;
+export const artworkCardShellBackground = `#ffffff`;
 
-export const artworkImageSurfaceBackground = `
-  linear-gradient(180deg, rgba(49, 43, 37, 0.92), rgba(31, 32, 36, 0.96))
-`;
+export const artworkImageSurfaceBackground = `#faf8f5`;
 
 export const buildArtworkImageSurfaceSx = (_imageUrl: string) => ({
   background: artworkImageSurfaceBackground,
@@ -13,8 +9,7 @@ export const buildArtworkImageSurfaceSx = (_imageUrl: string) => ({
   alignItems: "center",
   justifyContent: "center",
   position: "relative" as const,
-  border: "1px solid rgba(221, 189, 122, 0.12)",
-  boxShadow: "inset 0 1px 0 rgba(255, 250, 240, 0.04)",
+  border: "none",
 });
 
 export const artworkSourceBadgeSx = (isOfficial?: boolean) => ({
@@ -28,41 +23,35 @@ export const artworkSourceBadgeSx = (isOfficial?: boolean) => ({
 });
 
 export const primaryActionButtonSx = {
-  fontWeight: 600,
+  fontWeight: 400,
   minHeight: 46,
   paddingLeft: 24,
   paddingRight: 24,
-  border: "1px solid rgba(87, 138, 255, 0.22)",
-  background: "linear-gradient(180deg, #356fe0, #2d5fc0)",
-  boxShadow: "0 10px 24px rgba(20, 35, 68, 0.26)",
-  transition: "all 0.2s ease",
-  display: "inline-flex",
-  alignItems: "center",
-  color: "#f8fbff",
+  border: "1px solid #c4a255",
+  background: "#c4a255",
+  color: "#fff",
+  letterSpacing: "0.04em",
+  transition: "all 0.3s ease",
 
   "&:hover": {
-    transform: "translateY(-2px)",
-    boxShadow: "0 14px 28px rgba(20, 35, 68, 0.32)",
-    background: "linear-gradient(180deg, #3a78f3, #2f64ca)",
+    background: "#b8943e",
+    borderColor: "#b8943e",
   },
 };
 
 export const secondaryActionButtonSx = {
-  fontWeight: 600,
+  fontWeight: 400,
   minHeight: 46,
   paddingLeft: 24,
   paddingRight: 24,
-  border: "1px solid rgba(216, 183, 109, 0.18)",
-  background: "linear-gradient(180deg, rgba(255, 250, 241, 0.04), rgba(255, 255, 255, 0.02))",
-  color: "#f2e9d8",
-  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
-  transition: "all 0.2s ease",
-  display: "inline-flex",
-  alignItems: "center",
+  border: "1px solid #d4c8b0",
+  background: "transparent",
+  color: "#1a1a1a",
+  letterSpacing: "0.02em",
+  transition: "all 0.3s ease",
 
   "&:hover": {
-    transform: "translateY(-2px)",
-    borderColor: "rgba(216, 183, 109, 0.32)",
-    background: "linear-gradient(180deg, rgba(255, 250, 241, 0.06), rgba(255, 255, 255, 0.03))",
+    borderColor: "#c4a255",
+    color: "#c4a255",
   },
 };
