@@ -273,11 +273,15 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
   const [showManageMode, setShowManageMode] = useState(false); // 管理模式状态
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to grid top when page changes
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
   const ITEMS_PER_PAGE = 15;
-
-
-
-  // Scroll to top of grid when page changes
 
   const refreshKnowledgeBase = useCallback(async () => {
     try {
@@ -530,7 +534,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
             {/* 藏品列表 - 仅在非管理/上传模式下显示 */}
             {!showManageMode && !showUploadForm && (
-              <Tabs defaultValue="all" className={classes.tabs} variant="outline" onTabChange={() => { setPage(1); setJumpValue(''); }}>
+              <Tabs ref={gridRef} defaultValue="all" className={classes.tabs} variant="outline" onTabChange={() => { setPage(1); setJumpValue(''); }}>
                 <Tabs.List>
                   {categories.map((category) => (
                     <Tabs.Tab key={category.value} value={category.value}>

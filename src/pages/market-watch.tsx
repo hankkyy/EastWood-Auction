@@ -60,6 +60,13 @@ export default function MarketWatchPage() {
 
 
   const [jumpValue, setJumpValue] = useState<number | ''>('');
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page]);
 
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("newest");
@@ -158,7 +165,7 @@ export default function MarketWatchPage() {
                 {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
               </Text>
             ) : (
-              <Box>
+              <Box ref={gridRef}>
               <SimpleGrid
                 cols={3}
                 spacing="lg"
