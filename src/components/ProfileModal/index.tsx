@@ -108,14 +108,16 @@ export default function ProfileModal({
       size="md"
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
-      styles={{
+      styles={(theme) => ({
         content: {
           borderRadius: isMobile ? 0 : 16,
           padding: isMobile ? 16 : 24,
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
+          backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : undefined,
+          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : undefined,
         },
-      }}
+      })}
     >
       <Stack spacing="lg">
         {/* 用户信息卡片 */}
