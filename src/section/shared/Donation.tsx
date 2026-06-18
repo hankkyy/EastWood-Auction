@@ -32,7 +32,13 @@ export default function DonationSection() {
         >
           <Stack justify="center" sx={{ height: "100%" }}>
             <Container>
-              <Paper p="xl">
+              <Paper
+                p="xl"
+                sx={(theme) => ({
+                  backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fff",
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                })}
+              >
                 <Title align={smallerThan ? "center" : "start"}>
                   {t("sharedDonation.title")}
                 </Title>

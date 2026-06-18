@@ -91,7 +91,7 @@ const useStyles = createStyles((theme) => ({
     display: "block",
     color:
       theme.colorScheme === "dark"
-        ? theme.colors.dark[1]
+        ? theme.colors.dark[5]
         : theme.colors.dark[0],
     fontSize: theme.fontSizes.md,
     paddingTop: rem(4),
@@ -158,7 +158,7 @@ export default function AppFooter({ data }: FooterLinksProps) {
     p: theme.spacing.md,
     spacing: 6,
     sx: {
-      backgroundColor: theme.colorScheme === "dark" ? "rgba(255,255,255,0.04)" : "#fff",
+      backgroundColor: theme.colorScheme === "dark" ? "rgba(255,255,255,0.04)" : "#fbf8f2",
       border: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
       borderRadius: 2,
     },

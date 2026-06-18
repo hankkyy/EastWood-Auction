@@ -14,8 +14,8 @@ const useStyles = createStyles((theme) => ({
   card: {
     minHeight: 168,
     height: "100%",
-    backgroundColor: theme.colors.violet[9],
-    color: theme.white,
+    backgroundColor: theme.colorScheme === "dark" ? "#25221d" : "#fff",
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
 
     "&:hover, &:focus": {
       cursor: "pointer",

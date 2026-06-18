@@ -78,10 +78,12 @@ export const buildArtworkImageSurfaceSx = (_imageUrl: string) => (theme: Mantine
 
 // ── Badge styles ───────────────────────────────────────────────────
 
-export const artworkSourceBadgeSx = (isOfficial?: boolean) => ({
+export const artworkSourceBadgeSx = (isOfficial?: boolean, theme?: MantineTheme) => ({
   alignSelf: "flex-start" as const,
   backgroundColor: isOfficial === true ? "rgba(59, 130, 246, 0.14)" : "rgba(34, 197, 94, 0.14)",
-  color: isOfficial === true ? "#93c5fd" : "#86efac",
+  color: isOfficial === true
+    ? (theme?.colorScheme === "dark" ? "#93c5fd" : "#1e40af")
+    : (theme?.colorScheme === "dark" ? "#86efac" : "#166534"),
   border: `1px solid ${isOfficial === true ? "rgba(59, 130, 246, 0.28)" : "rgba(34, 197, 94, 0.28)"}`,
   letterSpacing: "0.04em",
   fontWeight: 600,

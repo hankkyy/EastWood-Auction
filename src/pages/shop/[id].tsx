@@ -230,7 +230,7 @@ export default function ShopDetailPage() {
                   <Badge
                     size="lg"
                     variant="light"
-                    sx={artworkSourceBadgeSx(item.isOfficial)}
+                    sx={(theme) => artworkSourceBadgeSx(item.isOfficial, theme)}
                   >
                     {item.isOfficial === true
                       ? t("cases.platformUpload")
