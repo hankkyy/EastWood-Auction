@@ -67,7 +67,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const [showManageMode, setShowManageMode] = useState(false);
   const [page, setPage] = useState(1);
   const [jumpValue, setJumpValue] = useState<number | ''>('');
-  const ITEMS_PER_PAGE = 9;
+  const ITEMS_PER_PAGE = 18;
  // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态

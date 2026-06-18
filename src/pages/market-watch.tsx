@@ -68,7 +68,7 @@ export default function MarketWatchPage() {
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
-    params.set("limit", "9");
+    params.set("limit", "18");
     params.set("sort", sort);
     if (search) params.set("search", search);
     if (minPrice) params.set("min_price", minPrice);
@@ -253,12 +253,12 @@ export default function MarketWatchPage() {
             )}
 
             {/* Pagination */}
-            {total > 9 && (
+            {total > 18 && (
               <Group position="center" mt="md" spacing="sm">
                 <Pagination
                   value={page}
                   onChange={setPage}
-                  total={Math.ceil(total / 9)}
+                  total={Math.ceil(total / 18)}
                   size="sm"
                   radius="md"
                   styles={(theme) => ({
@@ -274,25 +274,25 @@ export default function MarketWatchPage() {
                   onChange={setJumpValue}
                   placeholder={String(page)}
                   min={1}
-                  max={Math.ceil(total / 9)}
+                  max={Math.ceil(total / 18)}
                   size="sm"
                   styles={{ input: { width: 60, textAlign: "center" } }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 9)) {
+                    if (e.key === "Enter" && typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 18)) {
                       setPage(jumpValue); setJumpValue('');
                     }
                   }}
                   rightSection={
                     <Text size="xs" color="dimmed" sx={{ cursor: "pointer", userSelect: "none" }}
                       onClick={() => {
-                        if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 9)) {
+                        if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 18)) {
                           setPage(jumpValue); setJumpValue('');
                         }
                       }}>GO</Text>
                   }
                 />
                 <Text size="xs" color="dimmed">
-                  / {Math.ceil(total / 9)} {locale === "zh" ? "页" : "pages"}
+                  / {Math.ceil(total / 18)} {locale === "zh" ? "页" : "pages"}
                 </Text>
               </Group>
             )}
