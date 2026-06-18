@@ -297,7 +297,7 @@ export default function MarketWatchPage() {
                         if (typeof jumpValue === "number" && jumpValue >= 1 && jumpValue <= Math.ceil(total / 18)) {
                           setPage(jumpValue); setJumpValue('');
                         }
-                      }}>GO</Text>
+                      }}>→</Text>
                   }
                 />
                 <Text size="xs" color="dimmed">
