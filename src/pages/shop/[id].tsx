@@ -5,6 +5,7 @@ import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import { artworkSourceBadgeSx } from "@/components/artworkStyles";
+import { Model3DViewer } from "@/components/Model3DViewer";
 import { useAuth } from "@/hooks/useAuth";
 import {
   ActionIcon,
@@ -388,6 +389,26 @@ export default function ShopDetailPage() {
                       ))}
                     </Group>
                   </ScrollArea>
+                </Stack>
+              )}
+
+              {/* 3D Model Viewer */}
+              {item.threeDModel && (
+                <Stack spacing="sm">
+                  <Group spacing="xs" align="center">
+                    <Text weight={600} size="sm">
+                      {locale === "zh" ? "3D 模型" : "3D Model"}
+                    </Text>
+                    <Badge size="sm" variant="filled" color="blue">3D</Badge>
+                  </Group>
+                  <Model3DViewer
+                    src={item.threeDModel.url}
+                    poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
+                    alt={title}
+                    autoRotate
+                    ar
+                    height={isMobile ? 300 : 420}
+                  />
                 </Stack>
               )}
 

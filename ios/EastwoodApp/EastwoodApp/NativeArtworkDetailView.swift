@@ -43,6 +43,7 @@ struct NativeArtworkDetailView: View {
     @State private var selectedImageIndex = 0
     @State private var showShareSheet = false
     @State private var showLightbox = false
+    @State private var show3DViewer = false
 
     var body: some View {
         let pageWidth = UIScreen.main.bounds.width
@@ -148,6 +149,16 @@ struct NativeArtworkDetailView: View {
 
                 // Actions
                 VStack(spacing: 10) {
+                    if artwork.threeDModel != nil {
+                        Button {
+                            show3DViewer = true
+                        } label: {
+                            Label(language.language == .chinese ? "查看 3D 模型" : "View 3D Model",
+                                  systemImage: "view.3d")
+                        }
+                        .buttonStyle(EastwoodPrimaryButtonStyle())
+                        .tint(EastwoodTheme.gold)
+                    }
                     if let code = inquiryCode, !code.isEmpty {
                         Button {
                             showInquiryForm = true
@@ -245,6 +256,14 @@ struct NativeArtworkDetailView: View {
         }
         .fullScreenCover(isPresented: $showLightbox) {
             NativeImageLightbox(imageUrls: galleryUrls, initialIndex: selectedImageIndex)
+        }
+        .fullScreenCover(isPresented: $show3DViewer) {
+            if let model = artwork.threeDModel, let url = URL(string: model.url) {
+                Model3DViewer(
+                    modelURL: url,
+                    thumbnailURL: URL(string: model.thumbnailUrl)
+                )
+            }
         }
     }
 

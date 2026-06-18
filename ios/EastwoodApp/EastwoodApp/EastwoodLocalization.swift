@@ -544,7 +544,11 @@ final class LanguageManager: ObservableObject {
         // Related items
         "detail.relatedItems": "You May Also Like",
         "detail.relatedItems.subtitle": "Similar items from our catalog",
-        "detail.noRelated": "No related items found"
+        "detail.noRelated": "No related items found",
+
+        // 3D Scanner
+        "scanner.title": "3D Scanner",
+        "scanner.cancel": "Cancel"
     ]
 
     private static let chinese: [String: String] = [
@@ -1046,7 +1050,11 @@ final class LanguageManager: ObservableObject {
         // 相关推荐
         "detail.relatedItems": "你可能也喜欢",
         "detail.relatedItems.subtitle": "来自目录的相似藏品",
-        "detail.noRelated": "暂无相关藏品"
+        "detail.noRelated": "暂无相关藏品",
+
+        // 3D 扫描
+        "scanner.title": "3D 扫描",
+        "scanner.cancel": "取消"
     ]
 }
 

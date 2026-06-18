@@ -4,6 +4,7 @@ import type {
   ArtworkFeatureVector,
   ArtworkImageSignature,
   ArtworkListingType,
+  ThreeDModel,
 } from "@/data/artworks";
 import { hasSupabaseClientConfig } from "@/lib/supabase/config";
 import {
@@ -11,6 +12,17 @@ import {
   normalizeCaseId,
   normalizeCollectionId,
 } from "@/lib/artworkIds";
+
+export type ThreeDModelRow = {
+  url: string;
+  format: 'usdz' | 'glb';
+  thumbnail_url: string;
+  poster_url: string;
+  file_size: number;
+  vertex_count?: number;
+  face_count?: number;
+  scan_date?: string;
+} | null;
 
 export type ArtworkRow = {
   id: string;
@@ -35,6 +47,7 @@ export type ArtworkRow = {
   price: number | null; // 售价
   currency: 'USD' | 'CNY' | null; // 货币单位
   collection_id: string | null; // 藏品编号（唯一标识）
+  three_d_model: ThreeDModelRow; // LiDAR 3D 模型
   created_at?: string;
   updated_at?: string;
 };
@@ -106,6 +119,18 @@ export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
   price: artwork.price ?? null,
   currency: artwork.currency ?? 'CNY',
   collection_id: normalizeCollectionId(artwork.collectionId) ?? null,
+  three_d_model: artwork.threeDModel
+    ? {
+        url: artwork.threeDModel.url,
+        format: artwork.threeDModel.format,
+        thumbnail_url: artwork.threeDModel.thumbnailUrl,
+        poster_url: artwork.threeDModel.posterUrl,
+        file_size: artwork.threeDModel.fileSize,
+        vertex_count: artwork.threeDModel.vertexCount ?? null,
+        face_count: artwork.threeDModel.faceCount ?? null,
+        scan_date: artwork.threeDModel.scanDate ?? null,
+      }
+    : null,
 });
 
 export const rowToArtwork = (row: ArtworkRow): Artwork =>
@@ -132,4 +157,16 @@ export const rowToArtwork = (row: ArtworkRow): Artwork =>
     price: row.price ?? undefined,
     currency: row.currency ?? 'CNY',
     collectionId: row.collection_id ?? undefined,
+    threeDModel: row.three_d_model
+      ? {
+          url: row.three_d_model.url,
+          format: row.three_d_model.format,
+          thumbnailUrl: row.three_d_model.thumbnail_url,
+          posterUrl: row.three_d_model.poster_url,
+          fileSize: row.three_d_model.file_size,
+          vertexCount: row.three_d_model.vertex_count ?? undefined,
+          faceCount: row.three_d_model.face_count ?? undefined,
+          scanDate: row.three_d_model.scan_date ?? undefined,
+        }
+      : undefined,
   });

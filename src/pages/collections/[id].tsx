@@ -5,6 +5,7 @@ import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase
 import { useI18n } from "@/i18n";
 import type { Artwork } from "@/data/artworks";
 import { artworkSourceBadgeSx } from "@/components/artworkStyles";
+import { Model3DViewer } from "@/components/Model3DViewer";
 import { useAuth } from "@/hooks/useAuth";
 import {
   ActionIcon,
@@ -388,6 +389,38 @@ export default function CollectionDetailPage() {
                       ))}
                     </Group>
                   </ScrollArea>
+                </Stack>
+              )}
+
+              {/* 3D Model Viewer */}
+              {item.threeDModel && (
+                <Stack spacing="sm">
+                  <Group spacing="xs" align="center">
+                    <Text weight={600} size="sm">
+                      {locale === "zh" ? "3D 模型" : "3D Model"}
+                    </Text>
+                    <Badge
+                      size="sm"
+                      variant="filled"
+                      color="blue"
+                    >
+                      3D
+                    </Badge>
+                  </Group>
+                  <Model3DViewer
+                    src={item.threeDModel.url}
+                    poster={item.threeDModel.posterUrl || item.threeDModel.thumbnailUrl}
+                    alt={title}
+                    autoRotate
+                    ar
+                    height={isMobile ? 300 : 420}
+                  />
+                  {item.threeDModel.fileSize && (
+                    <Text size="xs" color="dimmed">
+                      {locale === "zh" ? "文件大小" : "Size"}: {(item.threeDModel.fileSize / (1024 * 1024)).toFixed(1)} MB
+                      {item.threeDModel.vertexCount && ` · ${item.threeDModel.vertexCount.toLocaleString()} vertices`}
+                    </Text>
+                  )}
                 </Stack>
               )}
 
