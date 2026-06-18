@@ -285,7 +285,7 @@ export default function InquiriesPage() {
                 })}
               >
                 <Stack spacing="sm">
-                  <Text>{t("inquiry.adminBlockedMessage")}</Text>
+                  <Text sx={(theme) => ({ color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0] })}>{t("inquiry.adminBlockedMessage")}</Text>
                   <Group
                     noWrap={!isMobile}
                     sx={{

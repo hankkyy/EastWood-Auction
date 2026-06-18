@@ -66,7 +66,7 @@ export default function TopBar() {
       notifications.show({
         title: t("inquiry.adminBlockedTitle"),
         message: t("inquiry.adminBlockedMessage"),
-        color: "yellow",
+        color: "#c4a255",
       });
       void router.push("/inbox");
       return;

@@ -204,7 +204,7 @@ export default function TopNav() {
       notifications.show({
         title: t("inquiry.adminBlockedTitle"),
         message: t("inquiry.adminBlockedMessage"),
-        color: "yellow",
+        color: "#c4a255",
       });
       void router.push("/inbox");
       return;
