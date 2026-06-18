@@ -423,7 +423,8 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     : (locale === "zh" ? "管理藏品" : "Manage Collections")}
                 </Button>
 
-                {/* 导入模拟数据按钮 */}
+                {/* 导入模拟数据按钮 — 仅开发环境 */}
+                {process.env.NODE_ENV === "development" && (
                 <Button
                   onClick={async () => {
                     if (!confirm(locale === "zh" ? "将导入 15 件古董模拟数据，确认？" : "Import 15 antique mock items?")) return;
@@ -442,6 +443,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                 >
                   {locale === "zh" ? "导入模拟数据" : "Seed Mock Data"}
                 </Button>
+                )}
               </Group>
             )}
 

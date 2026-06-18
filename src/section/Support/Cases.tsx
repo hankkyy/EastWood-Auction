@@ -396,8 +396,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   {t("cases.manageCasesButton")}
                 </Button>
 
-                {/* 导入模拟数据 — 仅管理员 */}
-                {isAdmin && (
+                {/* 导入模拟数据 — 仅管理员 + 仅开发环境 */}
+                {isAdmin && process.env.NODE_ENV === "development" && (
                   <Button
                     onClick={async () => {
                       if (!confirm(locale === "zh" ? "将导入 15 件古董模拟数据，确认？" : "Import 15 antique mock items?")) return;
