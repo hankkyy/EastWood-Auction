@@ -18,9 +18,10 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconShield, IconUser } from "@tabler/icons-react";
+import { IconShield, IconUser, IconEye } from "@tabler/icons-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdminMarketWatch from "@/components/AdminMarketWatch";
 
 type AdminProfile = Pick<
   Profile,
@@ -505,6 +506,21 @@ export default function AdminPage() {
                     {userProfiles.map(renderProfileCard)}
                   </Stack>
                 </Paper>
+
+                <Divider />
+
+                <Paper p="lg" withBorder radius="md">
+                  <Group position="apart" mb="md" noWrap={!isMobile}>
+                    <Group spacing="sm" noWrap={!isMobile}>
+                      <IconEye size={20} />
+                      <Title order={3}>
+                        {locale === "zh" ? "市场监控" : "Market Watch"}
+                      </Title>
+                    </Group>
+                  </Group>
+                  <AdminMarketWatch />
+                </Paper>
+
               </Stack>
             ) : null}
           </Stack>
