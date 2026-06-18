@@ -126,9 +126,9 @@ export const artworkToRow = (artwork: Artwork): ArtworkRow => ({
         thumbnail_url: artwork.threeDModel.thumbnailUrl,
         poster_url: artwork.threeDModel.posterUrl,
         file_size: artwork.threeDModel.fileSize,
-        vertex_count: artwork.threeDModel.vertexCount ?? null,
-        face_count: artwork.threeDModel.faceCount ?? null,
-        scan_date: artwork.threeDModel.scanDate ?? null,
+        vertex_count: artwork.threeDModel.vertexCount ?? undefined,
+        face_count: artwork.threeDModel.faceCount ?? undefined,
+        scan_date: artwork.threeDModel.scanDate ?? undefined,
       }
     : null,
 });
