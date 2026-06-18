@@ -27,7 +27,7 @@ export default function Wrapper({ children }: IProps) {
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           backgroundColor: theme.colorScheme === "dark"
-            ? "rgba(26,24,21,0.88)"
+            ? "#1a1815"
             : "rgba(245,240,233,0.86)",
           borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
         })}
