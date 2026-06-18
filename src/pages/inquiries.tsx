@@ -350,7 +350,7 @@ export default function InquiriesPage() {
                             : theme.colors.dark[0],
                       },
                     }
-                  : undefined
+                  : {}
               }
             >
               <form onSubmit={handleSubmit}>
