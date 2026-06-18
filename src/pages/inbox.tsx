@@ -650,7 +650,7 @@ export default function InboxPage() {
             "&:hover": {
               backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.2)" : "#f2dc8f",
             },
-          }}
+          })}
           onClick={() =>
             void updateInquiryStatus(
               inquiry.id,
