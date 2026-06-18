@@ -1329,7 +1329,19 @@ export default function InboxPage() {
             </Group>
 
             {!loading && !roleLoading && !user ? (
-              <Alert icon={<IconAlertCircle size={16} />} color="yellow" title={t("inbox.loginRequiredTitle")}>
+              <Alert icon={<IconAlertCircle size={16} />}
+                title={t("inbox.loginRequiredTitle")}
+                sx={(theme) => ({
+                  backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.1)" : "rgba(196,162,85,0.06)",
+                  borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.3)" : "rgba(180,158,120,0.3)",
+                  "& .mantine-Alert-title": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                  "& .mantine-Alert-message": {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  },
+                })}
+              >
                 <Stack spacing="sm">
                   <Text>{t("inbox.loginRequiredMessage")}</Text>
                   <Group>
@@ -1338,18 +1350,18 @@ export default function InboxPage() {
                     </Button>
                     <Button
                       variant="filled"
-                      color="yellow"
                       component={Link}
                       href="/inquiries"
-                      sx={{
-                        backgroundColor: "#f6e7b0",
-                        color: "#4f3b12",
-                        boxShadow: "0 6px 16px rgba(246, 231, 176, 0.38)",
+                      sx={(theme) => ({
+                        backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "#f6e7b0",
+                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                        border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.35)" : "transparent"}`,
+                        boxShadow: theme.colorScheme === "dark" ? "none" : "0 6px 16px rgba(246, 231, 176, 0.38)",
                         "&:hover": {
-                          backgroundColor: "#f2dc8f",
-                          boxShadow: "0 8px 18px rgba(242, 220, 143, 0.48)",
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.28)" : "#f2dc8f",
+                          boxShadow: theme.colorScheme === "dark" ? "none" : "0 8px 18px rgba(242, 220, 143, 0.48)",
                         },
-                      }}
+                      })}
                     >
                       {t("inquiry.entryButton")}
                     </Button>
@@ -1360,7 +1372,7 @@ export default function InboxPage() {
 
             {!loading && !roleLoading && !user ? null : isLoading || roleLoading ? (
               <Group position="center" py="xl">
-                <Loader color="yellow" />
+                <Loader color="#c4a255" />
               </Group>
             ) : error ? (
               <Alert icon={<IconAlertCircle size={16} />} color="red" title={t("inbox.loadFailedTitle")}>

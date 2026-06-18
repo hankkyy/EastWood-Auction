@@ -84,7 +84,6 @@ export default function TopBar() {
       notifications.show({
         title: t("inbox.loginRequiredTitle"),
         message: t("inbox.loginRequiredMessage"),
-        color: "yellow",
       });
       void router.push("/inbox");
       return;
