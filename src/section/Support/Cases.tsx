@@ -838,14 +838,14 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   />
                   <Box
                     sx={{
-                      position: "relative",
-                      zIndex: 3,
                       padding: 16,
+                      textAlign: "center",
                     }}
                   >
                     <Text
                       size="xl"
                       weight={600}
+                      align="center"
                       sx={(theme) => ({
                         color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                         letterSpacing: "-0.01em",
