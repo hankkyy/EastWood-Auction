@@ -1196,7 +1196,7 @@ const messages = {
     "home.featureShippingDesc": "安全保险的全球配送，确保每件藏品完好送达。",
     "home.bookButton": "开始咨询",
     "support.caseInquiryButton": "咨询此案例",
-    "home.visitTitle": "在线浏览古董"
+    "home.visitTitle": "在线浏览古董",
     "home.visitSubtitle": "查看商品亮点、拍卖预展和咨询入口。",
     "home.visitCardOneTitle": "浏览可售商品",
     "home.visitCardTwoTitle": "发送咨询",
