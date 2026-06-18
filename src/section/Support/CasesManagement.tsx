@@ -178,7 +178,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
             <Title order={2} color="red">{t("cases.loginRequired")}</Title>
-            <Text color="dimmed" align="center">
+            <Text align="center">
               {locale === "zh" 
                 ? `请先登录后才能${mode === "upload" ? "上传案例" : "管理案例"}。`
                 : `Please login first to ${mode === "upload" ? "upload" : "manage"} cases.`}
@@ -952,7 +952,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
             <Group position="apart">
               <div>
                 <Title order={2}>{t("cases.returnCaseManagement")}</Title>
-                <Text color="dimmed">
+                <Text>
                   {isAdmin 
                     ? t("cases.adminModeDescription")
                     : t("cases.userModeDescription")}
