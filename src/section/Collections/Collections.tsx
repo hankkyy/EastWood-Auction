@@ -83,7 +83,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     },
   },
   contentWrapper: {
-    backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.gold[0],
+    backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[0] : theme.colors.violet[0],
     color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
     paddingTop: remValue(72),
     paddingBottom: remValue(96),
