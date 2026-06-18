@@ -173,6 +173,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     display: "block",
     textDecoration: "none",
     cursor: "pointer",
+    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
     padding: remValue(14),
     borderRadius: remValue(12),
     background: "transparent",

@@ -792,9 +792,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
               paddingRight: 48,
               marginTop: 64, // ✅ 增加顶部间距
               marginBottom: 64,
-                      "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
-                      },
 
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
@@ -822,7 +819,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                     background: "transparent",
                     border: "1px solid transparent",
                     textDecoration: "none",
-                    color: "inherit",
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                     transition: "transform 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 280ms ease, box-shadow 320ms ease",
                     boxShadow: "none",
                     "&:hover": {
@@ -832,9 +829,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         ? "0 4px 16px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.18)"
                         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
-                      "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
-                      },
 
                     "@media (max-width: 48em)": {
                       padding: 12,
@@ -853,9 +847,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       objectPosition: "center 15%",
                       display: "block",
                       "@media (max-width: 62em)": { height: 260 },
-                      "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
-                      },
 
                       "@media (max-width: 48em)": { height: 220 },
                     })}
