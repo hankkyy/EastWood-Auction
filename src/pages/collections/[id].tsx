@@ -300,16 +300,15 @@ export default function CollectionDetailPage() {
               {/* 主图展示 */}
               <Box
                 sx={{
-                  background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
-                  borderRadius: 14,
+                  background: "#fff",
+                  borderRadius: 2,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
                   minHeight: isMobile ? 280 : 400,
                   padding: isMobile ? 10 : 0,
-                  border: "1px solid rgba(216, 183, 109, 0.16)",
-                  position: "relative",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
                 }}
               >
                 <Box
@@ -430,9 +429,9 @@ export default function CollectionDetailPage() {
                   spacing="sm"
                   sx={{
                     padding: isMobile ? 16 : 20,
-                    borderRadius: 14,
-                    background: "rgba(255, 255, 255, 0.03)",
-                    border: "1px solid rgba(216, 183, 109, 0.12)",
+                    borderRadius: 2,
+                    background: "#fff",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
                   }}
                 >
                   <Title order={4}>{t("collections.detailDescription")}</Title>

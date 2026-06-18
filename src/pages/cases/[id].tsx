@@ -28,13 +28,14 @@ import Head from "next/head";
 import { useEffect, useMemo, useState } from "react";
 
 const frameStyles = {
-  background: "linear-gradient(180deg, rgba(58, 46, 36, 0.45), rgba(23, 27, 34, 0.92))",
-  borderRadius: 8,
+  background: "#fff",
+  borderRadius: 2,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   overflow: "hidden",
-} as const;
+  boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
+};
 
 const getCaseCategoryLabel = (locale: "zh" | "en", rawCategory?: string, rawCategoryZh?: string) => {
   const raw = `${rawCategoryZh ?? ""} ${rawCategory ?? ""}`.trim().toLowerCase();
@@ -440,13 +441,13 @@ export default function CaseDetailPage() {
 
               {/* ✅ 案例详情描述 - 放在图片展示下方 */}
               {description && (
-                <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+                <Box p="lg" sx={{ backgroundColor: "#fff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" }}>
                   <Title order={4} mb="md">{t("support.caseDetails")}</Title>
-                  <Text size="lg" color="dark.1">{description}</Text>
+                  <Text size="lg" color="dark.9">{description}</Text>
                 </Box>
               )}
 
-              <Box p="lg" sx={{ backgroundColor: "rgba(24, 30, 38, 0.96)", border: "1px solid rgba(216, 183, 109, 0.18)", borderRadius: 8 }}>
+              <Box p="lg" sx={{ backgroundColor: "#fff", borderRadius: 2, boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)" }}>
                 <SimpleGrid cols={2} breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                   <Text><strong>{t("image.caseId")}:</strong> {item.caseRecord.caseId}</Text>
                   <Text><strong>{locale === "zh" ? "分类" : "Category"}:</strong> {caseCategoryLabel}</Text>
