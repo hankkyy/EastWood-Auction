@@ -178,7 +178,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
             <Title order={2} color="red">{t("cases.loginRequired")}</Title>
-            <Text color="dark.1" align="center">
+            <Text color="dimmed" align="center">
               {locale === "zh" 
                 ? `请先登录后才能${mode === "upload" ? "上传案例" : "管理案例"}。`
                 : `Please login first to ${mode === "upload" ? "upload" : "manage"} cases.`}
@@ -700,7 +700,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                         }}
                       >
                         <IconPlus size={32} color="#d8b76d" />
-                        <Text size="sm" color="dark.1" mt="xs">
+                        <Text size="sm" color="dimmed" mt="xs">
                           {locale === "zh" ? "添加图片" : "Add Images"}
                         </Text>
                       </Box>
@@ -835,12 +835,12 @@ const CasesManagementSection = memo(function CasesManagementSection({
               {isLoading ? (
                 <Box py="xl" sx={{ textAlign: "center" }}>
                   <Loader size="lg" />
-                  <Text mt="md" color="dark.1">
+                  <Text mt="md" color="dimmed">
                     {locale === "zh" ? "加载中..." : "Loading..."}
                   </Text>
                 </Box>
               ) : cases.length === 0 ? (
-                <Text color="dark.1" align="center" py="xl">
+                <Text color="dimmed" align="center" py="xl">
                   {isAdmin 
                     ? t("cases.noCasesYetAdmin")
                     : t("cases.noCasesYetUser")}
@@ -952,7 +952,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
             <Group position="apart">
               <div>
                 <Title order={2}>{t("cases.returnCaseManagement")}</Title>
-                <Text color="dark.1">
+                <Text color="dimmed">
                   {isAdmin 
                     ? t("cases.adminModeDescription")
                     : t("cases.userModeDescription")}
@@ -1139,7 +1139,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 <Stack spacing="sm" align="center">
                   <IconPhoto size={44} color="#d8b76d" />
                   <Text weight={600}>{t("cases.noPreviewImages")}</Text>
-                  <Text size="sm" color="dark.1">{t("cases.uploadCaseImages")}</Text>
+                  <Text size="sm" color="dimmed">{t("cases.uploadCaseImages")}</Text>
                 </Stack>
               </Box>
             )}

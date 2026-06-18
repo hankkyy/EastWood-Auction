@@ -526,7 +526,7 @@ export default function CollectionDetailPage() {
                 <IconChevronLeft size={isMobile ? 24 : 28} />
               </ActionIcon>
 
-              <Text color="dark.1" size="lg">
+              <Text color="dimmed" size="lg">
                 {selectedIndex + 1} / {gallery.length}
               </Text>
 
@@ -546,7 +546,7 @@ export default function CollectionDetailPage() {
             </Group>
           )}
           
-          <Text color="dark.1" size="sm" mt="xs" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 1 : 0.7 })}>
+          <Text color="dimmed" size="sm" mt="xs" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 1 : 0.7 })}>
             {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
           </Text>
         </Stack>

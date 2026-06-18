@@ -189,7 +189,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           <Stack spacing="sm" align="center">
             <IconLock size={48} color="red" />
             <Title order={2} color="red">{t("auth.loginRequired")}</Title>
-            <Text color="dark.1" align="center">
+            <Text color="dimmed" align="center">
               {locale === "zh" 
                 ? `请先登录后才能${mode === "upload" ? (shopMode ? "上传商品" : "上传藏品") : (shopMode ? "管理商品" : "管理藏品")}。`
                 : `Please log in first to ${mode === "upload" ? (shopMode ? "upload products" : "upload collections") : (shopMode ? "manage products" : "manage collections")}.`}
@@ -647,12 +647,12 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
           {isLoading ? (
             <Box py="xl" sx={{ textAlign: "center" }}>
               <Loader size="lg" />
-              <Text mt="md" color="dark.1">
+              <Text mt="md" color="dimmed">
                 {t("cases.loading")}
               </Text>
             </Box>
           ) : collections.length === 0 ? (
-            <Text color="dark.1" align="center" py="xl">
+            <Text color="dimmed" align="center" py="xl">
               {isAdmin 
                 ? t("collections.noCollectionsYet")
                 : t("cases.noCasesYetUser")}
@@ -845,7 +845,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                                   }}
                                 >
                                   <IconPlus size={24} color="#d8b76d" />
-                                  <Text size="xs" color="dark.1" mt="xs">
+                                  <Text size="xs" color="dimmed" mt="xs">
                                     {shopMode ? (locale === "zh" ? "添加商品图片" : "Add Product") : (locale === "zh" ? "添加" : "Add")}
                                   </Text>
                                 </Box>
@@ -1071,7 +1071,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                     ? (locale === "zh" ? "商品管理" : "Product Management")
                     : t("collections.managementTitle")}
                 </Title>
-                <Text color="dark.1">
+                <Text color="dimmed">
                   {isAdmin 
                     ? (shopMode 
                         ? (locale === "zh" ? "管理员模式：您可以上传和管理商店商品。" : "Admin mode: You can upload and manage shop products.")
@@ -1258,7 +1258,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       }}
                     >
                       <IconPlus size={32} color="#d8b76d" />
-                      <Text size="sm" color="dark.1" mt="xs">
+                      <Text size="sm" color="dimmed" mt="xs">
                         {shopMode ? (locale === "zh" ? "添加商品图片" : "Add Product Image") : (locale === "zh" ? "添加图片" : "Add Image")}
                       </Text>
                     </Box>
@@ -1272,7 +1272,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 <Stack spacing="sm" align="center">
                   <IconPhoto size={44} color="#d8b76d" />
                   <Text weight={600}>{t("collections.noPreviewImages")}</Text>
-                  <Text size="sm" color="dark.1">
+                  <Text size="sm" color="dimmed">
                     {shopMode 
                       ? (locale === "zh" ? "请上传商品图片（支持多选）" : "Please upload product images (multiple selection supported)")
                       : t("collections.uploadImagesMultiplePrompt")}
