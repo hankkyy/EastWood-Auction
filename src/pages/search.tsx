@@ -198,7 +198,16 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     >
                       {locale === "zh" ? "关键词搜索" : "Keyword search"}
                     </Text>
-                    <Text size="sm" color="dimmed" mt={4}>
+                    <Text
+                      size="sm"
+                      mt={4}
+                      sx={(theme) => ({
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[3]
+                            : theme.colors.dark[2],
+                      })}
+                    >
                       {locale === "zh"
                         ? "通过关键词检索藏品、商品和回流案例。拍照识图功能已暂时下线，后续可直接恢复。"
                         : "Search collections, products, and return cases by keywords. Visual search is temporarily unavailable and can be restored later."}
@@ -214,6 +223,14 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                   }
                   value={query}
                   onChange={(event) => setQuery(event.currentTarget.value)}
+                  styles={(theme) => ({
+                    label: {
+                      color:
+                        theme.colorScheme === "dark"
+                          ? theme.colors.dark[1]
+                          : undefined,
+                    },
+                  })}
                 />
                 <SimpleGrid cols={3} breakpoints={[{ maxWidth: "md", cols: 1 }]}>
                   <Select
@@ -222,6 +239,14 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     onChange={(value) => setTypeFilter((value as typeof typeFilter) || "all")}
                     withinPortal
                     zIndex={5000}
+                    styles={(theme) => ({
+                      label: {
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[1]
+                            : undefined,
+                      },
+                    })}
                     data={[
                       { value: "all", label: locale === "zh" ? "全部" : "All" },
                       { value: "collection", label: locale === "zh" ? "藏品" : "Collections" },
@@ -236,6 +261,14 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     searchable
                     withinPortal
                     zIndex={5000}
+                    styles={(theme) => ({
+                      label: {
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[1]
+                            : undefined,
+                      },
+                    })}
                   />
                   <Select
                     label={locale === "zh" ? "可售状态" : "Sale status"}
@@ -243,6 +276,14 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     onChange={(value) => setSaleFilter((value as typeof saleFilter) || "all")}
                     withinPortal
                     zIndex={5000}
+                    styles={(theme) => ({
+                      label: {
+                        color:
+                          theme.colorScheme === "dark"
+                            ? theme.colors.dark[1]
+                            : undefined,
+                      },
+                    })}
                     data={[
                       { value: "all", label: locale === "zh" ? "全部" : "All" },
                       { value: "for-sale", label: locale === "zh" ? "可售" : "For sale" },
