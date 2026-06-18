@@ -13,8 +13,9 @@ import { useI18n } from "@/i18n";
 import { supabase } from "@/lib/supabase/client";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
-import { IconInbox, IconMessageCircle } from "@tabler/icons-react";
+import { IconInbox, IconMessageCircle, IconSun, IconMoon } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useMantineColorScheme, ActionIcon } from "@mantine/core";
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -196,9 +197,26 @@ export default function TopBar() {
           >
             {t("inquiry.entryButton")}
           </Button>
+          <ThemeToggle />
           <LanguagePicker />
         </Group>
       </Container>
     </Header>
+  );
+}
+
+function ThemeToggle() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const isDark = colorScheme === "dark";
+
+  return (
+    <ActionIcon
+      variant="subtle"
+      color="gray"
+      onClick={() => toggleColorScheme()}
+      title={isDark ? "Switch to light" : "Switch to dark"}
+    >
+      {isDark ? <IconSun size={18} /> : <IconMoon size={18} />}
+    </ActionIcon>
   );
 }

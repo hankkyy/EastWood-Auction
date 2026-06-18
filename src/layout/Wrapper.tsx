@@ -16,19 +16,21 @@ export default function Wrapper({ children }: IProps) {
       initial={false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.24, ease: "easeOut" }}
-      style={{ backgroundColor: "#f5f0e9", color: "#1a1a1a", minHeight: "100vh" }}
+      style={{ minHeight: "100vh" }}
     >
       <Box
-        sx={{
+        sx={(theme) => ({
           position: "fixed",
           top: 0,
           zIndex: 2,
           width: "100%",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          backgroundColor: "rgba(245,240,233,0.86)",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
-        }}
+          backgroundColor: theme.colorScheme === "dark"
+            ? "rgba(26,24,21,0.88)"
+            : "rgba(245,240,233,0.86)",
+          borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
+        })}
       >
         <TopBar />
         <TopNav />
