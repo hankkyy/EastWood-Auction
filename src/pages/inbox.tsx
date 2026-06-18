@@ -741,8 +741,17 @@ export default function InboxPage() {
               </Box>
               <Stack spacing={6} align="flex-end">
                 <Badge
-                  color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "yellow"}
+                  color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "violet.7"}
                   variant={inquiry.is_archived ? "filled" : "light"}
+                  sx={(theme) =>
+                    !inquiry.is_archived && !inquiry.is_processed
+                      ? {
+                          backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.18)" : "rgba(196, 162, 85, 0.15)",
+                          color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                          border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.3)" : "rgba(180, 158, 120, 0.25)"}`,
+                        }
+                      : {}
+                  }
                 >
                   {getInquiryStatusLabel(inquiry)}
                 </Badge>
@@ -872,7 +881,7 @@ export default function InboxPage() {
             <Text
               size="sm"
               weight={700}
-              color={inquiry.is_archived ? "#b8a88a" : inquiry.is_processed ? "violet.5" : "yellow.2"}
+              color={inquiry.is_archived ? "#b8a88a" : inquiry.is_processed ? "violet.5" : "violet.7"}
               sx={{ whiteSpace: "nowrap", textAlign: "left" }}
             >
               {getInquiryStatusLabel(inquiry)}
@@ -986,16 +995,24 @@ export default function InboxPage() {
             </Text>
             <Group spacing="xs" noWrap={false}>
               <Badge
-                color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "yellow"}
+                color={inquiry.is_archived ? "violet.4" : inquiry.is_processed ? "violet.5" : "violet.7"}
                 variant={inquiry.is_archived ? "filled" : "light"}
-                sx={(theme) =>
-                  inquiry.is_archived
-                    ? {
-                        backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.18)" : "#f6e7b0",
-                        color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
-                      }
-                    : {}
-                }
+                sx={(theme) => {
+                  if (inquiry.is_archived) {
+                    return {
+                      backgroundColor: theme.colorScheme === "dark" ? "rgba(180, 158, 120, 0.18)" : "#f6e7b0",
+                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                    };
+                  }
+                  if (!inquiry.is_processed) {
+                    return {
+                      backgroundColor: theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.18)" : "rgba(196, 162, 85, 0.15)",
+                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4f3b12",
+                      border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.3)" : "rgba(180, 158, 120, 0.25)"}`,
+                    };
+                  }
+                  return {};
+                }}
               >
                 {getInquiryStatusLabel(inquiry)}
               </Badge>
