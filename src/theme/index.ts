@@ -103,5 +103,11 @@ export const theme: MantineThemeOverride = {
     ".mantine-InputWrapper-description, .mantine-InputWrapper-error, .mantine-Text-root[data-muted]": {
       color: `${appMutedTextColor(theme)} !important`,
     },
+    ".mantine-Tabs-tab": {
+      color: `${appTextColor(theme)} !important`,
+      "&[data-active]": {
+        color: `${appTextColor(theme)} !important`,
+      },
+    },
   }),
 };
