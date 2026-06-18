@@ -415,12 +415,12 @@ export default function ShopDetailPage() {
               {description && (
                 <Stack
                   spacing="sm"
-                  sx={{
+                  sx={(theme) => ({
                     padding: isMobile ? 16 : 20,
                     borderRadius: 2,
                     background: theme.colorScheme === "dark" ? "#1e1c19" : "#fff",
                     boxShadow: "0 2px 4px rgba(0,0,0,0.04), 0 12px 24px rgba(0,0,0,0.04)",
-                  }}
+                  })}
                 >
                   <Title order={4}>{t("collections.detailDescription")}</Title>
                   <Text size="md" color="dark.1" style={{ whiteSpace: "pre-wrap" }}>
