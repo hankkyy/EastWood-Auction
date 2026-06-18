@@ -790,11 +790,8 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
             sx={{ 
               paddingLeft: 48,
               paddingRight: 48,
-              marginTop: 64, // ✅ 增加顶部间距
+              marginTop: 64,
               marginBottom: 64,
-                      "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
-                      },
 
               "@media (max-width: 48em)": {
                 paddingLeft: 0,
@@ -833,7 +830,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                         : "0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)",
                     },
                       "& *, & .mantine-Text-root": {
-                        color: "inherit !important" as any,
+                        color: "inherit",
                       },
 
                     "@media (max-width: 48em)": {
