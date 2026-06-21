@@ -250,13 +250,13 @@ export default function CaseDetailPage() {
                 sx={(theme) => ({
                   color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   textDecoration: "none",
-                  opacity: 0.7,
+                  opacity: theme.colorScheme === "dark" ? 0.75 : 0.7,
                   "&:hover": { opacity: 1, color: "#c4a255" },
                 })}
               >
                 {locale === "zh" ? "首页" : "Home"}
               </Text>
-              <Text size="sm" sx={{ opacity: 0.5 }}>∕</Text>
+              <Text size="sm" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 0.6 : 0.5 })}>∕</Text>
               <Text
                 component={Link}
                 href="/cases"
@@ -264,14 +264,14 @@ export default function CaseDetailPage() {
                 sx={(theme) => ({
                   color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
                   textDecoration: "none",
-                  opacity: 0.7,
+                  opacity: theme.colorScheme === "dark" ? 0.75 : 0.7,
                   "&:hover": { opacity: 1, color: "#c4a255" },
                 })}
               >
                 {locale === "zh" ? "回流案例" : "Cases"}
               </Text>
-              <Text size="sm" sx={{ opacity: 0.5 }}>∕</Text>
-              <Text size="sm" sx={{ opacity: 0.8, fontWeight: 500 }}>
+              <Text size="sm" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 0.6 : 0.5 })}>∕</Text>
+              <Text size="sm" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 0.85 : 0.8, fontWeight: 500 })}>
                 {title.length > 40 ? title.slice(0, 40) + "…" : title}
               </Text>
             </Group>
