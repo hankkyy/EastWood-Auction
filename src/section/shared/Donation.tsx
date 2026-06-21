@@ -10,6 +10,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import Link from "next/link";
 import { useI18n } from "@/i18n";
 
 export default function DonationSection() {
@@ -46,7 +47,7 @@ export default function DonationSection() {
                   {t("sharedDonation.description")}
                 </Text>
                 <Center>
-                  <Button size="md" fullWidth={smallerThan}>
+                  <Button size="md" fullWidth={smallerThan} component={Link} href="/donation">
                     {t("sharedDonation.button")}
                   </Button>
                 </Center>
