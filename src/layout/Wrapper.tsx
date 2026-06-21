@@ -19,6 +19,7 @@ export default function Wrapper({ children }: IProps) {
       style={{ minHeight: "100vh" }}
     >
       <Box
+        component="header"
         sx={(theme) => ({
           position: "fixed",
           top: 0,
@@ -36,6 +37,7 @@ export default function Wrapper({ children }: IProps) {
         <TopNav />
       </Box>
       <Box
+        component="main"
         sx={(theme) => ({
           marginTop: `calc(${rem(104)} + env(safe-area-inset-top, 0px))`,
           [theme.fn.smallerThan("sm")]: {

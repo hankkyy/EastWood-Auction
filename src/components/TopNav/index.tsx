@@ -7,7 +7,6 @@ import {
   Divider,
   Drawer,
   Group,
-  Header,
   rem,
   ScrollArea,
   Stack,
@@ -423,7 +422,7 @@ export default function TopNav() {
 
   return (
     <Box>
-      <Header height="100%" px="md" className={classes.header}>
+      <Box component="nav" px="md" className={classes.header} sx={{ height: "100%" }}>
         <Group position="apart" sx={{ height: "100%" }}>
           <UnstyledButton
             component={Link}
@@ -471,7 +470,7 @@ export default function TopNav() {
             />
           </Group>
         </Group>
-      </Header>
+      </Box>
 
       <Drawer
         opened={drawerOpened}
