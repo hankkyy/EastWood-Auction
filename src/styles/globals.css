@@ -38,11 +38,6 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-::selection {
-  background-color: rgba(216, 183, 109, 0.35);
-  color: #fff7e8;
-}
-
 /* ========== 移动端优化 ========== */
 
 /* 增大触摸目标 */

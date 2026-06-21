@@ -599,31 +599,31 @@ export default function CaseDetailPage() {
                       </Text>
                       <SimpleGrid cols={2} spacing="sm" breakpoints={[{ maxWidth: "sm", cols: 1 }]}>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "成交价格" : "Sale Price"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "成交价格" : "Sale Price"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.salePrice}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "成交时间" : "Sale Date"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "成交时间" : "Sale Date"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.saleTime}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "出售平台" : "Platform"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "出售平台" : "Platform"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.salePlatform}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "客户地区" : "Client Region"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "客户地区" : "Client Region"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.clientRegion}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "物流成本" : "Logistics"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "物流成本" : "Logistics"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.logisticsCost}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "购买渠道" : "Purchase Channel"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "购买渠道" : "Purchase Channel"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.purchaseChannel}</Text>
                         </Box>
                         <Box>
-                          <Text size="xs" color="dimmed">{locale === "zh" ? "购买成本" : "Purchase Cost"}</Text>
+                          <Text size="sm" color="dimmed">{locale === "zh" ? "购买成本" : "Purchase Cost"}</Text>
                           <Text size="sm" weight={600}>{item.caseRecord.purchaseCost}</Text>
                         </Box>
                       </SimpleGrid>

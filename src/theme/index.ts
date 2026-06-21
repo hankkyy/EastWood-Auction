@@ -45,6 +45,14 @@ export const theme: MantineThemeOverride = {
     fontWeight: 400,
   },
   globalStyles: (theme) => ({
+    // Selection highlight — adapts to dark/light mode
+    "::selection": {
+      backgroundColor:
+        theme.colorScheme === "dark"
+          ? "rgba(196, 162, 85, 0.30)"
+          : "rgba(216, 183, 109, 0.35)",
+      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : "#4a3f2a",
+    },
     "h1, h2, h3, h4, h5, h6": {
       letterSpacing: "-0.02em",
     },
