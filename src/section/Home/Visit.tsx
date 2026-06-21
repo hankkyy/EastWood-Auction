@@ -42,8 +42,10 @@ export default function VisitSection() {
   const smallerThan = useMediaQuery("(max-width: 600px)");
   const { t } = useI18n();
 
-  const handleLearnMore = () => {
-    router.push("/shop");
+  const handleLearnMore = (index: number) => {
+    if (index === 0) router.push("/shop");
+    else if (index === 1) router.push("/inquiries");
+    else if (index === 2) router.push("/search");
   };
 
   return (
@@ -109,7 +111,7 @@ export default function VisitSection() {
               <Button 
                 variant="outline"
                 fullWidth={smallerThan}
-                onClick={handleLearnMore}
+                onClick={() => handleLearnMore(i)}
                 sx={(theme) => secondaryActionButtonSx(theme)}
               >
                 {t("visit.learnMore")}
