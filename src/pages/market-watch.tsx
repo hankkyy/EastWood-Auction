@@ -397,12 +397,12 @@ export default function MarketWatchPage() {
                           </Badge>
                           {isAuction && (
                             <Badge size="sm" variant="filled" color="red" sx={{ fontWeight: 400 }}>
-                              AUCTION
+                              {locale === "zh" ? "拍卖" : "AUCTION"}
                             </Badge>
                           )}
                           {isFixedPrice && (
                             <Badge size="sm" variant="filled" color="green" sx={{ fontWeight: 400 }}>
-                              BUY NOW
+                              {locale === "zh" ? "直购" : "BUY NOW"}
                             </Badge>
                           )}
                         </Group>

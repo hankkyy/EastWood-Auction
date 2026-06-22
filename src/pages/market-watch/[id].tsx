@@ -304,8 +304,8 @@ export default function MarketWatchDetailPage() {
                 >
                   <Group spacing={6} sx={{ position: "absolute", top: 12, left: 12 }}>
                     <Badge size="sm" variant="filled" color="blue">eBay</Badge>
-                    {isAuction && <Badge size="sm" variant="filled" color="red">AUCTION</Badge>}
-                    {isFixedPrice && <Badge size="sm" variant="filled" color="green">BUY NOW</Badge>}
+                    {isAuction && <Badge size="sm" variant="filled" color="red">{locale === "zh" ? "拍卖" : "AUCTION"}</Badge>}
+                    {isFixedPrice && <Badge size="sm" variant="filled" color="green">{locale === "zh" ? "直购" : "BUY NOW"}</Badge>}
                   </Group>
                 </Box>
               </Box>
