@@ -121,6 +121,22 @@ export default function MarketWatchPage() {
     <>
       <Head>
         <title>Market Watch — Eastwood Auction</title>
+        <script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          async
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              function googleTranslateElementInit() {
+                new google.translate.TranslateElement(
+                  { pageLanguage: 'en', includedLanguages: 'zh-CN', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false },
+                  'google_translate_element'
+                );
+              }
+            `,
+          }}
+        />
       </Head>
       <Wrapper>
         <Container py={isMobile ? 28 : 60} px={isMobile ? 16 : undefined}>
@@ -138,6 +154,9 @@ export default function MarketWatchPage() {
                   ? `共 ${total} 条来自 eBay 的古董商品，按预设规则自动匹配`
                   : `${total} antique listings from eBay, matched by preset rules`}
               </Text>
+              <Box mt={12}>
+                <div id="google_translate_element" />
+              </Box>
             </Box>
 
             {/* Filters */}
