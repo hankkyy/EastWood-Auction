@@ -581,7 +581,7 @@ export default function MarketWatchDetailPage() {
                       </Text>
                       {listing.feedback_pct && (
                         <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                          {t("marketWatch.feedback")}: {listing.feedback_pct}
+                          {t("marketWatch.feedback")}: {listing.feedback_pct}%
                           {listing.feedback_rating_star && ` · ${listing.feedback_rating_star}`}
                         </Text>
                       )}
