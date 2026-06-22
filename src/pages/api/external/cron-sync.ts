@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { searchEBayItems, buildEBayFilter, type EBayItemSummary } from "@/lib/ebay";
+import { searchEBayItems, buildEBayFilter, getEBayItem, type EBayItemSummary, type EBayItemDetail } from "@/lib/ebay";
 
 /**
  * POST /api/external/cron-sync
@@ -125,7 +125,32 @@ export default async function handler(
             { onConflict: "source,external_id" }
           );
 
-        if (!upsertErr) inserted++;
+        if (!upsertErr) {
+          inserted++;
+
+          // Enrich auction listings with bid count, current bid, description
+          if (item.buyingOptions?.includes("AUCTION")) {
+            try {
+              const detail: EBayItemDetail = await getEBayItem(item.itemId);
+              await supabase
+                .from("external_listings")
+                .update({
+                  current_bid: detail.currentBidPrice
+                    ? parseFloat(detail.currentBidPrice.value)
+                    : null,
+                  bid_count: detail.bidCount ?? null,
+                  reserve_price_met: detail.reservePriceMet ?? null,
+                  short_description: detail.shortDescription || null,
+                })
+                .eq("source", "ebay")
+                .eq("external_id", item.itemId);
+            } catch (detailErr: any) {
+              console.warn(
+                `[cron-sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
+              );
+            }
+          }
+        }
       }
 
       results.push({

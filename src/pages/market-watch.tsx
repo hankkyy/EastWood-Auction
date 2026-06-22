@@ -1,6 +1,8 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
+  Anchor,
   Box,
   Container,
   Group,
@@ -13,7 +15,6 @@ import {
   TextInput,
   Title,
   Badge,
-  Anchor,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { Wrapper } from "@/layout";
@@ -25,6 +26,9 @@ interface Listing {
   title: string;
   price: number | null;
   currency: string;
+  current_bid: number | null;
+  bid_count: number | null;
+  reserve_price_met: boolean | null;
   images: { url: string }[];
   listing_url: string;
   seller: string | null;
@@ -35,6 +39,7 @@ interface Listing {
   ends_at: string | null;
   matched_keywords: string[];
   buying_options: string[];
+  short_description?: string;
 }
 
 interface ListingsResponse {
@@ -294,15 +299,54 @@ export default function MarketWatchPage() {
 
                         {/* Price + Condition */}
                         <Group position="apart" mt={item.matched_keywords?.length ? 8 : 12}>
-                          <Text size="md" weight={600} color="#c4a255">
-                            {formatPrice(item.price, item.currency)}
-                          </Text>
-                          {item.condition && (
-                            <Badge size="xs" variant="light" color="dark.3">
-                              {item.condition}
-                            </Badge>
-                          )}
+                          <Group spacing={6}>
+                            <Text size="md" weight={600} color="#c4a255">
+                              {isAuction && item.current_bid
+                                ? formatPrice(item.current_bid, item.currency)
+                                : formatPrice(item.price, item.currency)}
+                            </Text>
+                            {isAuction && item.current_bid && item.price && item.current_bid !== item.price && (
+                              <Text size="xs" color="dimmed" strikethrough>
+                                {formatPrice(item.price, item.currency)}
+                              </Text>
+                            )}
+                          </Group>
+                          <Group spacing={4}>
+                            {isAuction && item.bid_count != null && item.bid_count > 0 && (
+                              <Badge size="xs" variant="light" color="yellow">
+                                {item.bid_count} {locale === "zh" ? "次出价" : "bids"}
+                              </Badge>
+                            )}
+                            {item.condition && (
+                              <Badge size="xs" variant="light" color="dark.3">
+                                {item.condition}
+                              </Badge>
+                            )}
+                          </Group>
                         </Group>
+
+                        {/* Auction reserve status */}
+                        {isAuction && item.reserve_price_met === false && (
+                          <Text size="xs" mt={4} color="red">
+                            {locale === "zh" ? "⚠️ 未达底价" : "⚠️ Reserve not met"}
+                          </Text>
+                        )}
+
+                        {/* Short description snippet */}
+                        {item.short_description && (
+                          <Text
+                            size="xs"
+                            mt={4}
+                            lineClamp={2}
+                            sx={(theme) => ({
+                              color: appMutedTextColor(theme),
+                              fontStyle: "italic",
+                              lineHeight: 1.4,
+                            })}
+                          >
+                            {item.short_description}
+                          </Text>
+                        )}
 
                         {/* Ends at countdown */}
                         {endInfo.text && (

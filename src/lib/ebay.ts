@@ -53,6 +53,50 @@ export interface EBayItemSummary {
   shortDescription?: string;
 }
 
+export interface EBayItemDetail {
+  itemId: string;
+  title: string;
+  shortDescription?: string;
+  description?: string;
+  price?: {
+    value: string;
+    currency: string;
+  };
+  currentBidPrice?: {
+    value: string;
+    currency: string;
+  };
+  bidCount?: number;
+  reservePriceMet?: boolean;
+  image?: EBayImage;
+  additionalImages?: EBayImage[];
+  itemWebUrl: string;
+  seller?: {
+    username: string;
+    feedbackPercentage?: string;
+    feedbackScore?: number;
+    feedbackRatingStar?: string;
+  };
+  condition?: string;
+  conditionDescription?: string;
+  itemLocation?: {
+    city: string;
+    stateOrProvince?: string;
+    country: string;
+    postalCode?: string;
+  };
+  buyingOptions?: string[];
+  itemEndDate?: string;
+  localizedAspects?: {
+    name: string;
+    value: string;
+  }[];
+  estimatedAvailabilities?: {
+    estimatedAvailableQuantity?: number;
+    estimatedSoldQuantity?: number;
+  }[];
+}
+
 export interface EBaySearchResponse {
   total: number;
   limit: number;
@@ -132,6 +176,34 @@ export async function searchEBayItems(
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`eBay search failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+/**
+ * Fetch a single eBay item's full details via the Browse API.
+ * Returns bid count, current bid, description, additional images, etc.
+ * Useful for auction items and detail pages.
+ */
+export async function getEBayItem(
+  itemId: string
+): Promise<EBayItemDetail> {
+  const token = await getAccessToken();
+
+  const url = `${EBAY_API_BASE}/buy/browse/v1/item/${encodeURIComponent(itemId)}`;
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`eBay item fetch failed: ${res.status} ${text}`);
   }
 
   return res.json();
