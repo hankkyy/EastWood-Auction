@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Anchor,
@@ -99,6 +100,7 @@ const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean; p
 export default function MarketWatchPage() {
   const { t, locale } = useI18n();
   const { user } = useAuth();
+  const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 600px)");
   const isTablet = useMediaQuery("(max-width: 960px)");
   const [listings, setListings] = useState<Listing[]>([]);
@@ -714,9 +716,14 @@ export default function MarketWatchPage() {
                             return null;
                           })()}
                         </Group>
-                        {/* Save button — wrapper stops propagation even when disabled */}
+                        {/* Save button — redirects to login when not authenticated */}
                         <Box
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (!user) {
+                              router.push("/login");
+                            }
+                          }}
                           sx={{ position: "absolute", top: 8, right: 8, zIndex: 2 }}
                         >
                         <Tooltip
