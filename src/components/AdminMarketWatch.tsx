@@ -286,7 +286,33 @@ export default function AdminMarketWatch() {
         throw new Error(payload.error || (locale === "zh" ? "保存失败，请重试" : "Save failed, please retry"));
       }
 
+      const saved = await res.json();
+      const newRuleId = saved.rule?.id;
+
       setModalOpen(false);
+
+      // Auto-sync after creating a new rule
+      if (!editingRule?.id && newRuleId) {
+        setSyncMsg(locale === "zh" ? `正在同步「${formName}」...` : `Syncing "${formName}"...`);
+        try {
+          const syncHeaders = await getAuthHeaders();
+          const syncRes = await fetch(`/api/external/sync?rule_id=${newRuleId}`, {
+            method: "POST",
+            headers: syncHeaders,
+          });
+          const syncData = await syncRes.json();
+          if (syncRes.ok) {
+            setSyncMsg(syncData.message || (locale === "zh" ? "同步完成" : "Sync done"));
+          } else {
+            setSyncMsg("");
+            setError(syncData.error || (locale === "zh" ? "同步失败" : "Sync failed"));
+          }
+        } catch {
+          setSyncMsg("");
+        }
+        setTimeout(() => setSyncMsg(""), 4000);
+      }
+
       void fetchRules();
     } catch (err: any) {
       setFormError(err.message || (locale === "zh" ? "保存失败" : "Save failed"));
