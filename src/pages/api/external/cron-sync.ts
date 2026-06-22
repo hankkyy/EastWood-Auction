@@ -119,6 +119,7 @@ export default async function handler(
                 item.title?.toLowerCase().includes(kw.toLowerCase())
               ),
               ends_at: item.itemEndDate || null,
+              buying_options: item.buyingOptions || [],
               discovered_at: new Date().toISOString(),
             },
             { onConflict: "source,external_id" }

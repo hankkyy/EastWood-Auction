@@ -33,6 +33,8 @@ interface Listing {
   location: string | null;
   discovered_at: string;
   ends_at: string | null;
+  matched_keywords: string[];
+  buying_options: string[];
 }
 
 interface ListingsResponse {
@@ -49,6 +51,20 @@ const formatPrice = (price: number | null, currency: string) => {
   return currency === "CNY"
     ? `¥${a.toLocaleString()}`
     : `$${a.toLocaleString()}`;
+};
+
+const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean } => {
+  if (!endsAt) return { text: "", urgent: false };
+  const end = new Date(endsAt);
+  const now = new Date();
+  const diffMs = end.getTime() - now.getTime();
+  if (diffMs <= 0) return { text: "Ended", urgent: true };
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffM = Math.floor((diffMs % 3600000) / 60000);
+  const diffD = Math.floor(diffH / 24);
+  if (diffD > 0) return { text: `Ends in ${diffD}d ${diffH % 24}h`, urgent: diffD <= 1 };
+  if (diffH > 0) return { text: `Ends in ${diffH}h ${diffM}m`, urgent: diffH <= 3 };
+  return { text: `Ends in ${diffM}m`, urgent: true };
 };
 
 export default function MarketWatchPage() {
@@ -174,7 +190,11 @@ export default function MarketWatchPage() {
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
               >
-                {listings.map((item) => (
+                {listings.map((item) => {
+                    const endInfo = formatEndsAt(item.ends_at);
+                    const isAuction = item.buying_options?.includes("AUCTION");
+                    const isFixedPrice = item.buying_options?.includes("FIXED_PRICE");
+                    return (
                   <Anchor
                     key={item.id}
                     href={item.listing_url}
@@ -208,58 +228,117 @@ export default function MarketWatchPage() {
                       {/* Image */}
                       <Box
                         sx={{
-                          height: 200,
+                          height: 220,
                           background: item.images?.[0]
                             ? `url(${item.images[0].url}) center/cover`
                             : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
                           position: "relative",
                         }}
                       >
-                        <Badge
-                          size="sm"
-                          variant="filled"
-                          color="blue"
-                          sx={{ position: "absolute", top: 8, left: 8, fontWeight: 400 }}
-                        >
-                          eBay
-                        </Badge>
+                        <Group spacing={6} sx={{ position: "absolute", top: 8, left: 8 }}>
+                          <Badge size="sm" variant="filled" color="blue" sx={{ fontWeight: 400 }}>
+                            eBay
+                          </Badge>
+                          {isAuction && (
+                            <Badge size="sm" variant="filled" color="red" sx={{ fontWeight: 400 }}>
+                              AUCTION
+                            </Badge>
+                          )}
+                          {isFixedPrice && (
+                            <Badge size="sm" variant="filled" color="green" sx={{ fontWeight: 400 }}>
+                              BUY NOW
+                            </Badge>
+                          )}
+                        </Group>
                       </Box>
 
                       {/* Info */}
                       <Box p="sm">
+                        {/* Title */}
                         <Text
                           size="sm"
-                          weight={400}
+                          weight={500}
                           lineClamp={2}
                           sx={(theme) => ({
                             fontFamily: "inherit",
-                            lineHeight: 1.3,
+                            lineHeight: 1.35,
                             minHeight: 36,
                             color: appTextColor(theme),
                           })}
                         >
                           {item.title}
                         </Text>
-                        <Group position="apart" mt={6}>
-                          <Text size="sm" weight={500} color="#c4a255">
+
+                        {/* Matched keywords — WHY this item matched */}
+                        {item.matched_keywords?.length > 0 && (
+                          <Group spacing={4} mt={6}>
+                            {item.matched_keywords.map((kw) => (
+                              <Badge
+                                key={kw}
+                                size="xs"
+                                variant="light"
+                                sx={(theme) => ({
+                                  backgroundColor: theme.colorScheme === "dark"
+                                    ? "rgba(196,162,85,0.15)"
+                                    : "rgba(196,162,85,0.12)",
+                                  color: "#c4a255",
+                                  fontWeight: 400,
+                                  textTransform: "none",
+                                })}
+                              >
+                                {kw}
+                              </Badge>
+                            ))}
+                          </Group>
+                        )}
+
+                        {/* Price + Condition */}
+                        <Group position="apart" mt={item.matched_keywords?.length ? 8 : 12}>
+                          <Text size="md" weight={600} color="#c4a255">
                             {formatPrice(item.price, item.currency)}
                           </Text>
                           {item.condition && (
-                            <Badge size="xs" variant="light" color="gray">
+                            <Badge size="xs" variant="light" color="dark.3">
                               {item.condition}
                             </Badge>
                           )}
                         </Group>
-                        {item.seller && (
-                          <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                            {item.seller}
-                            {item.seller_rating && ` · ★ ${item.seller_rating}`}
+
+                        {/* Ends at countdown */}
+                        {endInfo.text && (
+                          <Text
+                            size="xs"
+                            mt={6}
+                            sx={(theme) => ({
+                              color: endInfo.urgent
+                                ? theme.colors.red[6]
+                                : appMutedTextColor(theme),
+                              fontWeight: endInfo.urgent ? 500 : 400,
+                            })}
+                          >
+                            ⏰ {endInfo.text}
                           </Text>
                         )}
+
+                        {/* Location + Seller row */}
+                        <Group position="apart" mt={4}>
+                          {item.location && (
+                            <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                              📍 {item.location}
+                            </Text>
+                          )}
+                          {item.seller && (
+                            <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                              {item.seller}
+                              {item.seller_rating && ` · ★ ${item.seller_rating}`}
+                            </Text>
+                          )}
+                        </Group>
                       </Box>
                     </Box>
                   </Anchor>
-                ))}
+                    );
+                })}
               </SimpleGrid>
               </Box>
             )}

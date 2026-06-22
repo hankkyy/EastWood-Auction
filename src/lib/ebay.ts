@@ -50,6 +50,7 @@ export interface EBayItemSummary {
   };
   itemEndDate?: string;
   buyingOptions?: string[];
+  shortDescription?: string;
 }
 
 export interface EBaySearchResponse {
