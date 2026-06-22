@@ -272,6 +272,12 @@ export default async function handler(
         searched: items.length,
         inserted,
       });
+
+      // Update last_synced_at for this rule
+      await supabase
+        .from("external_rules")
+        .update({ last_synced_at: new Date().toISOString() })
+        .eq("id", rule.id);
     } catch (err: any) {
       results.push({
         rule_name: rule.name,

@@ -45,6 +45,7 @@ interface Rule {
   min_feedback_score: number | null;
   exclude_sellers: string[];
   enabled: boolean;
+  last_synced_at: string | null;
   created_at: string;
 }
 
@@ -453,6 +454,16 @@ export default function AdminMarketWatch() {
                       <Text size="xs" color="dimmed">· 🚫{rule.exclude_sellers.join(",")}</Text>
                     )}
                   </Group>
+                  {rule.last_synced_at && (
+                    <Text size="xs" mt={4} color="dimmed" sx={{ opacity: 0.6 }}>
+                      {locale === "zh" ? "上次同步" : "Last sync"}: {
+                        new Date(rule.last_synced_at).toLocaleString(
+                          locale === "zh" ? "zh-CN" : "en-US",
+                          { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
+                        )
+                      }
+                    </Text>
+                  )}
                 </Box>
                 <Group spacing={4}>
                   <ActionIcon size="sm" variant="subtle" onClick={() => openEdit(rule)}>
