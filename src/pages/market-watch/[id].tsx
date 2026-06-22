@@ -223,6 +223,41 @@ export default function MarketWatchDetailPage() {
       .catch(() => {});
   }, [id]);
 
+  // Preload all images so there's never a loading flash when switching
+  const preloadedRef = useRef<Set<string>>(new Set());
+
+  // Compute allImages from listing (safe for null during loading)
+  const allImages = useMemo(() => {
+    if (!listing) return [];
+    const seen = new Set<string>();
+    const result: { url: string; width?: number; height?: number }[] = [];
+    for (const img of [...(listing.images || []), ...(listing.extra_images || [])]) {
+      if (!seen.has(img.url)) {
+        seen.add(img.url);
+        result.push(img);
+      }
+    }
+    return result;
+  }, [listing]);
+
+  const goToPrevImage = useCallback(() => {
+    setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+  }, [allImages.length]);
+
+  const goToNextImage = useCallback(() => {
+    setSelectedIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+  }, [allImages.length]);
+
+  useEffect(() => {
+    for (const img of allImages) {
+      if (img.url && !preloadedRef.current.has(img.url)) {
+        const imageEl = new Image();
+        imageEl.src = img.url;
+        preloadedRef.current.add(img.url);
+      }
+    }
+  }, [allImages]);
+
   if (loading) {
     return (
       <Wrapper>
@@ -258,39 +293,7 @@ export default function MarketWatchDetailPage() {
     ? listing.current_bid
     : listing.price;
 
-  const allImages = (() => {
-    const seen = new Set<string>();
-    const result: { url: string; width?: number; height?: number }[] = [];
-    for (const img of [...(listing.images || []), ...(listing.extra_images || [])]) {
-      if (!seen.has(img.url)) {
-        seen.add(img.url);
-        result.push(img);
-      }
-    }
-    return result;
-  })();
-
   const selectedImage = allImages[selectedIndex]?.url || "";
-
-  // Preload all images so there's never a loading flash when switching
-  const preloadedRef = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    for (const img of allImages) {
-      if (img.url && !preloadedRef.current.has(img.url)) {
-        const imageEl = new Image();
-        imageEl.src = img.url;
-        preloadedRef.current.add(img.url);
-      }
-    }
-  }, [allImages]);
-
-  const goToPrevImage = useCallback(() => {
-    setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
-  }, [allImages.length]);
-
-  const goToNextImage = useCallback(() => {
-    setSelectedIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
-  }, [allImages.length]);
 
   // Scroll thumbnails left/right
   const scrollThumbnails = (dir: "left" | "right") => {
