@@ -426,30 +426,34 @@ export default function MarketWatchDetailPage() {
                 {allImages.length > 1 && (
                   <>
                     <ActionIcon
-                      variant="filled" radius="xl" size="lg"
+                      variant="filled" radius="xl" size="xl"
                       tabIndex={-1}
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrevImage(); }}
                       sx={{
                         position: "absolute", top: "50%", left: 8,
                         transform: "translateY(-50%)",
+                        zIndex: 3,
                         backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                         "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
                       }}
                     >
-                      <IconChevronLeft size={20} />
+                      <IconChevronLeft size={22} />
                     </ActionIcon>
                     <ActionIcon
-                      variant="filled" radius="xl" size="lg"
+                      variant="filled" radius="xl" size="xl"
                       tabIndex={-1}
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNextImage(); }}
                       sx={{
                         position: "absolute", top: "50%", right: 8,
                         transform: "translateY(-50%)",
+                        zIndex: 3,
                         backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                         "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
                       }}
                     >
-                      <IconChevronRight size={20} />
+                      <IconChevronRight size={22} />
                     </ActionIcon>
                   </>
                 )}
