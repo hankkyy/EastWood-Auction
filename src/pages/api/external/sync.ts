@@ -56,6 +56,14 @@ export default async function handler(
         listingTypes: (rule.listing_types as string[])?.length
           ? (rule.listing_types as string[])
           : undefined,
+        returnsAccepted: rule.returns_accepted_only || undefined,
+        itemLocationCountries: (rule.item_location_countries as string[])?.length
+          ? (rule.item_location_countries as string[])
+          : undefined,
+        minFeedbackScore: rule.min_feedback_score ?? undefined,
+        excludeSellers: (rule.exclude_sellers as string[])?.length
+          ? (rule.exclude_sellers as string[])
+          : undefined,
       });
 
       const ebayRes = await searchEBayItems({

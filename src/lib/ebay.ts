@@ -227,6 +227,10 @@ export function buildEBayFilter(params: {
   currency?: string;
   conditions?: string[];
   listingTypes?: string[];
+  returnsAccepted?: boolean;
+  itemLocationCountries?: string[];
+  minFeedbackScore?: number;
+  excludeSellers?: string[];
 }): string {
   const parts: string[] = [];
 
@@ -250,6 +254,28 @@ export function buildEBayFilter(params: {
   if (params.listingTypes && params.listingTypes.length > 0) {
     const types = params.listingTypes.map((t) => `{${t}}`).join(",");
     parts.push(`buyingOptions:${types}`);
+  }
+
+  // Returns accepted
+  if (params.returnsAccepted === true) {
+    parts.push("returnsAccepted:{true}");
+  }
+
+  // Item location countries
+  if (params.itemLocationCountries && params.itemLocationCountries.length > 0) {
+    const countries = params.itemLocationCountries.map((c) => `{${c}}`).join(",");
+    parts.push(`itemLocationCountry:${countries}`);
+  }
+
+  // Minimum feedback score
+  if (params.minFeedbackScore) {
+    parts.push(`feedbacks:{${params.minFeedbackScore}}`);
+  }
+
+  // Exclude sellers
+  if (params.excludeSellers && params.excludeSellers.length > 0) {
+    const sellers = params.excludeSellers.map((s) => `{${s}}`).join("|");
+    parts.push(`excludeSellers:{${sellers}}`);
   }
 
   return parts.join(",");

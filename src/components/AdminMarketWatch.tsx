@@ -37,6 +37,10 @@ interface Rule {
   currency: string;
   conditions: string[];
   listing_types: string[];
+  returns_accepted_only: boolean;
+  item_location_countries: string[];
+  min_feedback_score: number | null;
+  exclude_sellers: string[];
   enabled: boolean;
   created_at: string;
 }
@@ -69,6 +73,10 @@ export default function AdminMarketWatch() {
   const [formPriceMax, setFormPriceMax] = useState<number | "">("");
   const [formConditions, setFormConditions] = useState<string[]>(["USED"]);
   const [formListingTypes, setFormListingTypes] = useState<string[]>(["AUCTION", "FIXED_PRICE"]);
+  const [formReturnsAccepted, setFormReturnsAccepted] = useState(false);
+  const [formItemLocationCountries, setFormItemLocationCountries] = useState("");
+  const [formMinFeedbackScore, setFormMinFeedbackScore] = useState<number | "">("");
+  const [formExcludeSellers, setFormExcludeSellers] = useState("");
 
   const getAuthHeaders = useCallback(async (includeJson = false) => {
     const {
@@ -118,19 +126,27 @@ export default function AdminMarketWatch() {
     setFormPriceMax("");
     setFormConditions(["USED"]);
     setFormListingTypes(["AUCTION", "FIXED_PRICE"]);
+    setFormReturnsAccepted(false);
+    setFormItemLocationCountries("");
+    setFormMinFeedbackScore("");
+    setFormExcludeSellers("");
     setModalOpen(true);
   };
 
   const openEdit = (rule: Rule) => {
-    setEditingRule(rule);
-    setFormName(rule.name);
-    setFormKeywords(rule.keywords.join(", "));
-    setFormCategoryIds(rule.category_ids?.join(", ") || "");
-    setFormPriceMin(rule.price_min ?? "");
-    setFormPriceMax(rule.price_max ?? "");
-    setFormConditions(rule.conditions || []);
-    setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
-    setModalOpen(true);
+  setEditingRule(rule);
+  setFormName(rule.name);
+  setFormKeywords(rule.keywords.join(", "));
+  setFormCategoryIds(rule.category_ids?.join(", ") || "");
+  setFormPriceMin(rule.price_min ?? "");
+  setFormPriceMax(rule.price_max ?? "");
+  setFormConditions(rule.conditions || []);
+  setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
+  setFormReturnsAccepted(rule.returns_accepted_only || false);
+  setFormItemLocationCountries((rule.item_location_countries || []).join(", "));
+  setFormMinFeedbackScore(rule.min_feedback_score ?? "");
+  setFormExcludeSellers((rule.exclude_sellers || []).join(", "));
+  setModalOpen(true);
   };
 
   const saveRule = async () => {
@@ -147,6 +163,14 @@ export default function AdminMarketWatch() {
       price_max: formPriceMax === "" ? null : Number(formPriceMax),
       conditions: formConditions,
       listing_types: formListingTypes,
+      returns_accepted_only: formReturnsAccepted,
+      item_location_countries: formItemLocationCountries
+        ? formItemLocationCountries.split(",").map((c) => c.trim().toUpperCase()).filter(Boolean)
+        : [],
+      min_feedback_score: formMinFeedbackScore === "" ? null : Number(formMinFeedbackScore),
+      exclude_sellers: formExcludeSellers
+        ? formExcludeSellers.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
     };
 
     const url = editingRule?.id
@@ -294,6 +318,10 @@ export default function AdminMarketWatch() {
                     {rule.keywords.join(", ")}
                     {rule.price_min && ` · $${rule.price_min}`}
                     {rule.price_max && `-$${rule.price_max}`}
+                    {rule.returns_accepted_only && " · 可退货"}
+                    {rule.item_location_countries?.length > 0 && ` · 📍${rule.item_location_countries.join(",")}`}
+                    {rule.min_feedback_score && ` · ★≥${rule.min_feedback_score}`}
+                    {rule.exclude_sellers?.length > 0 && ` · 🚫${rule.exclude_sellers.join(",")}`}
                   </Text>
                 </Box>
                 <Group spacing={4}>
@@ -393,6 +421,50 @@ export default function AdminMarketWatch() {
             data={listingTypeOptions}
             value={formListingTypes}
             onChange={setFormListingTypes}
+            styles={(theme) => ({
+              label: {
+                color: appFieldLabelColor(theme),
+              },
+            })}
+          />
+          <Switch
+            label={locale === "zh" ? "只显示接受退货的商品" : "Returns accepted only"}
+            checked={formReturnsAccepted}
+            onChange={(e) => setFormReturnsAccepted(e.currentTarget.checked)}
+            styles={(theme) => ({
+              label: {
+                color: appFieldLabelColor(theme),
+              },
+            })}
+          />
+          <TextInput
+            label={locale === "zh" ? "物品所在地国家（逗号分隔，如 US,CN,JP）" : "Item Location Countries (comma-separated, e.g. US,CN,JP)"}
+            value={formItemLocationCountries}
+            onChange={(e) => setFormItemLocationCountries(e.currentTarget.value)}
+            placeholder="US,CN"
+            styles={(theme) => ({
+              label: {
+                color: appFieldLabelColor(theme),
+              },
+            })}
+          />
+          <NumberInput
+            label={locale === "zh" ? "卖家最低信用分" : "Min Seller Feedback Score"}
+            value={formMinFeedbackScore}
+            onChange={setFormMinFeedbackScore}
+            placeholder="100"
+            min={0}
+            styles={(theme) => ({
+              label: {
+                color: appFieldLabelColor(theme),
+              },
+            })}
+          />
+          <TextInput
+            label={locale === "zh" ? "排除卖家（逗号分隔）" : "Exclude Sellers (comma-separated)"}
+            value={formExcludeSellers}
+            onChange={(e) => setFormExcludeSellers(e.currentTarget.value)}
+            placeholder="seller1, seller2"
             styles={(theme) => ({
               label: {
                 color: appFieldLabelColor(theme),
