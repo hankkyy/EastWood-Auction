@@ -421,7 +421,7 @@ export default function AdminPage() {
                     : "This page is only for administrator and user permission management. Handle consignments and inquiries in the inbox."}
                 </Text>
               </div>
-              <Group spacing="xs" sx={{ width: isMobile ? "100%" : "auto" }}>
+              <Group spacing="xs" noWrap sx={{ width: isMobile ? "100%" : "auto" }}>
                 <Button
                   component={Link}
                   href="/inbox"
