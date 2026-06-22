@@ -666,26 +666,26 @@ export default function MarketWatchPage() {
                         })}
                       >
                         <Group spacing={6} sx={{ position: "absolute", top: 8, left: 8 }}>
-                          <Badge size="sm" variant="filled" color="blue" sx={{ fontWeight: 400 }}>
+                          <Badge size="sm" variant="light" color="blue" sx={{ fontWeight: 500 }}>
                             eBay
                           </Badge>
                           {isAuction && (
-                            <Badge size="sm" variant="filled" color="red" sx={{ fontWeight: 400 }}>
+                            <Badge size="sm" variant="light" color="red" sx={{ fontWeight: 500 }}>
                               {locale === "zh" ? "拍卖" : "AUCTION"}
                             </Badge>
                           )}
                           {isFixedPrice && (
-                            <Badge size="sm" variant="filled" color="green" sx={{ fontWeight: 400 }}>
+                            <Badge size="sm" variant="light" color="green" sx={{ fontWeight: 500 }}>
                               {locale === "zh" ? "直购" : "BUY NOW"}
                             </Badge>
                           )}
                           {isBestOffer && (
-                            <Badge size="sm" variant="filled" color="orange" sx={{ fontWeight: 400 }}>
+                            <Badge size="sm" variant="light" color="orange" sx={{ fontWeight: 500 }}>
                               {locale === "zh" ? "议价" : "OFFER"}
                             </Badge>
                           )}
                           {item.watch_count != null && item.watch_count > 0 && (
-                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "rgba(139,119,101,0.55)", color: "#fff" }}>
+                            <Badge size="sm" variant="light" sx={{ fontWeight: 400, backgroundColor: "rgba(139,119,101,0.18)", color: "#a09080" }}>
                               👁 {item.watch_count}
                             </Badge>
                           )}
@@ -695,7 +695,7 @@ export default function MarketWatchPage() {
                             const hoursAgo = (Date.now() - discovered) / 3600000;
                             if (hoursAgo <= 24) {
                               return (
-                                <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "#c4a255", color: "#fff" }}>
+                                <Badge size="sm" variant="light" sx={{ fontWeight: 500, backgroundColor: "rgba(196,162,85,0.18)", color: "#c4a255" }}>
                                   {locale === "zh" ? "新发现" : "NEW"}
                                 </Badge>
                               );
