@@ -15,10 +15,15 @@ import {
   TextInput,
   Title,
   Badge,
+  SegmentedControl,
+  ActionIcon,
+  Tooltip,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
+import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
+import { useAuth } from "@/hooks/useAuth";
 import { appMutedTextColor, appSurfaceBackground, appSurfaceBorder, appTextColor } from "@/components/artworkStyles";
 
 interface Listing {
@@ -40,6 +45,7 @@ interface Listing {
   matched_keywords: string[];
   buying_options: string[];
   short_description?: string;
+  is_saved?: boolean;
 }
 
 interface ListingsResponse {
@@ -74,11 +80,13 @@ const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean } 
 
 export default function MarketWatchPage() {
   const { t, locale } = useI18n();
+  const { user } = useAuth();
   const isMobile = useMediaQuery("(max-width: 600px)");
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const gridRef = useRef<HTMLDivElement>(null);
@@ -105,17 +113,66 @@ export default function MarketWatchPage() {
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
 
-    const res = await fetch(`/api/external/listings?${params}`);
+    // Auth + saved filter
+    const headers: Record<string, string> = {};
+    if (user) {
+      try {
+        const { supabase } = await import("@/lib/supabase/client");
+        const { data: session } = await supabase.auth.getSession();
+        if (session.session?.access_token) {
+          headers["Authorization"] = `Bearer ${session.session.access_token}`;
+        }
+      } catch (_) {}
+    }
+    if (savedOnly) {
+      params.set("saved_only", "true");
+    } else {
+      params.set("with_saved", "true");
+    }
+
+    const res = await fetch(`/api/external/listings?${params}`, { headers });
     if (!res.ok) return setLoading(false);
     const data: ListingsResponse = await res.json();
     setListings(data.listings);
     setTotal(data.total);
     setLoading(false);
-  }, [page, sort, search, minPrice, maxPrice]);
+  }, [page, sort, search, minPrice, maxPrice, savedOnly, user]);
 
   useEffect(() => {
     fetchListings();
   }, [fetchListings]);
+
+  const toggleSave = async (listingId: string, currentlySaved: boolean) => {
+    if (!user) return;
+    const newSaved = new Set(savedIds);
+    if (currentlySaved) {
+      newSaved.delete(listingId);
+    } else {
+      newSaved.add(listingId);
+    }
+    setSavedIds(newSaved);
+    setListings((prev) =>
+      prev.map((l) => (l.id === listingId ? { ...l, is_saved: !currentlySaved } : l))
+    );
+
+    try {
+      const { supabase } = await import("@/lib/supabase/client");
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) return;
+      await fetch("/api/external/saved", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          listing_id: listingId,
+          action: currentlySaved ? "unsave" : "save",
+        }),
+      });
+    } catch (_) {}
+  };
 
   return (
     <>
@@ -158,6 +215,19 @@ export default function MarketWatchPage() {
                 <div id="google_translate_element" />
               </Box>
             </Box>
+
+            {/* All / Saved toggle */}
+            {user && (
+              <SegmentedControl
+                value={savedOnly ? "saved" : "all"}
+                onChange={(v) => { setSavedOnly(v === "saved"); setPage(1); }}
+                size="sm"
+                data={[
+                  { value: "all", label: t("marketWatch.allListings") },
+                  { value: "saved", label: `❤️ ${t("marketWatch.savedFilter")}` },
+                ]}
+              />
+            )}
 
             {/* Filters */}
             <Group spacing="sm" noWrap={!isMobile}>
@@ -273,6 +343,43 @@ export default function MarketWatchPage() {
                             </Badge>
                           )}
                         </Group>
+                        {/* Save button */}
+                        <Tooltip
+                          label={user ? "" : t("marketWatch.loginToSave")}
+                          disabled={!!user}
+                        >
+                          <ActionIcon
+                            variant="filled"
+                            size="md"
+                            radius="xl"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleSave(item.id, item.is_saved || false);
+                            }}
+                            disabled={!user}
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              backgroundColor: item.is_saved
+                                ? "rgba(231,76,60,0.85)"
+                                : "rgba(0,0,0,0.4)",
+                              color: "#fff",
+                              "&:hover": {
+                                backgroundColor: item.is_saved
+                                  ? "rgba(231,76,60,0.95)"
+                                  : "rgba(0,0,0,0.6)",
+                              },
+                            }}
+                          >
+                            {item.is_saved ? (
+                              <IconHeartFilled size={16} />
+                            ) : (
+                              <IconHeart size={16} />
+                            )}
+                          </ActionIcon>
+                        </Tooltip>
                       </Box>
 
                       {/* Info */}

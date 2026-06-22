@@ -136,6 +136,46 @@ export default async function handler(
         if (!upsertErr) {
           inserted++;
 
+          // Get the listing ID for price history and enrichment
+          const { data: listing } = await supabase
+            .from("external_listings")
+            .select("id, price, current_bid")
+            .eq("source", "ebay")
+            .eq("external_id", item.itemId)
+            .single();
+
+          const listingId = listing?.id;
+
+          // Record price history
+          if (listingId) {
+            try {
+              const { data: lastRecord } = await supabase
+                .from("listing_price_history")
+                .select("price, current_bid")
+                .eq("listing_id", listingId)
+                .order("recorded_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              const price = item.price ? parseFloat(item.price.value) : null;
+              const shouldRecord =
+                !lastRecord ||
+                lastRecord.price !== price ||
+                (lastRecord.current_bid !== null);
+
+              if (shouldRecord) {
+                await supabase.from("listing_price_history").insert({
+                  listing_id: listingId,
+                  price,
+                  current_bid: null,
+                  currency: item.price?.currency || "USD",
+                });
+              }
+            } catch (_) {
+              // Non-critical — don't fail sync over price history
+            }
+          }
+
           // Enrich auction listings with bid count, current bid, description
           if (item.buyingOptions?.includes("AUCTION")) {
             try {
@@ -162,7 +202,21 @@ export default async function handler(
                 })
                 .eq("source", "ebay")
                 .eq("external_id", item.itemId);
-            } catch (detailErr: any) {
+
+            // Record current_bid in price history after enrichment
+            if (listingId && detail.currentBidPrice) {
+              try {
+                await supabase.from("listing_price_history").insert({
+                  listing_id: listingId,
+                  price: item.price ? parseFloat(item.price.value) : null,
+                  current_bid: parseFloat(detail.currentBidPrice.value),
+                  currency: detail.currentBidPrice.currency || "USD",
+                });
+              } catch (_) {
+                // Non-critical
+              }
+            }
+          } catch (detailErr: any) {
               console.warn(
                 `[cron-sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
               );

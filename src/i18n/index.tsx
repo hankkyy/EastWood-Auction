@@ -673,6 +673,20 @@ const messages = {
     "cases.success": "Operation Successful",
     "cases.noPublicCasesLogin": "No public return cases yet. Login to upload personal cases.",
     "cases.noCasesUploadPrompt": "No return cases yet. Click the \"Upload New Case\" button above to start uploading.",
+
+    // Market Watch detail & saved
+    "marketWatch.saveListing": "Save",
+    "marketWatch.unsaveListing": "Saved",
+    "marketWatch.savedFilter": "Saved",
+    "marketWatch.allListings": "All",
+    "marketWatch.extraImages": "More Images",
+    "marketWatch.itemSpecifics": "Item Specifics",
+    "marketWatch.feedback": "Feedback",
+    "marketWatch.fullDescription": "Full Description",
+    "marketWatch.estimatedSold": "Sold",
+    "marketWatch.priceHistory": "Price History",
+    "marketWatch.noPriceHistory": "No price history yet. Data accumulates with each sync.",
+    "marketWatch.loginToSave": "Sign in to save listings",
   },
   zh: {
     "common.brand": "Eastwood Auction",
@@ -1325,6 +1339,20 @@ const messages = {
     "cases.success": "操作成功",
     "cases.noPublicCasesLogin": "暂无公开的回流案例。登录后可以上传个人案例。",
     "cases.noCasesUploadPrompt": "暂无回流案例。点击上方的\"上传新案例\"按钮开始上传。",
+
+    // Market Watch detail & saved
+    "marketWatch.saveListing": "收藏",
+    "marketWatch.unsaveListing": "已收藏",
+    "marketWatch.savedFilter": "已收藏",
+    "marketWatch.allListings": "全部",
+    "marketWatch.extraImages": "更多图片",
+    "marketWatch.itemSpecifics": "物品详情",
+    "marketWatch.feedback": "好评率",
+    "marketWatch.fullDescription": "完整描述",
+    "marketWatch.estimatedSold": "已售",
+    "marketWatch.priceHistory": "价格历史",
+    "marketWatch.noPriceHistory": "暂无价格历史。每次同步会累积数据。",
+    "marketWatch.loginToSave": "登录后可收藏",
   },
 } as const;
 
