@@ -255,12 +255,26 @@ export default function MarketWatchPage() {
                 size="sm"
                 style={{ width: 100 }}
               />
-              <TextInput
-                placeholder={locale === "zh" ? "地区筛选..." : "Location..."}
+              <Select
+                placeholder={locale === "zh" ? "地区" : "Location"}
                 value={locationFilter}
-                onChange={(e) => { setLocationFilter(e.currentTarget.value); setPage(1); }}
+                onChange={(v) => { setLocationFilter(v || ""); setPage(1); }}
                 size="sm"
-                style={{ width: 160 }}
+                style={{ width: 130 }}
+                clearable
+                data={[
+                  { value: "", label: locale === "zh" ? "全部地区" : "All Locations" },
+                  { value: "US", label: "🇺🇸 United States" },
+                  { value: "China", label: "🇨🇳 China" },
+                  { value: "Japan", label: "🇯🇵 Japan" },
+                  { value: "United Kingdom", label: "🇬🇧 United Kingdom" },
+                  { value: "France", label: "🇫🇷 France" },
+                  { value: "Germany", label: "🇩🇪 Germany" },
+                  { value: "Italy", label: "🇮🇹 Italy" },
+                  { value: "Canada", label: "🇨🇦 Canada" },
+                  { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
+                  { value: "Australia", label: "🇦🇺 Australia" },
+                ]}
               />
               <Select
                 value={sort}
