@@ -185,19 +185,32 @@ export default function MarketWatchDetailPage() {
     fetchSavedStatus();
   }, [fetchSavedStatus]);
 
-  // Fetch related listings by shared keywords
+  // Fetch related listings — search by all keywords, fall back to recent listings
   useEffect(() => {
-    if (!listing?.matched_keywords?.length) return;
-    const kw = listing.matched_keywords[0];
-    fetch(`/api/external/listings?limit=8&search=${encodeURIComponent(kw)}`)
+    if (!listing?.id) return;
+    const keywords = listing.matched_keywords || [];
+
+    // Try keyword search first
+    const searchQuery = keywords.length > 0
+      ? keywords.slice(0, 3).join(" ")
+      : listing.title?.split(" ").slice(0, 3).join(" ") || "";
+
+    fetch(`/api/external/listings?limit=15&search=${encodeURIComponent(searchQuery)}`)
       .then((res) => res.json())
       .then((data) => {
-        setRelatedListings(
-          (data.listings || []).filter((r: ListingDetail) => r.id !== listing.id).slice(0, 4)
+        const others = (data.listings || []).filter(
+          (r: ListingDetail) => r.id !== listing.id
         );
+        // Prefer items that share keywords, then fill with any others
+        const keywordSet = new Set(keywords.map((k: string) => k.toLowerCase()));
+        const matched = others.filter((r: ListingDetail) =>
+          (r.matched_keywords || []).some((k: string) => keywordSet.has(k.toLowerCase()))
+        );
+        const result = [...matched, ...others.filter((r: ListingDetail) => !matched.includes(r))].slice(0, 4);
+        setRelatedListings(result);
       })
       .catch(() => {});
-  }, [listing?.id, listing?.matched_keywords]);
+  }, [listing?.id, listing?.matched_keywords, listing?.title]);
 
   // Fetch price history
   useEffect(() => {
