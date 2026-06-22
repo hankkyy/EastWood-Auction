@@ -47,11 +47,11 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.vercel-analytics.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.vercel-analytics.com https://translate.google.com https://translate.googleapis.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' https://fonts.gstatic.com",
-              "connect-src 'self' https://*.supabase.co https://*.vercel-analytics.com",
+              "connect-src 'self' https://*.supabase.co https://*.vercel-analytics.com https://translate.googleapis.com",
               "media-src 'self' blob:",
               "frame-ancestors 'none'",
             ].join("; "),
