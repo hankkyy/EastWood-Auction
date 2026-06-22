@@ -266,14 +266,14 @@ export default function MarketWatchPage() {
                   { value: "", label: locale === "zh" ? "全部地区" : "All Locations" },
                   { value: "US", label: "🇺🇸 United States" },
                   { value: "China", label: "🇨🇳 China" },
+                  { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
                   { value: "Japan", label: "🇯🇵 Japan" },
                   { value: "United Kingdom", label: "🇬🇧 United Kingdom" },
+                  { value: "Canada", label: "🇨🇦 Canada" },
+                  { value: "Australia", label: "🇦🇺 Australia" },
                   { value: "France", label: "🇫🇷 France" },
                   { value: "Germany", label: "🇩🇪 Germany" },
                   { value: "Italy", label: "🇮🇹 Italy" },
-                  { value: "Canada", label: "🇨🇦 Canada" },
-                  { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
-                  { value: "Australia", label: "🇦🇺 Australia" },
                 ]}
               />
               <Select
