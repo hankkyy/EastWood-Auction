@@ -574,15 +574,21 @@ export default function MarketWatchPage() {
                     {locale === "zh" ? "暂无匹配结果" : "No matching listings"}
                   </Text>
                   <Text size="sm" color="dimmed" align="center" maw={400}>
-                    {hasActiveFilters
-                      ? (locale === "zh"
-                        ? "尝试调整或清除筛选条件"
-                        : "Try adjusting or clearing your filters")
-                      : (locale === "zh"
-                        ? "请先在管理后台配置监控规则并执行同步"
-                        : "Configure monitoring rules in the admin panel and run a sync first")}
+                    {savedOnly
+                      ? (!user
+                        ? (locale === "zh" ? "请登录后查看收藏" : "Log in to view your saved items")
+                        : (locale === "zh" ? "你还没有收藏任何商品。浏览时点击 ❤️ 即可收藏。" : "You haven't saved any items yet. Click ❤️ while browsing to save."))
+                      : hasActiveFilters
+                        ? (locale === "zh" ? "尝试调整或清除筛选条件" : "Try adjusting or clearing your filters")
+                        : (locale === "zh" ? "请先在管理后台配置监控规则并执行同步" : "Configure monitoring rules in the admin panel and run a sync first")}
                   </Text>
-                  {hasActiveFilters ? (
+                  {savedOnly ? (
+                    !user ? (
+                      <Button component={Link} href="/login" variant="subtle">
+                        {locale === "zh" ? "去登录 →" : "Log in →"}
+                      </Button>
+                    ) : null
+                  ) : hasActiveFilters ? (
                     <Button variant="subtle" onClick={clearFilters}>
                       {locale === "zh" ? "清除所有筛选" : "Clear all filters"}
                     </Button>
