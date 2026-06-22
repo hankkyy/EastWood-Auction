@@ -194,7 +194,7 @@ export default function MarketWatchPage() {
                 __html: `
                   function googleTranslateElementInit() {
                     new google.translate.TranslateElement(
-                      { pageLanguage: 'en', includedLanguages: 'zh-CN', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false },
+                      { pageLanguage: 'en', includedLanguages: 'en,zh-CN', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false },
                       'google_translate_element'
                     );
                   }
