@@ -105,6 +105,8 @@ export default function MarketWatchPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [regionFilter, setRegionFilter] = useState("");
+  const [conditionFilter, setConditionFilter] = useState("");
+  const [buyingOptionFilter, setBuyingOptionFilter] = useState("");
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -117,6 +119,8 @@ export default function MarketWatchPage() {
     if (maxPrice) params.set("max_price", maxPrice);
     if (locationFilter) params.set("location", locationFilter);
     if (regionFilter) params.set("location_region", regionFilter);
+    if (conditionFilter) params.set("condition", conditionFilter);
+    if (buyingOptionFilter) params.set("buying_option", buyingOptionFilter);
 
     // Auth + saved filter
     const headers: Record<string, string> = {};
@@ -141,7 +145,7 @@ export default function MarketWatchPage() {
     setListings(data.listings);
     setTotal(data.total);
     setLoading(false);
-  }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, savedOnly, user]);
+  }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, conditionFilter, buyingOptionFilter, savedOnly, user]);
 
   useEffect(() => {
     fetchListings();
@@ -315,6 +319,34 @@ export default function MarketWatchPage() {
                   ]}
                 />
               )}
+              <Select
+                placeholder={locale === "zh" ? "品相" : "Condition"}
+                value={conditionFilter}
+                onChange={(v) => { setConditionFilter(v || ""); setPage(1); }}
+                size="sm"
+                style={{ width: 110 }}
+                clearable
+                data={[
+                  { value: "", label: locale === "zh" ? "全部品相" : "All" },
+                  { value: "NEW", label: locale === "zh" ? "全新" : "New" },
+                  { value: "USED", label: locale === "zh" ? "二手" : "Used" },
+                  { value: "PARTS", label: locale === "zh" ? "零件" : "Parts" },
+                  { value: "SELLER_REFURBISHED", label: locale === "zh" ? "翻新" : "Refurbished" },
+                ]}
+              />
+              <Select
+                placeholder={locale === "zh" ? "类型" : "Type"}
+                value={buyingOptionFilter}
+                onChange={(v) => { setBuyingOptionFilter(v || ""); setPage(1); }}
+                size="sm"
+                style={{ width: 110 }}
+                clearable
+                data={[
+                  { value: "", label: locale === "zh" ? "全部类型" : "All" },
+                  { value: "AUCTION", label: locale === "zh" ? "拍卖" : "Auction" },
+                  { value: "FIXED_PRICE", label: locale === "zh" ? "直购" : "Buy Now" },
+                ]}
+              />
               <Select
                 value={sort}
                 onChange={(v) => { setSort(v || "newest"); setPage(1); }}

@@ -13,6 +13,10 @@ import { verifySupabaseUser } from "@/lib/supabase/auth";
  *   sort        — 'price_asc', 'price_desc', 'newest' (default)
  *   page        — default 1
  *   limit       — default 20
+ *   location    — filter by location (ilike)
+ *   location_region — filter by state/region (ilike)
+ *   condition   — 'NEW', 'USED', 'PARTS', etc.
+ *   buying_option — 'AUCTION', 'FIXED_PRICE'
  *   saved_only  — 'true' (requires auth) returns only saved listings
  *   with_saved  — 'true' (requires auth) attaches is_saved:boolean to each listing
  */
@@ -39,6 +43,8 @@ export default async function handler(
     with_saved,
     location,
     location_region,
+    condition,
+    buying_option,
   } = req.query;
 
   // Attempt auth (optional — succeeds silently if no token)
@@ -63,6 +69,8 @@ export default async function handler(
   if (max_price) query = query.lte("price", Number(max_price));
   if (location) query = query.ilike("location", `%${String(location)}%`);
   if (location_region) query = query.ilike("location", `%${String(location_region)}%`);
+  if (condition) query = query.eq("condition", String(condition));
+  if (buying_option) query = query.contains("buying_options", [String(buying_option)]);
 
   // Filter by saved listings only
   if (saved_only === "true" && userId) {

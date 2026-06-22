@@ -236,6 +236,7 @@ export default async function handler(
                         detail.itemLocation.city,
                         detail.itemLocation.stateOrProvince,
                         detail.itemLocation.country,
+                        detail.itemLocation.postalCode,
                       ]
                         .filter(Boolean)
                         .join(", ")

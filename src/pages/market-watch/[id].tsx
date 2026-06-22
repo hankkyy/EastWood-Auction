@@ -60,6 +60,7 @@ interface ListingDetail {
   estimated_sold?: number | null;
   estimated_available_qty?: number | null;
   category_path?: string | null;
+  category_id?: string | null;
   watch_count?: number | null;
   item_creation_date?: string | null;
   listing_duration?: string | null;
@@ -353,6 +354,11 @@ export default function MarketWatchDetailPage() {
                 {listing.category_path && (
                   <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
                     {listing.category_path}
+                    {listing.category_id && (
+                      <Text component="span" size="xs" sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.6 })}>
+                        {" "}· ID: {listing.category_id}
+                      </Text>
+                    )}
                   </Text>
                 )}
 
@@ -410,7 +416,17 @@ export default function MarketWatchDetailPage() {
                       )}
                     </Text>
                   )}
-                  {/* Cheapest shipping */}
+                  {listing.marketing_price?.discountAmount && (
+                    <Text size="xs" color="green" mt={2}>
+                      {locale === "zh" ? "省" : "Save"}: {formatPrice(parseFloat(listing.marketing_price.discountAmount.value), listing.marketing_price.discountAmount.currency)}
+                    </Text>
+                  )}
+                  {listing.marketing_price?.priceTreatment && (
+                    <Text size="xs" color="dimmed" mt={2}>
+                      {listing.marketing_price.priceTreatment}
+                    </Text>
+                  )}
+                  {/* Shipping options */}
                   {(() => {
                     const opts = listing.shipping_options;
                     if (!opts || opts.length === 0) return null;
@@ -419,15 +435,73 @@ export default function MarketWatchDetailPage() {
                       const minCost = parseFloat(min?.shippingCost?.value || "999999");
                       return cost < minCost ? s : min;
                     }, null);
+
+                    // Friendly names for shipping service codes
+                    const serviceLabels: Record<string, string> = {
+                      USPSPriority: "USPS Priority",
+                      USPSFirstClass: "USPS First Class",
+                      USPSParcelSelect: "USPS Parcel Select",
+                      USPSSmartMail: "USPS Smart Mail",
+                      USPSPriorityMailExpress: "USPS Priority Express",
+                      FedExHomeDelivery: "FedEx Home",
+                      FedExGround: "FedEx Ground",
+                      FedEx2Day: "FedEx 2Day",
+                      FedExExpressSaver: "FedEx Express Saver",
+                      UPSGround: "UPS Ground",
+                      UPS3rdDay: "UPS 3-Day",
+                      UPS2ndDay: "UPS 2nd Day",
+                      UPSNextDay: "UPS Next Day",
+                      StandardShipping: locale === "zh" ? "标准物流" : "Standard",
+                      EconomyShipping: locale === "zh" ? "经济物流" : "Economy",
+                      ExpeditedShipping: locale === "zh" ? "加急物流" : "Expedited",
+                    };
+                    const svcCode = cheapest?.shippingServiceCode || "";
+                    const serviceName = serviceLabels[svcCode] || svcCode;
+
+                    // Estimated delivery
+                    const estDelivery = cheapest?.estimatedDeliveryDates;
+                    const formatEstDate = (d?: string) => {
+                      if (!d) return "";
+                      const dt = new Date(d);
+                      return dt.toLocaleDateString(
+                        locale === "zh" ? "zh-CN" : "en-US",
+                        { month: "short", day: "numeric" }
+                      );
+                    };
+
+                    // Additional per-unit cost
+                    const extraPerUnit = cheapest?.additionalShippingCostPerUnit;
+                    const extraPerUnitCost = extraPerUnit
+                      ? parseFloat(extraPerUnit.value)
+                      : 0;
+
                     if (cheapest?.shippingCost) {
                       const cost = parseFloat(cheapest.shippingCost.value);
                       const free = cost === 0;
+                      const costType = cheapest.shippingCostType === "CALCULATED"
+                        ? (locale === "zh" ? "（按距离计算）" : " (calculated)")
+                        : "";
+
                       return (
-                        <Text size="xs" mt={2} sx={(theme) => ({ color: free ? theme.colors.green[6] : undefined })}>
-                          🚚 {free
-                            ? (locale === "zh" ? "免运费" : "Free shipping")
-                            : `${locale === "zh" ? "运费" : "Shipping"}: ${formatPrice(cost, cheapest.shippingCost.currency)}`}
-                        </Text>
+                        <Stack spacing={2} mt={2}>
+                          <Text size="xs" sx={(theme) => ({ color: free ? theme.colors.green[6] : undefined })}>
+                            🚚 {free
+                              ? (locale === "zh" ? "免运费" : "Free shipping")
+                              : `${locale === "zh" ? "运费" : "Shipping"}: ${formatPrice(cost, cheapest.shippingCost.currency)}${costType}`}
+                            {serviceName && ` · ${serviceName}`}
+                          </Text>
+                          {estDelivery?.minDate && (
+                            <Text size="xs" color="dimmed">
+                              📦 {locale === "zh" ? "预计送达" : "Est. delivery"}: {formatEstDate(estDelivery.minDate)}
+                              {estDelivery.maxDate && ` — ${formatEstDate(estDelivery.maxDate)}`}
+                            </Text>
+                          )}
+                          {extraPerUnitCost > 0 && (
+                            <Text size="xs" color="dimmed">
+                              {locale === "zh" ? "每件额外运费" : "Extra per item"}: {formatPrice(extraPerUnitCost, extraPerUnit.currency)}
+                            </Text>
+                          )}
+                        </Stack>
                       );
                     }
                     return null;
@@ -589,7 +663,7 @@ export default function MarketWatchDetailPage() {
                   )}
                 </Group>
 
-                {/* Return policy + Listed date */}
+                {/* Return policy + Listed date + Duration */}
                 <Group spacing="lg">
                   {listing.return_terms?.returnsAccepted != null && (
                     <Box>
@@ -603,9 +677,19 @@ export default function MarketWatchDetailPage() {
                               const payer = listing.return_terms.returnShippingCostPayer === "SELLER"
                                 ? (locale === "zh" ? "卖家付运费" : "seller pays")
                                 : "";
+                              const refundMethod = listing.return_terms.refundMethod
+                                ? (locale === "zh"
+                                    ? ({"MERCHANDISE_CREDIT": "商品积分退款", "MONEY_BACK": "全额退款", "MONEY_BACK_OR_REPLACEMENT": "退款或换货", "MONEY_BACK_OR_EXCHANGE": "退款或置换"} as Record<string, string>)[listing.return_terms.refundMethod] || listing.return_terms.refundMethod
+                                    : String(listing.return_terms.refundMethod).replace(/_/g, " "))
+                                : "";
+                              const restocking = listing.return_terms.restockingFeePercentage
+                                ? ` · ${listing.return_terms.restockingFeePercentage}`
+                                : "";
                               return (locale === "zh" ? "接受" : "Accepted")
                                 + (days ? ` · ${days}${locale === "zh" ? "天" : "d"}` : "")
-                                + (payer ? ` · ${payer}` : "");
+                                + (payer ? ` · ${payer}` : "")
+                                + (refundMethod ? ` · ${refundMethod}` : "")
+                                + (restocking ? restocking : "");
                             })()
                           : (locale === "zh" ? "不接受" : "Not Accepted")}
                       </Text>
@@ -619,6 +703,14 @@ export default function MarketWatchDetailPage() {
                           locale === "zh" ? "zh-CN" : "en-US",
                           { year: "numeric", month: "short", day: "numeric" }
                         )}
+                      </Text>
+                    </Box>
+                  )}
+                  {listing.listing_duration && (
+                    <Box>
+                      <Text size="xs" color="dimmed">{locale === "zh" ? "上架周期" : "Duration"}</Text>
+                      <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>
+                        {listing.listing_duration}
                       </Text>
                     </Box>
                   )}
