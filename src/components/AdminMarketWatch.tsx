@@ -570,7 +570,7 @@ export default function AdminMarketWatch() {
             })}
           />
           <MultiSelect
-            label={locale === "zh" ? "物品所在地国家" : "Item Location Countries"}
+            label={locale === "zh" ? "物品所在地区" : "Item Location"}
             data={countryOptions}
             value={formItemLocationCountries}
             onChange={(v) => {
