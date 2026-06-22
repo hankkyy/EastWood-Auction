@@ -217,7 +217,14 @@ export default async function handler(
                   estimated_available_qty: detail.estimatedAvailabilities?.[0]
                     ?.estimatedAvailableQuantity ?? null,
                   category_path: detail.categoryPath || null,
+                  category_id: detail.categoryId || null,
                   watch_count: detail.watchCount ?? null,
+                  item_creation_date: detail.itemCreationDate || null,
+                  listing_duration: detail.listingDuration || null,
+                  quantity: detail.quantity ?? null,
+                  return_terms: detail.returnTerms || {},
+                  shipping_options: detail.shippingOptions || [],
+                  marketing_price: detail.marketingPrice || {},
                   location: detail.itemLocation
                     ? [
                         detail.itemLocation.city,

@@ -61,6 +61,12 @@ interface ListingDetail {
   estimated_available_qty?: number | null;
   category_path?: string | null;
   watch_count?: number | null;
+  item_creation_date?: string | null;
+  listing_duration?: string | null;
+  quantity?: number | null;
+  return_terms?: any;
+  shipping_options?: any[];
+  marketing_price?: any;
   is_saved?: boolean;
 }
 
@@ -393,6 +399,39 @@ export default function MarketWatchDetailPage() {
                       {listing.estimated_available_qty} {locale === "zh" ? "件可售" : "available"}
                     </Text>
                   )}
+                  {/* Original price strikethrough + discount */}
+                  {listing.marketing_price?.originalPrice && (
+                    <Text size="xs" color="dimmed" mt={2} strikethrough>
+                      {locale === "zh" ? "原价" : "Was"}: {formatPrice(parseFloat(listing.marketing_price.originalPrice.value), listing.marketing_price.originalPrice.currency)}
+                      {listing.marketing_price.discountPercentage && (
+                        <Text component="span" color="green" ml={4} sx={{ textDecoration: "none" }}>
+                          -{listing.marketing_price.discountPercentage}%
+                        </Text>
+                      )}
+                    </Text>
+                  )}
+                  {/* Cheapest shipping */}
+                  {(() => {
+                    const opts = listing.shipping_options;
+                    if (!opts || opts.length === 0) return null;
+                    const cheapest = opts.reduce((min: any, s: any) => {
+                      const cost = parseFloat(s.shippingCost?.value || "0");
+                      const minCost = parseFloat(min?.shippingCost?.value || "999999");
+                      return cost < minCost ? s : min;
+                    }, null);
+                    if (cheapest?.shippingCost) {
+                      const cost = parseFloat(cheapest.shippingCost.value);
+                      const free = cost === 0;
+                      return (
+                        <Text size="xs" mt={2} sx={(theme) => ({ color: free ? theme.colors.green[6] : undefined })}>
+                          🚚 {free
+                            ? (locale === "zh" ? "免运费" : "Free shipping")
+                            : `${locale === "zh" ? "运费" : "Shipping"}: ${formatPrice(cost, cheapest.shippingCost.currency)}`}
+                        </Text>
+                      );
+                    }
+                    return null;
+                  })()}
                 </Box>
 
                 {/* Auction details */}
@@ -540,6 +579,49 @@ export default function MarketWatchDetailPage() {
                           {listing.feedback_rating_star && ` · ${listing.feedback_rating_star}`}
                         </Text>
                       )}
+                    </Box>
+                  )}
+                </Group>
+
+                {/* Return policy + Listed date */}
+                <Group spacing="lg">
+                  {listing.return_terms?.returnsAccepted != null && (
+                    <Box>
+                      <Text size="xs" color="dimmed">{locale === "zh" ? "退货政策" : "Returns"}</Text>
+                      <Text size="sm" sx={(theme) => ({
+                        color: listing.return_terms.returnsAccepted ? theme.colors.green[6] : theme.colors.red[6],
+                      })}>
+                        {listing.return_terms.returnsAccepted
+                          ? (() => {
+                              const days = listing.return_terms.returnPeriod?.value;
+                              const payer = listing.return_terms.returnShippingCostPayer === "SELLER"
+                                ? (locale === "zh" ? "卖家付运费" : "seller pays")
+                                : "";
+                              return (locale === "zh" ? "接受" : "Accepted")
+                                + (days ? ` · ${days}${locale === "zh" ? "天" : "d"}` : "")
+                                + (payer ? ` · ${payer}` : "");
+                            })()
+                          : (locale === "zh" ? "不接受" : "Not Accepted")}
+                      </Text>
+                    </Box>
+                  )}
+                  {listing.item_creation_date && (
+                    <Box>
+                      <Text size="xs" color="dimmed">{locale === "zh" ? "上架时间" : "Listed"}</Text>
+                      <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>
+                        {new Date(listing.item_creation_date).toLocaleDateString(
+                          locale === "zh" ? "zh-CN" : "en-US",
+                          { year: "numeric", month: "short", day: "numeric" }
+                        )}
+                      </Text>
+                    </Box>
+                  )}
+                  {listing.quantity != null && listing.quantity > 1 && (
+                    <Box>
+                      <Text size="xs" color="dimmed">{locale === "zh" ? "库存" : "Qty"}</Text>
+                      <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>
+                        {listing.quantity}
+                      </Text>
                     </Box>
                   )}
                 </Group>

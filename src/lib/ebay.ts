@@ -97,7 +97,31 @@ export interface EBayItemDetail {
     estimatedSoldQuantity?: number;
   }[];
   categoryPath?: string;
+  categoryId?: string;
   watchCount?: number;
+  itemCreationDate?: string;
+  listingDuration?: string;
+  quantity?: number;
+  returnTerms?: {
+    returnsAccepted?: boolean;
+    refundMethod?: string;
+    restockingFeePercentage?: string;
+    returnShippingCostPayer?: string;
+    returnPeriod?: { unit: string; value: number };
+  };
+  shippingOptions?: {
+    shippingCost?: { value: string; currency: string };
+    shippingCostType?: string;
+    shippingServiceCode?: string;
+    estimatedDeliveryDates?: { minDate?: string; maxDate?: string };
+    additionalShippingCostPerUnit?: { value: string; currency: string };
+  }[];
+  marketingPrice?: {
+    originalPrice?: { value: string; currency: string };
+    discountAmount?: { value: string; currency: string };
+    discountPercentage?: string;
+    priceTreatment?: string;
+  };
 }
 
 export interface EBaySearchResponse {
