@@ -25,7 +25,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconHeart, IconHeartFilled, IconArrowBack, IconSearchOff } from "@tabler/icons-react";
+import { IconHeart, IconHeartFilled, IconSearchOff, IconLanguage } from "@tabler/icons-react";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
@@ -131,6 +131,9 @@ export default function MarketWatchPage() {
   const [minFeedbackFilter, setMinFeedbackFilter] = useState("");
   const [newOnly, setNewOnly] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedMap, setTranslatedMap] = useState<Record<string, string>>({});
+  const [showTranslation, setShowTranslation] = useState(false);
 
   const hasActiveFilters = !!(search || minPrice || maxPrice || locationFilter || conditionFilter || buyingOptionFilter || endingSoonFilter || returnsFilter || minFeedbackFilter);
 
@@ -239,6 +242,43 @@ export default function MarketWatchPage() {
     } catch (_) {}
   };
 
+  const handleTranslate = async () => {
+    if (showTranslation) {
+      setShowTranslation(false);
+      return;
+    }
+
+    // Collect texts to translate: titles + short descriptions
+    const textsToTranslate: string[] = [];
+    for (const item of listings) {
+      if (item.title && !translatedMap[item.title]) textsToTranslate.push(item.title);
+      if (item.short_description && !translatedMap[item.short_description]) textsToTranslate.push(item.short_description);
+    }
+
+    if (textsToTranslate.length === 0) {
+      setShowTranslation(true);
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const resp = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: textsToTranslate }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setTranslatedMap((prev) => ({ ...prev, ...data.translations }));
+      }
+    } catch (err) {
+      console.error("Translation failed:", err);
+    } finally {
+      setTranslating(false);
+      setShowTranslation(true);
+    }
+  };
+
   // Skeleton cards for loading state
   const skeletonCards = Array.from({ length: 6 }, (_, i) => (
     <Box key={i} sx={{ borderRadius: 12, overflow: "hidden" }}>
@@ -261,26 +301,6 @@ export default function MarketWatchPage() {
         <meta name="description" content="Monitor antique market listings and price trends. Track comparable items from major auction platforms with Eastwood Auction's market watch tool." />
         <meta property="og:title" content="Market Watch — Eastwood Auction" />
         <meta property="og:description" content="Monitor antique market listings and price trends. Track comparable items from major auction platforms." />
-        {locale === "zh" && (
-          <>
-            <script
-              src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-              async
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  function googleTranslateElementInit() {
-                    new google.translate.TranslateElement(
-                      { pageLanguage: 'en', includedLanguages: 'en,zh-CN', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false },
-                      'google_translate_element'
-                    );
-                  }
-                `,
-              }}
-            />
-          </>
-        )}
       </Head>
       <Wrapper>
         <Container py={isMobile ? 28 : 60} px={isMobile ? 16 : undefined}>
@@ -301,36 +321,27 @@ export default function MarketWatchPage() {
               {locale === "zh" && (
                 <Box mt={12}>
                   <Group spacing="sm" align="center">
-                    <div id="google_translate_element" />
                     <Button
                       variant="outline"
                       size="xs"
-                      leftIcon={<IconArrowBack size={14} />}
-                      onClick={() => {
-                        document.cookie = "googtrans=/en/en;path=/;max-age=0";
-                        document.cookie = "googtrans=/en/en;path=/";
-                        window.location.reload();
-                      }}
+                      leftIcon={<IconLanguage size={14} />}
+                      onClick={handleTranslate}
+                      loading={translating}
                       sx={(theme) => ({
-                        borderColor: theme.colorScheme === "dark"
+                        borderColor: showTranslation ? "#c4a255" : theme.colorScheme === "dark"
                           ? "rgba(196,162,85,0.3)"
                           : "rgba(180,158,120,0.3)",
-                        color: theme.colorScheme === "dark"
+                        color: showTranslation ? "#c4a255" : theme.colorScheme === "dark"
                           ? theme.colors.dark[9]
                           : theme.colors.dark[0],
                         "&:hover": { borderColor: "#c4a255", color: "#c4a255" },
                       })}
                     >
-                      恢复原文
+                      {showTranslation ? "恢复原文" : "翻译为中文"}
                     </Button>
                   </Group>
-                  <Text size="xs" color="dimmed" mt={6} lh={1.5}>
-                    点击下拉菜单选择翻译语言，或点击「恢复原文」按钮取消翻译
-                  </Text>
-                  <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
-                    {locale === "zh"
-                      ? "⚠️ 翻译由 Google 第三方提供，可能存在误翻或滞后。商品描述、属性、退货政策等关键信息请以英文原文为准。"
-                      : "⚠️ Translation powered by Google. Errors may occur. Refer to the original English listing for accurate item details, policies, and descriptions."}
+                  <Text size="xs" mt={6} sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
+                    ⚠️ 机器翻译仅供参考。商品描述、属性、退货政策等关键信息请以英文原文为准。
                   </Text>
                 </Box>
               )}
@@ -772,7 +783,7 @@ export default function MarketWatchPage() {
                             minHeight: 36, color: appTextColor(theme),
                           })}
                         >
-                          {item.title}
+                          {showTranslation && translatedMap[item.title] ? translatedMap[item.title] : item.title}
                         </Text>
 
                         {/* Matched keywords */}
@@ -848,7 +859,7 @@ export default function MarketWatchPage() {
                               color: appMutedTextColor(theme), fontStyle: "italic", lineHeight: 1.4,
                             })}
                           >
-                            {item.short_description}
+                            {showTranslation && translatedMap[item.short_description] ? translatedMap[item.short_description] : item.short_description}
                           </Text>
                         )}
 

@@ -28,9 +28,9 @@ import {
   IconExternalLink,
   IconHeart,
   IconHeartFilled,
-  IconArrowBack,
   IconTrendingUp,
   IconTrendingDown,
+  IconLanguage,
 } from "@tabler/icons-react";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
@@ -125,6 +125,9 @@ export default function MarketWatchDetailPage() {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [relatedListings, setRelatedListings] = useState<ListingDetail[]>([]);
   const thumbnailsRef = useRef<HTMLDivElement>(null);
+  const [translating, setTranslating] = useState(false);
+  const [translatedMap, setTranslatedMap] = useState<Record<string, string>>({});
+  const [showTranslation, setShowTranslation] = useState(false);
 
   const id = typeof router.query.id === "string" ? router.query.id : "";
 
@@ -166,6 +169,50 @@ export default function MarketWatchDetailPage() {
       }
     } catch (_) {}
     setSaving(false);
+  };
+
+  const handleTranslate = async () => {
+    if (showTranslation) {
+      setShowTranslation(false);
+      return;
+    }
+
+    if (!listing) return;
+
+    // Collect texts to translate: title, short_description, description
+    const textsToTranslate: string[] = [];
+    if (listing.title && !translatedMap[listing.title]) textsToTranslate.push(listing.title);
+    if (listing.short_description && !translatedMap[listing.short_description]) textsToTranslate.push(listing.short_description);
+    if (listing.description && !translatedMap[listing.description]) textsToTranslate.push(listing.description);
+
+    // Item specifics (name-value pairs)
+    const specifics = listing.item_specifics || [];
+    for (const spec of specifics) {
+      if (spec.value && !translatedMap[spec.value]) textsToTranslate.push(spec.value);
+    }
+
+    if (textsToTranslate.length === 0) {
+      setShowTranslation(true);
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const resp = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ texts: textsToTranslate }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setTranslatedMap((prev) => ({ ...prev, ...data.translations }));
+      }
+    } catch (err) {
+      console.error("Translation failed:", err);
+    } finally {
+      setTranslating(false);
+      setShowTranslation(true);
+    }
   };
 
   useEffect(() => {
@@ -321,26 +368,6 @@ export default function MarketWatchDetailPage() {
     <>
       <Head>
         <title>{listing.title} — Market Watch — Eastwood Auction</title>
-        {locale === "zh" && (
-          <>
-            <script
-              src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInitDetail"
-              async
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  function googleTranslateElementInitDetail() {
-                    new google.translate.TranslateElement(
-                      { pageLanguage: 'en', includedLanguages: 'en,zh-CN', layout: google.translate.TranslateElement.InlineLayout.SIMPLE, autoDisplay: false },
-                      'google_translate_element_detail'
-                    );
-                  }
-                `,
-              }}
-            />
-          </>
-        )}
       </Head>
       <Wrapper>
         <Container py={isMobile ? 28 : 60} px={isMobile ? 16 : undefined}>
@@ -381,25 +408,23 @@ export default function MarketWatchDetailPage() {
                 {locale === "zh" ? "返回" : "Back"}
               </Button>
               {locale === "zh" && (
-                <>
-                  <div id="google_translate_element_detail" />
-                  <Button
-                    variant="outline" size="xs"
-                    leftIcon={<IconArrowBack size={14} />}
-                    onClick={() => {
-                      document.cookie = "googtrans=/en/en;path=/;max-age=0";
-                      document.cookie = "googtrans=/en/en;path=/";
-                      window.location.reload();
-                    }}
-                    sx={(theme) => ({
-                      borderColor: "rgba(196,162,85,0.3)",
-                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
-                      "&:hover": { borderColor: "#c4a255", color: "#c4a255" },
-                    })}
-                  >
-                    恢复原文
-                  </Button>
-                </>
+                <Button
+                  variant="outline" size="xs"
+                  leftIcon={<IconLanguage size={14} />}
+                  onClick={handleTranslate}
+                  loading={translating}
+                  sx={(theme) => ({
+                    borderColor: showTranslation
+                      ? "#c4a255"
+                      : "rgba(196,162,85,0.3)",
+                    color: showTranslation
+                      ? "#c4a255"
+                      : theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                    "&:hover": { borderColor: "#c4a255", color: "#c4a255" },
+                  })}
+                >
+                  {showTranslation ? "恢复原文" : "翻译为中文"}
+                </Button>
               )}
             </Group>
             <Tooltip label={user ? "" : t("marketWatch.loginToSave")} disabled={!!user}>
@@ -416,14 +441,11 @@ export default function MarketWatchDetailPage() {
             </Tooltip>
           </Group>
 
-          {/* Translate guidance + disclaimer */}
+          {/* Translate disclaimer */}
           {locale === "zh" && (
             <Box mb="lg">
-              <Text size="xs" color="dimmed" lh={1.5}>
-                点击下拉菜单选择翻译语言，或点击「恢复原文」按钮取消翻译
-              </Text>
-              <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
-                ⚠️ 翻译由 Google 第三方提供，可能存在误翻或滞后。商品描述、属性、退货政策等关键信息请以英文原文为准。
+              <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
+                ⚠️ 机器翻译仅供参考。商品描述、属性、退货政策等关键信息请以英文原文为准。
               </Text>
             </Box>
           )}
@@ -593,7 +615,7 @@ export default function MarketWatchDetailPage() {
                     letterSpacing: "-0.02em",
                   })}
                 >
-                  {listing.title}
+                  {showTranslation && translatedMap[listing.title] ? translatedMap[listing.title] : listing.title}
                 </Title>
 
                 {/* eBay category path */}
@@ -837,7 +859,7 @@ export default function MarketWatchDetailPage() {
                       />
                     ) : (
                       <Text size="sm" sx={(theme) => ({ color: appTextColor(theme), lineHeight: 1.6 })}>
-                        {listing.short_description}
+                        {showTranslation && translatedMap[listing.short_description!] ? translatedMap[listing.short_description!] : listing.short_description}
                       </Text>
                     )}
                   </Box>
@@ -856,7 +878,10 @@ export default function MarketWatchDetailPage() {
                     >
                       <tbody>
                         {listing.item_specifics.map((spec, i) => (
-                          <tr key={i}><td>{spec.name}</td><td>{spec.value}</td></tr>
+                          <tr key={i}>
+                            <td>{spec.name}</td>
+                            <td>{showTranslation && translatedMap[spec.value] ? translatedMap[spec.value] : spec.value}</td>
+                          </tr>
                         ))}
                       </tbody>
                     </Table>
