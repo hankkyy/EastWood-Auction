@@ -1,6 +1,6 @@
 import { Wrapper } from "@/layout";
 import dynamic from "next/dynamic";
-import Head from "next/head";
+import { SEO } from "@/components/SEO";
 
 const ImageSearchExperience = dynamic(
   () => import("@/components/ImageSearch/ImageSearchExperience"),
@@ -12,9 +12,10 @@ const ImageSearchExperience = dynamic(
 export default function SearchPage() {
   return (
     <>
-      <Head>
-        <title>Eastwood Auction - Search</title>
-      </Head>
+      <SEO
+        title="Image Search"
+        description="Search for antiques by text or upload an image to find similar items. Upload a reference photo to find the closest matching antique product in our catalog."
+      />
       <Wrapper>
         <ImageSearchExperience />
       </Wrapper>

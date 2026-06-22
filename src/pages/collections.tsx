@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { AnimatedBox, Wrapper } from "@/layout";
 import { CollectionsSection, LinksSection } from "@/section/Collections";
 import DonationSection from "@/section/shared/Donation";
@@ -6,6 +5,7 @@ import SupportSection from "@/section/shared/Support";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import type { Artwork } from "@/data/artworks";
 import { GetStaticProps } from "next";
+import { SEO } from "@/components/SEO";
 
 interface CollectionsPageProps {
   initialData: Artwork[];
@@ -14,9 +14,10 @@ interface CollectionsPageProps {
 export default function Collections({ initialData }: CollectionsPageProps) {
   return (
     <>
-      <Head>
-        <title>Eastwood Auction - Collections</title>
-      </Head>
+      <SEO
+        title="Collections"
+        description="Explore the antique catalog — browse selected Chinese porcelain, jade, paintings, bronze, and scholar objects from Eastwood Auction."
+      />
       <Wrapper>
         <AnimatedBox>
           <CollectionsSection initialData={initialData} />
@@ -33,16 +34,13 @@ export default function Collections({ initialData }: CollectionsPageProps) {
   );
 }
 
-// ✅ 使用 getStaticProps 在构建时预加载数据
 export const getStaticProps: GetStaticProps<CollectionsPageProps> = async () => {
   try {
     const data = await fetchKnowledgeBaseServer();
-    
     return {
       props: {
         initialData: data || [],
       },
-      // ✅ 每 60 秒重新生成页面（增量静态再生）
       revalidate: 60,
     };
   } catch (error) {

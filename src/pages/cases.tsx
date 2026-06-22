@@ -1,10 +1,10 @@
 import { AnimatedBox, Wrapper } from "@/layout";
-import Head from "next/head";
 import HeroSection from "@/section/Support/Hero";
 import CasesSection from "@/section/Support/Cases";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import type { Artwork } from "@/data/artworks";
 import { GetStaticProps } from "next";
+import { SEO } from "@/components/SEO";
 
 interface CasesPageProps {
   initialData: Artwork[];
@@ -13,9 +13,10 @@ interface CasesPageProps {
 export default function Support({ initialData }: CasesPageProps) {
   return (
     <>
-      <Head>
-        <title>Eastwood Auction - Return Cases</title>
-      </Head>
+      <SEO
+        title="Return Cases"
+        description="Return case archive — browse completed transaction records, sale price histories, and risk-avoidance advice from Eastwood Auction."
+      />
       <Wrapper>
         <HeroSection />
         <AnimatedBox>
@@ -26,16 +27,13 @@ export default function Support({ initialData }: CasesPageProps) {
   );
 }
 
-// ✅ 使用 getStaticProps 在构建时预加载数据
 export const getStaticProps: GetStaticProps<CasesPageProps> = async () => {
   try {
     const data = await fetchKnowledgeBaseServer();
-    
     return {
       props: {
         initialData: data || [],
       },
-      // ✅ 每 60 秒重新生成页面（增量静态再生）
       revalidate: 60,
     };
   } catch (error) {

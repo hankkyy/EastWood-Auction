@@ -7,16 +7,15 @@ import DonationSection from "@/section/shared/Donation";
 import DiscoverSection from "@/section/Home/Discover";
 import SupportSection from "@/section/shared/Support";
 import { AnimatedBox, Wrapper } from "@/layout";
+import { SEO } from "@/components/SEO";
 
 export default function Home() {
   return (
     <>
-      <Head>
-        <title>Eastwood Auction</title>
-        <meta name="description" content="Eastwood Auction" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <SEO
+        title="Eastwood Auction"
+        description="Discover antique collections, auction previews, image search, and client services from Eastwood Auction. Browse Chinese porcelain, jade, paintings, and bronze artifacts online."
+      />
       <Wrapper>
         <HeroSection />
         <AnimatedBox>

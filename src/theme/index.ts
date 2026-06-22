@@ -30,14 +30,14 @@ export const theme: MantineThemeOverride = {
     dark: [
       "#1a1815",   // 0 — darkest (bg in dark mode)
       "#25221d",   // 1 — surface in dark mode
-      "#8a8375",   // 2 — dimmed text (4.8:1 contrast on #1a1815)
+      "#aba398",   // 2 — dimmed text (≥7:1 contrast on #1a1815)
       "#4a453b",   // 3
       "#625c50",   // 4
-      "#9a9388",   // 5
-      "#a59e90",   // 6
-      "#c4bfb3",   // 7
-      "#e0dcd4",   // 8
-      "#f5f0e9",   // 9 — lightest (text in dark mode)
+      "#bdb6aa",   // 5 — muted text (footer links, helper text)
+      "#c2bbb0",   // 6
+      "#d5d0c7",   // 7 — nav links, secondary headings
+      "#e6e2db",   // 8 — form labels, subtle headings
+      "#f5f0e9",   // 9 — lightest (primary text in dark mode)
     ],
   },
   headings: {

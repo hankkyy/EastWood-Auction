@@ -20,7 +20,8 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useCallback, useState } from "react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
 
@@ -47,6 +48,24 @@ export default function SearchModal({ opened, close }: IProps) {
   const { classes, theme } = useStyles();
   const { t } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  const handleSubmit = useCallback(() => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    close();
+    void router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+  }, [query, close, router]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        handleSubmit();
+      }
+    },
+    [handleSubmit]
+  );
 
   const paperProps: PaperProps = {
     p: "md",
@@ -127,8 +146,15 @@ export default function SearchModal({ opened, close }: IProps) {
               placeholder={t("search.placeholder")}
               icon={<IconSearch size={18} />}
               aria-label={t("search.events")}
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+              onKeyDown={handleKeyDown}
             />
-            <Button size="lg" sx={{ width: "fit-content" }}>
+            <Button
+              size="lg"
+              sx={{ width: "fit-content" }}
+              onClick={handleSubmit}
+            >
               {t("search.submit")}
             </Button>
           </Stack>

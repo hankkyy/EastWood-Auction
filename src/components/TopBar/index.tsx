@@ -216,7 +216,7 @@ function ThemeToggle() {
       title={isDark ? "Switch to light" : "Switch to dark"}
       size="lg"
     >
-      {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
+      {isDark ? <IconMoon size={20} /> : <IconSun size={20} />}
     </ActionIcon>
   );
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Wrapper } from "@/layout";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
+import { SEO } from "@/components/SEO";
 import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/lib/supabase/client";
 import {
@@ -1310,9 +1311,10 @@ export default function InboxPage() {
 
   return (
     <>
-      <Head>
-        <title>{t("inbox.pageTitle")} - Eastwood Auction</title>
-      </Head>
+      <SEO
+        title={t("inbox.pageTitle")}
+        description={t("inbox.pageDescription")}
+      />
       <Wrapper>
         <Container
           size={user ? "xl" : "md"}

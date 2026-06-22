@@ -1,18 +1,31 @@
 /**
- * 基本的 HTML 消毒函数 — 移除危险标签和属性。
- * 用于消毒 eBay 商品描述中可能包含的恶意内容。
+ * HTML sanitizer for eBay and other external content.
+ * Strips dangerous tags, inline styles, and layout-breaking elements
+ * that can escape our page container and wreck the layout.
  */
 
-// 完全移除的危险标签
+// Tags to remove entirely (including their content)
 const STRIP_TAGS = new Set([
   "script", "iframe", "object", "embed", "form", "input",
   "link", "meta", "base", "applet", "frame", "frameset",
+  // Style tags inject CSS that breaks layout
+  "style",
+  // Audio/video embeds from eBay
+  "audio", "video",
 ]);
 
-// 移除的事件处理属性和危险属性
-const STRIP_ATTRS = /on\w+\s*=|href\s*=\s*"javascript:/gi;
+// Tags to unwrap (remove the tag, keep its inner content)
+const UNWRAP_TAGS = new Set([
+  "font", "center",
+]);
 
-// 移除注释
+// Attributes to remove (event handlers, inline styles, dangerous URLs)
+const STRIP_ATTRS = /on\w+\s*=|href\s*=\s*"javascript:/gi;
+// Inline style attribute — eBay descriptions are full of position:absolute, width:800px, etc.
+const STRIP_STYLE = /\s*style\s*=\s*"[^"]*"/gi;
+const STRIP_STYLE_SINGLE = /\s*style\s*=\s*'[^']*'/gi;
+
+// HTML comments (may contain conditional comments)
 const STRIP_COMMENTS = /<!--[\s\S]*?-->/g;
 
 export function sanitizeHtml(html: string): string {
@@ -20,24 +33,82 @@ export function sanitizeHtml(html: string): string {
 
   let sanitized = html;
 
-  // 1. 移除 HTML 注释（可能包含条件注释攻击）
+  // 1. Remove HTML comments
   sanitized = sanitized.replace(STRIP_COMMENTS, "");
 
-  // 2. 移除危险标签及其内容
-  for (const tag of Array.from(STRIP_TAGS)) {
+  // 2. Remove inline styles (layout-breaking fixed widths, absolute positioning, etc.)
+  sanitized = sanitized.replace(STRIP_STYLE, "");
+  sanitized = sanitized.replace(STRIP_STYLE_SINGLE, "");
+
+  // 3. Remove event handlers and javascript: URLs
+  sanitized = sanitized.replace(STRIP_ATTRS, "");
+
+  // 4. Remove dangerous tags with their content
+  for (const tag of STRIP_TAGS) {
     sanitized = sanitized.replace(
       new RegExp(`<${tag}\\b[^>]*>[\\s\\S]*?<\\/${tag}>`, "gi"),
       ""
     );
-    // 自闭合形式
+    // Self-closing form
     sanitized = sanitized.replace(
       new RegExp(`<${tag}\\b[^>]*\\/>`, "gi"),
       ""
     );
   }
 
-  // 3. 移除事件处理器和 javascript: URL
-  sanitized = sanitized.replace(STRIP_ATTRS, "");
+  // 5. Unwrap font/center tags (keep inner content, remove the wrapper)
+  for (const tag of UNWRAP_TAGS) {
+    sanitized = sanitized.replace(
+      new RegExp(`<\\/${tag}\\s*>`, "gi"),
+      ""
+    );
+    sanitized = sanitized.replace(
+      new RegExp(`<${tag}\\b[^>]*>`, "gi"),
+      ""
+    );
+  }
+
+  // 6. Tables: eBay descriptions often have tables with fixed widths (e.g. width="800").
+  //    Strip width/height attributes from tables to prevent overflow.
+  sanitized = sanitized.replace(
+    /<table\b([^>]*)>/gi,
+    (_, attrs) => {
+      const cleaned = attrs
+        .replace(/\s*width\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*width\s*=\s*'[^']*'/gi, "")
+        .replace(/\s*height\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*height\s*=\s*'[^']*'/gi, "")
+        .replace(/\s*bgcolor\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*bgcolor\s*=\s*'[^']*'/gi, "");
+      return `<table${cleaned}>`;
+    }
+  );
+
+  // 7. Strip width/height from td/th as well
+  sanitized = sanitized.replace(
+    /<(td|th)\b([^>]*)>/gi,
+    (_, tag, attrs) => {
+      const cleaned = attrs
+        .replace(/\s*width\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*width\s*=\s*'[^']*'/gi, "")
+        .replace(/\s*height\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*height\s*=\s*'[^']*'/gi, "");
+      return `<${tag}${cleaned}>`;
+    }
+  );
+
+  // 8. Strip width/height from img (CSS will constrain via max-width)
+  sanitized = sanitized.replace(
+    /<img\b([^>]*)>/gi,
+    (_, attrs) => {
+      const cleaned = attrs
+        .replace(/\s*width\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*width\s*=\s*'[^']*'/gi, "")
+        .replace(/\s*height\s*=\s*"[^"]*"/gi, "")
+        .replace(/\s*height\s*=\s*'[^']*'/gi, "");
+      return `<img${cleaned}>`;
+    }
+  );
 
   return sanitized;
 }

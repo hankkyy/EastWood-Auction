@@ -258,6 +258,9 @@ export default function MarketWatchPage() {
     <>
       <Head>
         <title>Market Watch — Eastwood Auction</title>
+        <meta name="description" content="Monitor antique market listings and price trends. Track comparable items from major auction platforms with Eastwood Auction's market watch tool." />
+        <meta property="og:title" content="Market Watch — Eastwood Auction" />
+        <meta property="og:description" content="Monitor antique market listings and price trends. Track comparable items from major auction platforms." />
         {locale === "zh" && (
           <>
             <script
@@ -814,7 +817,16 @@ export default function MarketWatchPage() {
                               </Badge>
                             )}
                             {item.condition && (
-                              <Badge size="xs" variant="light" color="dark.3">
+                              <Badge size="xs" variant="light"
+                                sx={(theme) => ({
+                                  backgroundColor: theme.colorScheme === "dark"
+                                    ? "rgba(196,162,85,0.15)"
+                                    : "rgba(196,162,85,0.18)",
+                                  color: theme.colorScheme === "dark" ? "#e6e2db" : "#5a4a2a",
+                                  border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.18)" : "rgba(196,162,85,0.28)"}`,
+                                  fontWeight: 500,
+                                })}
+                              >
                                 {item.condition}
                               </Badge>
                             )}
@@ -870,27 +882,26 @@ export default function MarketWatchPage() {
                           </Box>
                         )}
 
-                        {/* Location + Seller + Returns */}
-                        <Group position="apart" mt={4}>
-                          <Group spacing={6}>
-                            {item.location && (
-                              <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                                📍 {item.location}
-                              </Text>
-                            )}
-                            {returnsAccepted && (
-                              <Text size="xs" color="green">
-                                ✅ {locale === "zh" ? "可退" : "Returns"}
-                              </Text>
-                            )}
-                          </Group>
-                          {item.seller && (
+                        {/* Location + Returns */}
+                        <Group spacing={6} mt={4}>
+                          {item.location && (
                             <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                              {item.seller}
-                              {item.seller_rating && ` · ★ ${item.seller_rating}`}
+                              📍 {item.location}
+                            </Text>
+                          )}
+                          {returnsAccepted && (
+                            <Text size="xs" color="green">
+                              ✅ {locale === "zh" ? "可退" : "Returns"}
                             </Text>
                           )}
                         </Group>
+                        {/* Seller — always on its own line, never wraps with location */}
+                        {item.seller && (
+                          <Text size="xs" mt={2} sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                            🏪 {item.seller}
+                            {item.seller_rating && ` · ★ ${item.seller_rating}`}
+                          </Text>
+                        )}
                       </Box>
                     </Box>
                   </Anchor>

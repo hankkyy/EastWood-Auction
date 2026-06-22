@@ -1,13 +1,14 @@
 import { AnimatedBox, Wrapper } from "@/layout";
-import Head from "next/head";
 import { FaqsSection, HeroSection, InfoSection } from "@/section/Donation";
+import { SEO } from "@/components/SEO";
 
 export default function Donation() {
   return (
     <>
-      <Head>
-        <title>Eastwood Auction - Donation</title>
-      </Head>
+      <SEO
+        title="Consignment"
+        description="Consign your antiques with Eastwood Auction. Expert cataloging, presentation, and buyer matching for Chinese porcelain, jade, paintings, and fine art."
+      />
       <Wrapper>
         <HeroSection />
         <AnimatedBox>

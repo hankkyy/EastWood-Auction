@@ -18,6 +18,30 @@ export default function Wrapper({ children }: IProps) {
       transition={{ duration: 0.24, ease: "easeOut" }}
       style={{ minHeight: "100vh" }}
     >
+      {/* Skip-to-content link for keyboard users */}
+      <Box
+        component="a"
+        href="#main-content"
+        sx={(theme) => ({
+          position: "absolute",
+          top: 8,
+          left: 8,
+          zIndex: 10000,
+          padding: "8px 16px",
+          backgroundColor: "#c4a255",
+          color: "#1a1815",
+          fontWeight: 700,
+          borderRadius: theme.radius.sm,
+          textDecoration: "none",
+          transform: "translateY(-120%)",
+          transition: "transform 0.2s",
+          "&:focus": {
+            transform: "translateY(0)",
+          },
+        })}
+      >
+        Skip to content
+      </Box>
       <Box
         component="header"
         sx={(theme) => ({
@@ -38,6 +62,7 @@ export default function Wrapper({ children }: IProps) {
       </Box>
       <Box
         component="main"
+        id="main-content"
         sx={(theme) => ({
           marginTop: `calc(${rem(104)} + env(safe-area-inset-top, 0px))`,
           [theme.fn.smallerThan("sm")]: {

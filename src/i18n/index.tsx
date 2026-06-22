@@ -169,7 +169,7 @@ const messages = {
     "image.password": "Password",
     "image.passwordPlaceholder": "Enter admin password",
     "image.loginButton": "Log in to import",
-    "image.demoPassword": "Demo password: admin123",
+    "image.demoPassword": "",
     "image.adminProtectedTitle": "Protected import workflow",
     "image.adminProtectedDescription":
       "Customer image matching stays public, but product import is restricted to administrators.",
@@ -838,7 +838,7 @@ const messages = {
     "image.password": "密码",
     "image.passwordPlaceholder": "请输入管理员密码",
     "image.loginButton": "登录后导入",
-    "image.demoPassword": "演示密码：admin123",
+    "image.demoPassword": "",
     "image.adminProtectedTitle": "受保护的导入流程",
     "image.adminProtectedDescription":
       "用户拍照匹配保持公开，但商品导入只允许管理员使用。",

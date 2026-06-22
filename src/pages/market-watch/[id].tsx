@@ -36,6 +36,7 @@ import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { ebayFullResUrl } from "@/lib/ebay";
 import {
   appMutedTextColor,
   appSurfaceBackground,
@@ -271,13 +272,25 @@ export default function MarketWatchDetailPage() {
 
   const selectedImage = allImages[selectedIndex]?.url || "";
 
-  const goToPrevImage = () => {
-    setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
-  };
+  // Preload all images so there's never a loading flash when switching
+  const preloadedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const img of allImages) {
+      if (img.url && !preloadedRef.current.has(img.url)) {
+        const imageEl = new Image();
+        imageEl.src = img.url;
+        preloadedRef.current.add(img.url);
+      }
+    }
+  }, [allImages]);
 
-  const goToNextImage = () => {
+  const goToPrevImage = useCallback(() => {
+    setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+  }, [allImages.length]);
+
+  const goToNextImage = useCallback(() => {
     setSelectedIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
-  };
+  }, [allImages.length]);
 
   // Scroll thumbnails left/right
   const scrollThumbnails = (dir: "left" | "right") => {
@@ -422,8 +435,15 @@ export default function MarketWatchDetailPage() {
                 minWidth: isMobile ? "100%" : 280,
               }}
             >
-              {/* Main image with arrows */}
-              <Box sx={{ position: "relative" }}>
+              {/* Main image with arrows — aspect-ratio locks height, prevents arrow bounce */}
+              <Box
+                sx={{
+                  position: "relative",
+                  aspectRatio: "1",
+                  userSelect: "none",
+                  overscrollBehavior: "contain",
+                }}
+              >
                 <Box
                   sx={(theme) => ({
                     borderRadius: 2, overflow: "hidden",
@@ -437,78 +457,60 @@ export default function MarketWatchDetailPage() {
                       background: selectedImage
                         ? `url(${selectedImage}) center/contain no-repeat`
                         : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
-                      backgroundColor: selectedImage ? "#1a1815" : undefined,
+                      backgroundColor: "#1a1815",
                     }}
                   >
-                    <Group spacing={6} sx={{ position: "absolute", top: 12, left: 12 }}>
-                      <Badge size="sm" variant="filled" color="blue">eBay</Badge>
-                      {isAuction && <Badge size="sm" variant="filled" color="red">{locale === "zh" ? "拍卖" : "AUCTION"}</Badge>}
-                      {isFixedPrice && <Badge size="sm" variant="filled" color="green">{locale === "zh" ? "直购" : "BUY NOW"}</Badge>}
-                      {isBestOffer && <Badge size="sm" variant="filled" color="orange">{locale === "zh" ? "议价" : "OFFER"}</Badge>}
-                      {(() => {
-                        const discovered = new Date(listing.discovered_at).getTime();
-                        const hoursAgo = (Date.now() - discovered) / 3600000;
-                        if (hoursAgo <= 24) {
-                          return (
-                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "#c4a255", color: "#fff" }}>
-                              {locale === "zh" ? "新发现" : "NEW"}
-                            </Badge>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </Group>
                   </Box>
                 </Box>
 
                 {/* Left/Right arrow overlays */}
                 {allImages.length > 1 && (
                   <>
-                    <ActionIcon
-                      variant="filled" radius="xl" size="xl"
-                      tabIndex={-1}
+                    <Box
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrevImage(); }}
                       sx={{
-                        position: "absolute", top: "50%", left: 8,
-                        transform: "translateY(-50%)",
-                        zIndex: 3,
-                        backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                        "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
+                        position: "absolute", top: 0, bottom: 0, left: 0,
+                        width: "25%", zIndex: 3, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "flex-start",
+                        paddingLeft: 4,
                       }}
                     >
-                      <IconChevronLeft size={22} />
-                    </ActionIcon>
-                    <ActionIcon
-                      variant="filled" radius="xl" size="xl"
-                      tabIndex={-1}
+                      <ActionIcon
+                        variant="filled" radius="xl" size="xl"
+                        tabIndex={-1}
+                        sx={{
+                          backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                          pointerEvents: "none",
+                          "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
+                        }}
+                      >
+                        <IconChevronLeft size={22} />
+                      </ActionIcon>
+                    </Box>
+                    <Box
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNextImage(); }}
                       sx={{
-                        position: "absolute", top: "50%", right: 8,
-                        transform: "translateY(-50%)",
-                        zIndex: 3,
-                        backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                        "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
+                        position: "absolute", top: 0, bottom: 0, right: 0,
+                        width: "25%", zIndex: 3, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "flex-end",
+                        paddingRight: 4,
                       }}
                     >
-                      <IconChevronRight size={22} />
-                    </ActionIcon>
+                      <ActionIcon
+                        variant="filled" radius="xl" size="xl"
+                        tabIndex={-1}
+                        sx={{
+                          backgroundColor: "rgba(0,0,0,0.45)", color: "#fff",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                          pointerEvents: "none",
+                          "&:hover": { backgroundColor: "rgba(0,0,0,0.65)" },
+                        }}
+                      >
+                        <IconChevronRight size={22} />
+                      </ActionIcon>
+                    </Box>
                   </>
-                )}
-
-                {/* Image counter */}
-                {allImages.length > 1 && (
-                  <Badge
-                    size="sm" variant="filled"
-                    sx={{
-                      position: "absolute", bottom: 8, right: 8,
-                      backgroundColor: "rgba(0,0,0,0.55)", color: "#fff",
-                      fontWeight: 400, fontSize: 12,
-                    }}
-                  >
-                    {selectedIndex + 1} / {allImages.length}
-                  </Badge>
                 )}
               </Box>
 
@@ -813,13 +815,25 @@ export default function MarketWatchDetailPage() {
                       <Box
                         sx={(theme) => ({
                           color: appTextColor(theme), lineHeight: 1.7, fontSize: 14,
-                          wordBreak: "break-word", overflowWrap: "break-word", overflow: "hidden",
+                          wordBreak: "break-word", overflowWrap: "break-word",
+                          maxHeight: 600, overflowY: "auto",
+                          border: `1px solid ${appSurfaceBorder(theme)}`,
+                          borderRadius: 4, padding: 12,
                           "& *": { maxWidth: "100%" },
                           "& p": { margin: "0 0 0.5em" },
                           "& ul, & ol": { paddingLeft: 20, margin: "0 0 0.5em" },
                           "& img": { maxWidth: "100%", height: "auto" },
                           "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
                           "& a": { color: "#c4a255" },
+                          // Kill all hardcoded background/color from eBay HTML
+                          "& *, & td, & th, & tr, & table, & div, & span, & p, & li": {
+                            backgroundColor: "transparent !important",
+                            background: "none !important",
+                          },
+                          // Ensure text inherits the container color
+                          "& td, & th, & div, & span, & p, & li, & font": {
+                            color: `${appTextColor(theme)} !important`,
+                          },
                         })}
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(listing.description) }}
                       />
@@ -993,13 +1007,19 @@ export default function MarketWatchDetailPage() {
                 <Box sx={(theme) => ({ flex: 1, height: 1, background: theme.colorScheme === "dark" ? "linear-gradient(270deg, rgba(196,162,85,0.3), rgba(196,162,85,0.05))" : "linear-gradient(270deg, rgba(196,162,85,0.4), rgba(196,162,85,0.05))" })} />
               </Group>
               <SimpleGrid
-                cols={4} spacing="lg"
+                cols={3} spacing="lg"
                 breakpoints={[
                   { maxWidth: "md", cols: 2, spacing: "sm" },
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
               >
-                {relatedListings.map((related) => (
+                {relatedListings.map((related) => {
+                  const isRelatedAuction = related.buying_options?.includes("AUCTION");
+                  const rEndInfo = formatEndsAt(related.ends_at);
+                  const relatedImg = related.images?.[0]
+                    ? ebayFullResUrl(related.images[0].url)
+                    : null;
+                  return (
                   <Anchor key={related.id} component={Link} href={`/market-watch/${related.id}`} underline={false}>
                     <Box
                       sx={(theme) => ({
@@ -1014,32 +1034,80 @@ export default function MarketWatchDetailPage() {
                         },
                       })}
                     >
+                      {/* Image */}
                       <Box
                         sx={{
-                          height: 140,
-                          background: related.images?.[0]
-                            ? `url(${related.images[0].url}) center/cover`
+                          height: 200,
+                          background: relatedImg
+                            ? `url(${relatedImg}) center/cover`
                             : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
-                          backgroundPosition: related.images?.[0] ? "center 15%" : undefined,
+                          backgroundPosition: relatedImg ? "center 15%" : undefined,
+                          position: "relative",
+                          borderRadius: "12px 12px 0 0",
                         }}
-                      />
-                      <Box p={10}>
-                        <Text size="xs" weight={500} lineClamp={2}
-                          sx={(theme) => ({ color: appTextColor(theme), lineHeight: 1.35, minHeight: 32 })}
+                      >
+                        {/* Badges */}
+                        <Group spacing={6} sx={{ position: "absolute", top: 8, left: 8 }}>
+                          {isRelatedAuction && (
+                            <Badge size="sm" variant="filled" color="red" sx={{ fontWeight: 400 }}>AUCTION</Badge>
+                          )}
+                          {related.buying_options?.includes("FIXED_PRICE") && (
+                            <Badge size="sm" variant="filled" color="green" sx={{ fontWeight: 400 }}>BUY NOW</Badge>
+                          )}
+                        </Group>
+                        {rEndInfo.text && (
+                          <Badge
+                            size="xs" variant="filled"
+                            sx={{
+                              position: "absolute", bottom: 8, right: 8,
+                              backgroundColor: rEndInfo.urgent ? "rgba(231,76,60,0.85)" : "rgba(0,0,0,0.6)",
+                              color: "#fff", fontWeight: 400,
+                            }}
+                          >
+                            {rEndInfo.text}
+                          </Badge>
+                        )}
+                      </Box>
+                      {/* Info */}
+                      <Box p="sm">
+                        <Text size="sm" weight={500} lineClamp={2}
+                          sx={(theme) => ({ color: appTextColor(theme), lineHeight: 1.35, minHeight: 36 })}
                         >
                           {related.title}
                         </Text>
-                        <Text size="xs" color="#c4a255" mt={4} weight={500}>
-                          {formatPrice(
-                            related.buying_options?.includes("AUCTION") && related.current_bid
-                              ? related.current_bid : related.price,
-                            related.currency
+                        {related.matched_keywords?.length > 0 && (
+                          <Group spacing={4} mt={6}>
+                            {related.matched_keywords.slice(0, 3).map((kw) => (
+                              <Badge key={kw} size="xs" variant="light"
+                                sx={(theme) => ({
+                                  backgroundColor: theme.colorScheme === "dark"
+                                    ? "rgba(196,162,85,0.15)" : "rgba(196,162,85,0.12)",
+                                  color: "#c4a255", fontWeight: 400, textTransform: "none",
+                                })}
+                              >
+                                {kw}
+                              </Badge>
+                            ))}
+                          </Group>
+                        )}
+                        <Group position="apart" mt={related.matched_keywords?.length ? 8 : 12}>
+                          <Text size="md" weight={600} color="#c4a255">
+                            {formatPrice(
+                              isRelatedAuction && related.current_bid ? related.current_bid : related.price,
+                              related.currency
+                            )}
+                          </Text>
+                          {related.seller && (
+                            <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                              {related.seller.length > 20 ? related.seller.slice(0, 18) + "…" : related.seller}
+                            </Text>
                           )}
-                        </Text>
+                        </Group>
                       </Box>
                     </Box>
                   </Anchor>
-                ))}
+                  );
+                })}
               </SimpleGrid>
             </Box>
           )}

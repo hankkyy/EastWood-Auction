@@ -8,6 +8,9 @@ import { searchEBayItems, buildEBayFilter, getEBayItem, ebayFullResUrl, type EBa
  *
  * Triggers eBay search for all enabled rules, upserts results into external_listings.
  * Admin only. Can also pass ?rule_id=xxx to sync a single rule.
+ *
+ * Uses parallel item detail fetches with concurrency limits to avoid
+ * eBay rate limiting while keeping syncs fast.
  */
 export default async function handler(
   req: NextApiRequest,
@@ -16,6 +19,14 @@ export default async function handler(
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
     return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  // Vercel serverless functions have a 60s timeout (hobby) / 900s (pro).
+  // Set a reasonable internal deadline so we can return partial results.
+  const DEADLINE_MS = 50_000; // 50s — leaves 10s buffer for Vercel overhead
+  const startTime = Date.now();
+  function hasTimedOut() {
+    return Date.now() - startTime > DEADLINE_MS;
   }
 
   const auth = await verifySupabaseUser(req);
@@ -39,10 +50,23 @@ export default async function handler(
     rule_name: string;
     searched: number;
     inserted: number;
+    enriched: number;
     error?: string;
+    timed_out?: boolean;
   }[] = [];
 
   for (const rule of rules) {
+    if (hasTimedOut()) {
+      results.push({
+        rule_name: rule.name,
+        searched: 0,
+        inserted: 0,
+        enriched: 0,
+        timed_out: true,
+      });
+      continue;
+    }
+
     try {
       const keywords = (rule.keywords as string[]) || [];
       const query = keywords.join(" ");
@@ -75,7 +99,9 @@ export default async function handler(
 
       const items = ebayRes.itemSummaries || [];
       let inserted = 0;
+      let enriched = 0;
 
+      // Step 1: Upsert basic listing info (fast, no item-detail call needed)
       for (const item of items) {
         const images = item.image
           ? [{ url: ebayFullResUrl(item.image.imageUrl), width: item.image.width, height: item.image.height }]
@@ -118,66 +144,72 @@ export default async function handler(
 
         if (!upsertErr) {
           inserted++;
+        }
+      }
 
-          // Enrich ALL listings with full details from getEBayItem
+      // Step 2: Enrich ALL listings in parallel with concurrency cap
+      // 5 concurrent calls prevent eBay rate limiting while being much faster than serial
+      const CONCURRENCY = 5;
+      const itemIds = items.map((i) => i.itemId);
+
+      for (let i = 0; i < itemIds.length; i += CONCURRENCY) {
+        if (hasTimedOut()) break;
+
+        const batch = itemIds.slice(i, i + CONCURRENCY);
+        const detailResults = await Promise.allSettled(
+          batch.map(async (itemId) => {
+            const detail: EBayItemDetail = await getEBayItem(itemId);
+            return { itemId, detail };
+          })
+        );
+
+        for (const result of detailResults) {
+          if (result.status === "rejected") {
+            console.warn(`[sync] Failed to fetch item detail: ${result.reason?.message || result.reason}`);
+            continue;
+          }
+
+          const { itemId, detail } = result.value;
+          const item = items.find((i) => i.itemId === itemId);
+          const locationStr = item?.itemLocation
+            ? [item.itemLocation.city, item.itemLocation.stateOrProvince, item.itemLocation.country]
+                .filter(Boolean)
+                .join(", ")
+            : null;
+
           try {
-            const detail: EBayItemDetail = await getEBayItem(item.itemId);
-
             await supabase
               .from("external_listings")
               .update({
-                // Auction-specific
                 current_bid: detail.currentBidPrice
                   ? parseFloat(detail.currentBidPrice.value)
                   : null,
                 bid_count: detail.bidCount ?? null,
                 reserve_price_met: detail.reservePriceMet ?? null,
-
-                // Descriptions
                 short_description: detail.shortDescription || null,
                 description: detail.description || null,
-
-                // Images
                 extra_images: detail.additionalImages?.map((img) => ({
                   url: ebayFullResUrl(img.imageUrl),
                   width: img.width,
                   height: img.height,
                 })) || [],
-
-                // Item specifics (localizedAspects)
                 item_specifics: detail.localizedAspects || [],
-
-                // Seller details
                 feedback_pct: detail.seller?.feedbackPercentage || null,
                 feedback_rating_star: detail.seller?.feedbackRatingStar || null,
-
-                // Availability
                 estimated_sold: detail.estimatedAvailabilities?.[0]
                   ?.estimatedSoldQuantity ?? null,
                 estimated_available_qty: detail.estimatedAvailabilities?.[0]
                   ?.estimatedAvailableQuantity ?? null,
-
-                // Condition
                 condition_description: detail.conditionDescription || null,
-
-                // Category
                 category_path: detail.categoryPath || null,
                 category_id: detail.categoryId || null,
-
-                // Engagement
                 watch_count: detail.watchCount ?? null,
-
-                // Listing metadata
                 item_creation_date: detail.itemCreationDate || null,
                 listing_duration: detail.listingDuration || null,
                 quantity: detail.quantity ?? null,
-
-                // Policies
                 return_terms: detail.returnTerms || {},
                 shipping_options: detail.shippingOptions || [],
                 marketing_price: detail.marketingPrice || {},
-
-                // Update location with full detail (includes state + postal when available)
                 location: detail.itemLocation
                   ? [
                       detail.itemLocation.city,
@@ -189,10 +221,12 @@ export default async function handler(
                   : locationStr,
               })
               .eq("source", "ebay")
-              .eq("external_id", item.itemId);
+              .eq("external_id", itemId);
+
+            enriched++;
           } catch (detailErr: any) {
             console.warn(
-              `[sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
+              `[sync] Failed to update DB for item ${itemId}: ${detailErr.message}`
             );
           }
         }
@@ -202,28 +236,40 @@ export default async function handler(
         rule_name: rule.name,
         searched: items.length,
         inserted,
+        enriched,
       });
 
-      // Update last_synced_at for this rule
+      // Always update last_synced_at — even if enrichment partially failed
       await supabase
         .from("external_rules")
         .update({ last_synced_at: new Date().toISOString() })
         .eq("id", rule.id);
     } catch (err: any) {
+      // Still update last_synced_at on error so user knows we attempted a sync
+      await supabase
+        .from("external_rules")
+        .update({ last_synced_at: new Date().toISOString() })
+        .eq("id", rule.id);
+
       results.push({
         rule_name: rule.name,
         searched: 0,
         inserted: 0,
+        enriched: 0,
         error: err.message,
       });
     }
   }
 
   const totalInserted = results.reduce((sum, r) => sum + r.inserted, 0);
+  const totalEnriched = results.reduce((sum, r) => sum + (r.enriched || 0), 0);
+  const hadTimeout = results.some((r) => r.timed_out);
 
   return res.status(200).json({
-    message: `Synced ${totalInserted} listings across ${results.length} rules.`,
+    message: `Synced ${totalInserted} listings (${totalEnriched} enriched) across ${results.length} rules.${hadTimeout ? " Some rules skipped (timeout)." : ""}`,
     synced: totalInserted,
+    enriched: totalEnriched,
     results,
+    timed_out: hadTimeout,
   });
 }

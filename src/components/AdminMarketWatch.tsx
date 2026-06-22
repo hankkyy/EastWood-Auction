@@ -302,7 +302,12 @@ export default function AdminMarketWatch() {
           });
           const syncData = await syncRes.json();
           if (syncRes.ok) {
-            setSyncMsg(syncData.message || (locale === "zh" ? "同步完成" : "Sync done"));
+            const enriched = syncData.enriched || 0;
+            setSyncMsg(
+              locale === "zh"
+                ? `同步完成：「${formName}」— ${syncData.synced || 0} 条${enriched > 0 ? ` (${enriched} 已丰富)` : ""}`
+                : `Sync done: "${formName}" — ${syncData.synced || 0} results${enriched > 0 ? ` (${enriched} enriched)` : ""}`
+            );
           } else {
             setSyncMsg("");
             setError(syncData.error || (locale === "zh" ? "同步失败" : "Sync failed"));
@@ -310,7 +315,6 @@ export default function AdminMarketWatch() {
         } catch {
           setSyncMsg("");
         }
-        setTimeout(() => setSyncMsg(""), 4000);
       }
 
       void fetchRules();
@@ -354,7 +358,12 @@ export default function AdminMarketWatch() {
         });
         const syncData = await syncRes.json();
         if (syncRes.ok) {
-          setSyncMsg(syncData.message || (locale === "zh" ? "同步完成" : "Sync done"));
+          const enriched = syncData.enriched || 0;
+          setSyncMsg(
+            locale === "zh"
+              ? `同步完成：「${rule.name}」— ${syncData.synced || 0} 条${enriched > 0 ? ` (${enriched} 已丰富)` : ""}`
+              : `Sync done: "${rule.name}" — ${syncData.synced || 0} results${enriched > 0 ? ` (${enriched} enriched)` : ""}`
+          );
         } else {
           setSyncMsg("");
           setError(syncData.error || (locale === "zh" ? "同步失败" : "Sync failed"));
@@ -362,7 +371,6 @@ export default function AdminMarketWatch() {
       } catch (err: any) {
         setSyncMsg("");
       }
-      setTimeout(() => setSyncMsg(""), 4000);
     }
 
     void fetchRules();
@@ -380,19 +388,38 @@ export default function AdminMarketWatch() {
         throw new Error(data.error || "Sync failed.");
       }
 
-      // Show per-rule errors if any
-      const errors = (data.results || []).filter((r: any) => r.error).map((r: any) => `${r.rule_name}: ${r.error}`);
-      const msg = errors.length > 0
-        ? `${data.message} (${errors.join("; ")})`
-        : data.message || "Done";
-      setSyncMsg(msg);
+      // Build a detailed per-rule result message
+      const parts: string[] = [];
+      if (data.results) {
+        for (const r of data.results) {
+          if (r.timed_out) {
+            parts.push(`${r.rule_name}: ${locale === "zh" ? "超时跳过" : "timeout"}`);
+          } else if (r.error) {
+            parts.push(`${r.rule_name}: ${r.error}`);
+          } else {
+            const enriched = r.enriched || 0;
+            parts.push(
+              `${r.rule_name}: ${r.inserted} ${locale === "zh" ? "条" : "found"}${enriched > 0 ? ` (${enriched} ${locale === "zh" ? "条已丰富" : "enriched"})` : ""}`
+            );
+          }
+        }
+      }
+
+      const summary = locale === "zh"
+        ? `同步完成：共 ${data.synced} 条 (${data.enriched || 0} 已丰富)`
+        : `Sync done: ${data.synced} results (${data.enriched || 0} enriched)`;
+
+      setSyncMsg(
+        parts.length > 0
+          ? `${summary} — ${parts.join(" | ")}`
+          : summary
+      );
       void fetchRules();
     } catch (err: any) {
       setSyncMsg("");
       setError(err.message || (locale === "zh" ? "同步失败。" : "Sync failed."));
-    } finally {
-      setTimeout(() => setSyncMsg(""), 3000);
     }
+    // Don't clear the message automatically — let the user read it
   };
 
   if (loading) return <Text color="dimmed">Loading...</Text>;
@@ -425,7 +452,18 @@ export default function AdminMarketWatch() {
       </Group>
 
       {syncMsg && (
-        <Text size="sm" color="dimmed" mb="sm">{syncMsg}</Text>
+        <Text
+          size="sm"
+          sx={(theme) => ({
+            color: syncMsg.includes(locale === "zh" ? "同步中" : "Syncing")
+              ? (theme.colorScheme === "dark" ? "#e6e2db" : "#5a4a2a")
+              : (theme.colorScheme === "dark" ? "#c4a255" : "#7a6e56"),
+            fontWeight: syncMsg.includes(locale === "zh" ? "同步中" : "Syncing") ? 500 : 400,
+          })}
+          mb="sm"
+        >
+          {syncMsg}
+        </Text>
       )}
 
       {error && (
@@ -480,7 +518,16 @@ export default function AdminMarketWatch() {
                       </Badge>
                     ))}
                     {rule.category_ids?.length > 0 && rule.category_ids.map((cid) => (
-                      <Badge key={cid} size="xs" variant="light" color="dark.3">
+                      <Badge key={cid} size="xs" variant="light"
+                        sx={(theme) => ({
+                          backgroundColor: theme.colorScheme === "dark"
+                            ? "rgba(196,162,85,0.15)"
+                            : "rgba(196,162,85,0.18)",
+                          color: theme.colorScheme === "dark" ? "#e6e2db" : "#5a4a2a",
+                          border: `1px solid ${theme.colorScheme === "dark" ? "rgba(196,162,85,0.18)" : "rgba(196,162,85,0.28)"}`,
+                          fontWeight: 500,
+                        })}
+                      >
                         {categoryIdToName[cid] || cid}
                       </Badge>
                     ))}

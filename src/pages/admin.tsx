@@ -2,6 +2,7 @@ import Head from "next/head";
 import { Wrapper } from "@/layout";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
+import { SEO } from "@/components/SEO";
 import { supabase, type Profile } from "@/lib/supabase/client";
 import {
   Alert,
@@ -401,9 +402,11 @@ export default function AdminPage() {
 
   return (
     <>
-      <Head>
-        <title>{title} - Eastwood Auction</title>
-      </Head>
+      <SEO
+        title={title}
+        description={locale === "zh" ? "Eastwood Auction 后台管理系统" : "Eastwood Auction administration dashboard"}
+        noindex
+      />
       <Wrapper>
         <Container size="lg" py={48}>
           <Stack spacing="xl">

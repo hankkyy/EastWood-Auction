@@ -1,7 +1,6 @@
-import Head from "next/head";
-import Link from "next/link";
 import { GetStaticProps } from "next";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import {
   Badge,
   Box,
@@ -28,6 +27,8 @@ import {
 import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import { IconArrowRight } from "@tabler/icons-react";
+import { SEO } from "@/components/SEO";
+import Link from "next/link";
 
 interface SearchPageProps {
   initialData: Artwork[];
@@ -107,10 +108,19 @@ const getCategoryLabelByKey = (
 export default function SearchPage({ initialData }: SearchPageProps) {
   const { t, locale } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "collection" | "case">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [saleFilter, setSaleFilter] = useState<"all" | "for-sale" | "not-for-sale">("all");
+
+  // Read query param from URL (set by SearchModal or direct link)
+  useEffect(() => {
+    const q = router.query.q;
+    if (typeof q === "string" && q.trim()) {
+      setQuery(q.trim());
+    }
+  }, [router.query.q]);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -173,9 +183,10 @@ export default function SearchPage({ initialData }: SearchPageProps) {
 
   return (
     <>
-      <Head>
-        <title>Eastwood Auction - {t("search.title")}</title>
-      </Head>
+      <SEO
+        title="Search"
+        description="Search for antiques by text or upload an image to find similar items. Browse Chinese porcelain, jade, paintings, and bronze artifacts from Eastwood Auction."
+      />
       <Wrapper>
         <Container size="xl" py={48} px={isMobile ? 14 : undefined}>
           <Stack spacing="lg">

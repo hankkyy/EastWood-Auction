@@ -199,7 +199,7 @@ a {
 
 @keyframes movement_two {
   0%,
-  500% {
+  100% {
     transform: none;
   }
   50% {

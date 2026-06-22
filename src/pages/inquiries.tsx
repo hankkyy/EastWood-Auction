@@ -3,6 +3,7 @@ import { Wrapper } from "@/layout";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
 import AuthModal from "@/components/AuthModal";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/lib/supabase/client";
 import {
   Alert,
@@ -211,9 +212,10 @@ export default function InquiriesPage() {
 
   return (
     <>
-      <Head>
-        <title>{t("inquiry.pageTitle")} - Eastwood Auction</title>
-      </Head>
+      <SEO
+        title={t("inquiry.pageTitle")}
+        description={t("inquiry.pageDescription")}
+      />
       <Wrapper>
         <Container size="sm" py={48} px={isMobile ? 14 : undefined}>
           <Stack spacing="xl">
