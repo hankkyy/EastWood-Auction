@@ -342,7 +342,7 @@ export default function MarketWatchPage() {
                   size="sm"
                   data={[
                     { value: "all", label: t("marketWatch.allListings") },
-                    { value: "saved", label: `❤️ ${t("marketWatch.savedFilter")}` },
+                    { value: "saved", label: t("marketWatch.savedFilter") },
                   ]}
                 />
               )}

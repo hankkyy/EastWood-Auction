@@ -1343,7 +1343,7 @@ const messages = {
     // Market Watch detail & saved
     "marketWatch.saveListing": "收藏",
     "marketWatch.unsaveListing": "已收藏",
-    "marketWatch.savedFilter": "已收藏",
+    "marketWatch.savedFilter": "我的收藏",
     "marketWatch.allListings": "全部",
     "marketWatch.extraImages": "更多图片",
     "marketWatch.itemSpecifics": "物品详情",
