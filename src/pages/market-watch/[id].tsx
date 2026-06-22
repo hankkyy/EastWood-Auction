@@ -35,6 +35,7 @@ import {
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
+import { sanitizeHtml } from "@/lib/sanitize";
 import {
   appMutedTextColor,
   appSurfaceBackground,
@@ -444,6 +445,18 @@ export default function MarketWatchDetailPage() {
                       {isAuction && <Badge size="sm" variant="filled" color="red">{locale === "zh" ? "拍卖" : "AUCTION"}</Badge>}
                       {isFixedPrice && <Badge size="sm" variant="filled" color="green">{locale === "zh" ? "直购" : "BUY NOW"}</Badge>}
                       {isBestOffer && <Badge size="sm" variant="filled" color="orange">{locale === "zh" ? "议价" : "OFFER"}</Badge>}
+                      {(() => {
+                        const discovered = new Date(listing.discovered_at).getTime();
+                        const hoursAgo = (Date.now() - discovered) / 3600000;
+                        if (hoursAgo <= 24) {
+                          return (
+                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "#c4a255", color: "#fff" }}>
+                              {locale === "zh" ? "新发现" : "NEW"}
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })()}
                     </Group>
                   </Box>
                 </Box>
@@ -808,7 +821,7 @@ export default function MarketWatchDetailPage() {
                           "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
                           "& a": { color: "#c4a255" },
                         })}
-                        dangerouslySetInnerHTML={{ __html: listing.description }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(listing.description) }}
                       />
                     ) : (
                       <Text size="sm" sx={(theme) => ({ color: appTextColor(theme), lineHeight: 1.6 })}>

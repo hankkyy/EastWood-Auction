@@ -262,7 +262,7 @@ export default async function handler(
     // Update artwork
     const { error: updateError } = await supabase
       .from("artworks")
-      .update({ three_d_model: threeDModel } as any)
+      .update({ three_d_model: threeDModel })
       .eq("id", artworkId);
 
     if (updateError) {

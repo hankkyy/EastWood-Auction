@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import {
-  uploadDataUrlToStorage,
-} from "@/features/image-search/storageUpload";
+import { uploadDataUrlToStorage } from "@/features/image-search/storageUpload";
 import { VISUAL_SEARCH_QUERY_PREFIX } from "@/features/image-search/visualSearchShared";
 import { isSupabaseConfigured } from "@/features/image-search/artworkCloud";
+import { verifySupabaseUser } from "@/lib/supabase/auth";
 
 export const config = {
   api: {
@@ -33,6 +32,11 @@ export default async function handler(
     return res.status(503).json({
       error: "Supabase is not configured. Cloud persistence is required.",
     });
+  }
+
+  const auth = await verifySupabaseUser(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
 
   const imageDataUrl =

@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       platform: platform?.trim() || "ios",
       app_version: appVersion?.trim() || null,
       last_seen_at: new Date().toISOString(),
-    } as any,
+    },
     {
       onConflict: "token",
     }

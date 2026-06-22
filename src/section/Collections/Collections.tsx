@@ -486,7 +486,6 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     onSuccess={() => {
                       // ✅ 保存成功后自动关闭上传表单
                       setShowUploadForm(false);
-                      console.log('[Collections] Upload form closed after success');
                     }}
                     onCancel={async () => {
                       setShowUploadForm(false);

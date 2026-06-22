@@ -20,6 +20,7 @@ import {
   Title,
   Badge,
   SegmentedControl,
+  Switch,
   ActionIcon,
   Tooltip,
 } from "@mantine/core";
@@ -28,6 +29,7 @@ import { IconHeart, IconHeartFilled, IconArrowBack, IconSearchOff } from "@table
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase/client";
 import { appMutedTextColor, appSurfaceBackground, appSurfaceBorder, appTextColor } from "@/components/artworkStyles";
 
 interface Listing {
@@ -107,6 +109,7 @@ export default function MarketWatchPage() {
 
   const [jumpValue, setJumpValue] = useState<number | ''>('');
   const gridRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (gridRef.current) {
@@ -126,6 +129,7 @@ export default function MarketWatchPage() {
   const [endingSoonFilter, setEndingSoonFilter] = useState("");
   const [returnsFilter, setReturnsFilter] = useState("");
   const [minFeedbackFilter, setMinFeedbackFilter] = useState("");
+  const [newOnly, setNewOnly] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
 
   const hasActiveFilters = !!(search || minPrice || maxPrice || locationFilter || conditionFilter || buyingOptionFilter || endingSoonFilter || returnsFilter || minFeedbackFilter);
@@ -145,6 +149,13 @@ export default function MarketWatchPage() {
   };
 
   const fetchListings = useCallback(async () => {
+    // Cancel previous in-flight request
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     const params = new URLSearchParams();
     params.set("page", String(page));
@@ -165,7 +176,6 @@ export default function MarketWatchPage() {
     const headers: Record<string, string> = {};
     if (user) {
       try {
-        const { supabase } = await import("@/lib/supabase/client");
         const { data: session } = await supabase.auth.getSession();
         if (session.session?.access_token) {
           headers["Authorization"] = `Bearer ${session.session.access_token}`;
@@ -178,12 +188,20 @@ export default function MarketWatchPage() {
       params.set("with_saved", "true");
     }
 
-    const res = await fetch(`/api/external/listings?${params}`, { headers });
-    if (!res.ok) return setLoading(false);
-    const data: ListingsResponse = await res.json();
-    setListings(data.listings);
-    setTotal(data.total);
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/external/listings?${params}`, { headers, signal: controller.signal });
+      if (!res.ok) return setLoading(false);
+      const data: ListingsResponse = await res.json();
+      setListings(data.listings);
+      setTotal(data.total);
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        console.error("Failed to fetch listings:", err);
+        setLoading(false);
+      }
+    } finally {
+      setLoading(false);
+    }
   }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, conditionFilter, buyingOptionFilter, endingSoonFilter, returnsFilter, minFeedbackFilter, savedOnly, user]);
 
   useEffect(() => {
@@ -204,7 +222,6 @@ export default function MarketWatchPage() {
     );
 
     try {
-      const { supabase } = await import("@/lib/supabase/client");
       const { data: session } = await supabase.auth.getSession();
       const token = session.session?.access_token;
       if (!token) return;
@@ -316,18 +333,32 @@ export default function MarketWatchPage() {
               )}
             </Box>
 
-            {/* All / Saved toggle */}
-            {user && (
-              <SegmentedControl
-                value={savedOnly ? "saved" : "all"}
-                onChange={(v) => { setSavedOnly(v === "saved"); setPage(1); }}
+            {/* All / Saved / New toggle */}
+            <Group spacing="sm">
+              {user && (
+                <SegmentedControl
+                  value={savedOnly ? "saved" : "all"}
+                  onChange={(v) => { setSavedOnly(v === "saved"); setPage(1); }}
+                  size="sm"
+                  data={[
+                    { value: "all", label: t("marketWatch.allListings") },
+                    { value: "saved", label: `❤️ ${t("marketWatch.savedFilter")}` },
+                  ]}
+                />
+              )}
+              <Switch
                 size="sm"
-                data={[
-                  { value: "all", label: t("marketWatch.allListings") },
-                  { value: "saved", label: `❤️ ${t("marketWatch.savedFilter")}` },
-                ]}
+                label={locale === "zh" ? "只看新发现" : "New only"}
+                checked={newOnly}
+                onChange={(e) => { setNewOnly(e.currentTarget.checked); setPage(1); }}
+                styles={(theme) => ({
+                  label: {
+                    color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                    fontSize: 13,
+                  },
+                })}
               />
-            )}
+            </Group>
 
             {/* Filters — Row 1: key filters */}
             <Group spacing="sm" noWrap={!isMobile}>
@@ -639,10 +670,23 @@ export default function MarketWatchPage() {
                             </Badge>
                           )}
                           {item.watch_count != null && item.watch_count > 0 && (
-                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "rgba(139,119,101,0.55)", color: "#fff" }}>
                               👁 {item.watch_count}
                             </Badge>
                           )}
+                          {/* NEW badge: discovered within 24 hours */}
+                          {(() => {
+                            const discovered = new Date(item.discovered_at).getTime();
+                            const hoursAgo = (Date.now() - discovered) / 3600000;
+                            if (hoursAgo <= 24) {
+                              return (
+                                <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "#c4a255", color: "#fff" }}>
+                                  {locale === "zh" ? "新发现" : "NEW"}
+                                </Badge>
+                              );
+                            }
+                            return null;
+                          })()}
                         </Group>
                         {/* Save button */}
                         <Tooltip
@@ -690,7 +734,7 @@ export default function MarketWatchPage() {
                                 size="xs" variant="filled"
                                 sx={{
                                   position: "absolute", bottom: 8, left: 8,
-                                  backgroundColor: "rgba(0,0,0,0.55)", color: "#fff",
+                                  backgroundColor: "rgba(139,119,101,0.6)", color: "#fff",
                                   fontWeight: 400, fontSize: 11,
                                 }}
                               >

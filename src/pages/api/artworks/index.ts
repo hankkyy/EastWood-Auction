@@ -172,7 +172,7 @@ export default async function handler(
 
       const { data, error } = await supabase
         .from(TABLE_NAME)
-        .insert(row as any)
+        .insert(row)
         .select("*")
         .single();
 

@@ -46,7 +46,7 @@ const canMutateArtwork = async (
     return false;
   }
 
-  return (data as any).uploaded_by === userId;
+  return data.uploaded_by === userId;
 };
 
 const parseDataUrl = (value: string) => {
@@ -194,7 +194,7 @@ export default async function handler(
         galleryImages: uploadedImages.galleryImages,
       });
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE_NAME)
         .update(row)
         .eq("id", id)
