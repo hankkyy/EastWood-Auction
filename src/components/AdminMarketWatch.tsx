@@ -62,6 +62,39 @@ export default function AdminMarketWatch() {
     { value: "AUCTION", label: locale === "zh" ? "拍卖" : "Auction" },
     { value: "FIXED_PRICE", label: locale === "zh" ? "一口价" : "Buy It Now" },
   ], [locale]);
+
+  const countryOptions = useMemo(() => [
+    { value: "US", label: "🇺🇸 United States" },
+    { value: "CN", label: "🇨🇳 China" },
+    { value: "JP", label: "🇯🇵 Japan" },
+    { value: "HK", label: "🇭🇰 Hong Kong" },
+    { value: "GB", label: "🇬🇧 United Kingdom" },
+    { value: "FR", label: "🇫🇷 France" },
+    { value: "DE", label: "🇩🇪 Germany" },
+    { value: "IT", label: "🇮🇹 Italy" },
+    { value: "CA", label: "🇨🇦 Canada" },
+    { value: "AU", label: "🇦🇺 Australia" },
+    { value: "KR", label: "🇰🇷 South Korea" },
+    { value: "TW", label: "🇹🇼 Taiwan" },
+  ], []);
+
+  const regionOptions = useMemo(() => [
+    { value: "CA", label: "California" },
+    { value: "NY", label: "New York" },
+    { value: "TX", label: "Texas" },
+    { value: "FL", label: "Florida" },
+    { value: "IL", label: "Illinois" },
+    { value: "PA", label: "Pennsylvania" },
+    { value: "OH", label: "Ohio" },
+    { value: "GA", label: "Georgia" },
+    { value: "NC", label: "North Carolina" },
+    { value: "MI", label: "Michigan" },
+    { value: "NJ", label: "New Jersey" },
+    { value: "VA", label: "Virginia" },
+    { value: "WA", label: "Washington" },
+    { value: "MA", label: "Massachusetts" },
+    { value: "AZ", label: "Arizona" },
+  ], []);
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncMsg, setSyncMsg] = useState("");
@@ -78,8 +111,8 @@ export default function AdminMarketWatch() {
   const [formConditions, setFormConditions] = useState<string[]>([]);
   const [formListingTypes, setFormListingTypes] = useState<string[]>([]);
   const [formReturnsAccepted, setFormReturnsAccepted] = useState(false);
-  const [formItemLocationCountries, setFormItemLocationCountries] = useState("");
-  const [formItemLocationRegions, setFormItemLocationRegions] = useState("");
+  const [formItemLocationCountries, setFormItemLocationCountries] = useState<string[]>([]);
+  const [formItemLocationRegions, setFormItemLocationRegions] = useState<string[]>([]);
   const [formMinFeedbackScore, setFormMinFeedbackScore] = useState<number | "">("");
   const [formExcludeSellers, setFormExcludeSellers] = useState("");
 
@@ -132,8 +165,8 @@ export default function AdminMarketWatch() {
     setFormConditions([]);
     setFormListingTypes([]);
     setFormReturnsAccepted(false);
-    setFormItemLocationCountries("");
-    setFormItemLocationRegions("");
+    setFormItemLocationCountries([]);
+    setFormItemLocationRegions([]);
     setFormMinFeedbackScore("");
     setFormExcludeSellers("");
     setModalOpen(true);
@@ -149,8 +182,8 @@ export default function AdminMarketWatch() {
   setFormConditions(rule.conditions || []);
   setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
   setFormReturnsAccepted(rule.returns_accepted_only || false);
-  setFormItemLocationCountries((rule.item_location_countries || []).join(", "));
-  setFormItemLocationRegions((rule.item_location_regions || []).join(", "));
+  setFormItemLocationCountries(rule.item_location_countries || []);
+  setFormItemLocationRegions(rule.item_location_regions || []);
   setFormMinFeedbackScore(rule.min_feedback_score ?? "");
   setFormExcludeSellers((rule.exclude_sellers || []).join(", "));
   setModalOpen(true);
@@ -171,12 +204,8 @@ export default function AdminMarketWatch() {
       conditions: formConditions,
       listing_types: formListingTypes,
       returns_accepted_only: formReturnsAccepted,
-      item_location_countries: formItemLocationCountries
-        ? formItemLocationCountries.split(",").map((c) => c.trim().toUpperCase()).filter(Boolean)
-        : [],
-      item_location_regions: formItemLocationRegions
-        ? formItemLocationRegions.split(",").map((r) => r.trim().toUpperCase()).filter(Boolean)
-        : [],
+      item_location_countries: formItemLocationCountries,
+      item_location_regions: formItemLocationRegions,
       min_feedback_score: formMinFeedbackScore === "" ? null : Number(formMinFeedbackScore),
       exclude_sellers: formExcludeSellers
         ? formExcludeSellers.split(",").map((s) => s.trim()).filter(Boolean)
@@ -447,26 +476,28 @@ export default function AdminMarketWatch() {
               },
             })}
           />
-          <TextInput
-            label={locale === "zh" ? "物品所在地国家（逗号分隔，如 US,CN,JP）" : "Item Location Countries (comma-separated, e.g. US,CN,JP)"}
+          <MultiSelect
+            label={locale === "zh" ? "物品所在地国家" : "Item Location Countries"}
+            data={countryOptions}
             value={formItemLocationCountries}
-            onChange={(e) => setFormItemLocationCountries(e.currentTarget.value)}
-            placeholder="US,CN"
+            onChange={setFormItemLocationCountries}
+            placeholder={locale === "zh" ? "选择国家..." : "Select countries..."}
+            clearable
+            searchable
             styles={(theme) => ({
-              label: {
-                color: appFieldLabelColor(theme),
-              },
+              label: { color: appFieldLabelColor(theme) },
             })}
           />
-          <TextInput
-            label={locale === "zh" ? "物品所在地州/省（逗号分隔，如 CA,NY,TX）" : "Item Location States (comma-separated, e.g. CA,NY,TX)"}
+          <MultiSelect
+            label={locale === "zh" ? "物品所在地州/省" : "Item Location States"}
+            data={regionOptions}
             value={formItemLocationRegions}
-            onChange={(e) => setFormItemLocationRegions(e.currentTarget.value)}
-            placeholder="CA,NY"
+            onChange={setFormItemLocationRegions}
+            placeholder={locale === "zh" ? "选择州/省..." : "Select states..."}
+            clearable
+            searchable
             styles={(theme) => ({
-              label: {
-                color: appFieldLabelColor(theme),
-              },
+              label: { color: appFieldLabelColor(theme) },
             })}
           />
           <NumberInput
