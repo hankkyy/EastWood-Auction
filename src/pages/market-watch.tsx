@@ -468,12 +468,22 @@ export default function MarketWatchPage() {
                     { value: "false", label: locale === "zh" ? "❌ 不可退" : "❌ No" },
                   ]}
                 />
-                <TextInput
-                  placeholder={locale === "zh" ? "卖家信誉≥" : "Rating ≥"}
+                <Select
+                  placeholder={locale === "zh" ? "卖家信誉" : "Rating"}
                   value={minFeedbackFilter}
-                  onChange={(e) => { setMinFeedbackFilter(e.currentTarget.value); setPage(1); }}
+                  onChange={(v) => { setMinFeedbackFilter(v || ""); setPage(1); }}
                   size="sm"
-                  style={{ width: 100 }}
+                  style={{ width: 130 }}
+                  clearable
+                  data={[
+                    { value: "", label: locale === "zh" ? "全部信誉" : "Any rating" },
+                    { value: "10", label: locale === "zh" ? "★ 10+" : "★ 10+" },
+                    { value: "50", label: locale === "zh" ? "★ 50+" : "★ 50+" },
+                    { value: "100", label: locale === "zh" ? "★ 100+" : "★ 100+" },
+                    { value: "500", label: locale === "zh" ? "★ 500+" : "★ 500+" },
+                    { value: "1000", label: locale === "zh" ? "★ 1000+" : "★ 1000+" },
+                    { value: "5000", label: locale === "zh" ? "★ 5000+" : "★ 5000+" },
+                  ]}
                 />
                 {hasActiveFilters && (
                   <Button
