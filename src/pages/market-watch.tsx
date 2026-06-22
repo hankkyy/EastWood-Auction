@@ -202,9 +202,8 @@ export default function MarketWatchPage() {
                     return (
                   <Anchor
                     key={item.id}
-                    href={item.listing_url}
-                    target="_blank"
-                    rel="noopener"
+                    component={Link}
+                    href={`/market-watch/${item.id}`}
                     underline={false}
                     sx={(theme) => ({
                       display: "block",

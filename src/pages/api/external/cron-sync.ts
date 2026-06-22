@@ -141,6 +141,16 @@ export default async function handler(
                   bid_count: detail.bidCount ?? null,
                   reserve_price_met: detail.reservePriceMet ?? null,
                   short_description: detail.shortDescription || null,
+                  description: detail.description || null,
+                  extra_images: detail.additionalImages?.map((img) => ({
+                    url: img.imageUrl,
+                    width: img.width,
+                    height: img.height,
+                  })) || [],
+                  item_specifics: detail.localizedAspects || [],
+                  feedback_pct: detail.seller?.feedbackPercentage || null,
+                  estimated_sold: detail.estimatedAvailabilities?.[0]
+                    ?.estimatedSoldQuantity ?? null,
                 })
                 .eq("source", "ebay")
                 .eq("external_id", item.itemId);
