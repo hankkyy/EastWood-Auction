@@ -794,10 +794,12 @@ export default function MarketWatchPage() {
                             >
                               ⏰ {endInfo.text}
                             </Text>
-                            {item.ends_at && item.item_creation_date && (
+                            {item.ends_at && (
                               <Progress
                                 value={(() => {
-                                  const start = new Date(item.item_creation_date).getTime();
+                                  const startDate = item.item_creation_date || item.discovered_at;
+                                  if (!startDate) return 0;
+                                  const start = new Date(startDate).getTime();
                                   const end = new Date(item.ends_at).getTime();
                                   const now = Date.now();
                                   if (end <= start) return 100;

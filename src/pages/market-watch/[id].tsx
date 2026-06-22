@@ -17,6 +17,7 @@ import {
   Title,
   Tooltip,
   ActionIcon,
+  Progress,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import {
@@ -755,6 +756,24 @@ export default function MarketWatchDetailPage() {
                         <Text size="lg" weight={600} sx={(theme) => ({ color: endInfo.urgent ? theme.colors.red[6] : appTextColor(theme) })}>
                           {endInfo.text}
                         </Text>
+                        {listing.ends_at && (
+                          <Progress
+                            value={(() => {
+                              const startDate = listing.item_creation_date || listing.discovered_at;
+                              if (!startDate) return 0;
+                              const start = new Date(startDate).getTime();
+                              const end = new Date(listing.ends_at).getTime();
+                              const now = Date.now();
+                              if (end <= start) return 100;
+                              const pct = ((now - start) / (end - start)) * 100;
+                              return Math.min(100, Math.max(0, pct));
+                            })()}
+                            size="xs"
+                            color={endInfo.urgent ? "red" : "yellow"}
+                            mt={4}
+                            sx={{ maxWidth: 100 }}
+                          />
+                        )}
                       </Box>
                     )}
                   </Group>
