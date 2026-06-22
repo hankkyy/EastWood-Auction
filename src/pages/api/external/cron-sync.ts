@@ -149,7 +149,7 @@ export default async function handler(
           // Get the listing ID for price history and enrichment
           const { data: listing } = await supabase
             .from("external_listings")
-            .select("id, price, current_bid, description")
+            .select("id, price, current_bid, description, return_terms, shipping_options, item_specifics")
             .eq("source", "ebay")
             .eq("external_id", item.itemId)
             .single();
@@ -188,10 +188,13 @@ export default async function handler(
 
           // Enrich listings with eBay item detail (bid count, description, specifics, etc.)
           // - AUCTION items: always enrich (to get fresh bid data)
-          // - FIXED_PRICE items: enrich once (check if description is missing)
+          // - FIXED_PRICE items: enrich if any key field is missing
           const needsEnrichment =
             item.buyingOptions?.includes("AUCTION") ||
-            !listing?.description;
+            !listing?.description ||
+            !listing?.return_terms ||
+            ((listing?.shipping_options as any[]) || []).length === 0 ||
+            ((listing?.item_specifics as any[]) || []).length === 0;
 
           if (needsEnrichment) {
             try {
