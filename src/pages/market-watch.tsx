@@ -4,12 +4,16 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Anchor,
   Box,
+  Button,
+  Center,
   Container,
   Group,
   NumberInput,
   Pagination,
+  Progress,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   TextInput,
@@ -20,7 +24,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { IconHeart, IconHeartFilled, IconArrowBack, IconSearchOff } from "@tabler/icons-react";
 import { Wrapper } from "@/layout";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,9 +47,13 @@ interface Listing {
   location: string | null;
   discovered_at: string;
   ends_at: string | null;
+  item_creation_date?: string | null;
   matched_keywords: string[];
   buying_options: string[];
   short_description?: string;
+  watch_count?: number | null;
+  estimated_sold?: number | null;
+  return_terms?: any;
   is_saved?: boolean;
 }
 
@@ -65,24 +73,32 @@ const formatPrice = (price: number | null, currency: string) => {
     : `$${a.toLocaleString()}`;
 };
 
-const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean } => {
-  if (!endsAt) return { text: "", urgent: false };
+const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean; progress: number } => {
+  if (!endsAt) return { text: "", urgent: false, progress: 0 };
   const end = new Date(endsAt);
   const now = new Date();
   const diffMs = end.getTime() - now.getTime();
-  if (diffMs <= 0) return { text: "Ended", urgent: true };
+  if (diffMs <= 0) return { text: "Ended", urgent: true, progress: 100 };
   const diffH = Math.floor(diffMs / 3600000);
   const diffM = Math.floor((diffMs % 3600000) / 60000);
   const diffD = Math.floor(diffH / 24);
-  if (diffD > 0) return { text: `Ends in ${diffD}d ${diffH % 24}h`, urgent: diffD <= 1 };
-  if (diffH > 0) return { text: `Ends in ${diffH}h ${diffM}m`, urgent: diffH <= 3 };
-  return { text: `Ends in ${diffM}m`, urgent: true };
+
+  // Calculate progress: how much of the listing duration has elapsed
+  // If we have creation date, use it; otherwise estimate based on end date
+  let text = "";
+  if (diffD > 0) text = `Ends in ${diffD}d ${diffH % 24}h`;
+  else if (diffH > 0) text = `Ends in ${diffH}h ${diffM}m`;
+  else text = `Ends in ${diffM}m`;
+  const urgent = diffD <= 1;
+
+  return { text, urgent, progress: 0 };
 };
 
 export default function MarketWatchPage() {
   const { t, locale } = useI18n();
   const { user } = useAuth();
   const isMobile = useMediaQuery("(max-width: 600px)");
+  const isTablet = useMediaQuery("(max-width: 960px)");
   const [listings, setListings] = useState<Listing[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -107,6 +123,26 @@ export default function MarketWatchPage() {
   const [regionFilter, setRegionFilter] = useState("");
   const [conditionFilter, setConditionFilter] = useState("");
   const [buyingOptionFilter, setBuyingOptionFilter] = useState("");
+  const [endingSoonFilter, setEndingSoonFilter] = useState("");
+  const [returnsFilter, setReturnsFilter] = useState("");
+  const [minFeedbackFilter, setMinFeedbackFilter] = useState("");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+
+  const hasActiveFilters = !!(search || minPrice || maxPrice || locationFilter || conditionFilter || buyingOptionFilter || endingSoonFilter || returnsFilter || minFeedbackFilter);
+
+  const clearFilters = () => {
+    setSearch("");
+    setMinPrice("");
+    setMaxPrice("");
+    setLocationFilter("");
+    setRegionFilter("");
+    setConditionFilter("");
+    setBuyingOptionFilter("");
+    setEndingSoonFilter("");
+    setReturnsFilter("");
+    setMinFeedbackFilter("");
+    setPage(1);
+  };
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -118,9 +154,12 @@ export default function MarketWatchPage() {
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
     if (locationFilter) params.set("location", locationFilter);
-    if (regionFilter) params.set("location_region", regionFilter);
+    if (locationFilter === "United States" && regionFilter) params.set("location_region", regionFilter);
     if (conditionFilter) params.set("condition", conditionFilter);
     if (buyingOptionFilter) params.set("buying_option", buyingOptionFilter);
+    if (endingSoonFilter) params.set("ending_soon", endingSoonFilter);
+    if (returnsFilter) params.set("returns_accepted", returnsFilter);
+    if (minFeedbackFilter) params.set("min_seller_rating", minFeedbackFilter);
 
     // Auth + saved filter
     const headers: Record<string, string> = {};
@@ -145,7 +184,7 @@ export default function MarketWatchPage() {
     setListings(data.listings);
     setTotal(data.total);
     setLoading(false);
-  }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, conditionFilter, buyingOptionFilter, savedOnly, user]);
+  }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, conditionFilter, buyingOptionFilter, endingSoonFilter, returnsFilter, minFeedbackFilter, savedOnly, user]);
 
   useEffect(() => {
     fetchListings();
@@ -182,6 +221,21 @@ export default function MarketWatchPage() {
       });
     } catch (_) {}
   };
+
+  // Skeleton cards for loading state
+  const skeletonCards = Array.from({ length: 6 }, (_, i) => (
+    <Box key={i} sx={{ borderRadius: 12, overflow: "hidden" }}>
+      <Skeleton height={220} radius={0} />
+      <Box p="sm">
+        <Skeleton height={18} mb={8} />
+        <Skeleton height={14} width="60%" mb={12} />
+        <Group position="apart">
+          <Skeleton height={20} width={80} />
+          <Skeleton height={16} width={50} />
+        </Group>
+      </Box>
+    </Box>
+  ));
 
   return (
     <>
@@ -226,9 +280,32 @@ export default function MarketWatchPage() {
               </Text>
               {locale === "zh" && (
                 <Box mt={12}>
-                  <div id="google_translate_element" />
-                  <Text size="xs" color="dimmed" mt={4}>
-                    点击上方下拉菜单选择「English」即可恢复原文
+                  <Group spacing="sm" align="center">
+                    <div id="google_translate_element" />
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      leftIcon={<IconArrowBack size={14} />}
+                      onClick={() => {
+                        document.cookie = "googtrans=/en/en;path=/;max-age=0";
+                        document.cookie = "googtrans=/en/en;path=/";
+                        window.location.reload();
+                      }}
+                      sx={(theme) => ({
+                        borderColor: theme.colorScheme === "dark"
+                          ? "rgba(196,162,85,0.3)"
+                          : "rgba(180,158,120,0.3)",
+                        color: theme.colorScheme === "dark"
+                          ? theme.colors.dark[9]
+                          : theme.colors.dark[0],
+                        "&:hover": { borderColor: "#c4a255", color: "#c4a255" },
+                      })}
+                    >
+                      恢复原文
+                    </Button>
+                  </Group>
+                  <Text size="xs" color="dimmed" mt={6}>
+                    点击下拉菜单选择翻译语言，或点击「恢复原文」按钮取消翻译
                   </Text>
                 </Box>
               )}
@@ -247,7 +324,7 @@ export default function MarketWatchPage() {
               />
             )}
 
-            {/* Filters */}
+            {/* Filters — Row 1: key filters */}
             <Group spacing="sm" noWrap={!isMobile}>
               <TextInput
                 placeholder={locale === "zh" ? "搜索..." : "Search..."}
@@ -270,55 +347,6 @@ export default function MarketWatchPage() {
                 size="sm"
                 style={{ width: 100 }}
               />
-              <Select
-                placeholder={locale === "zh" ? "地区" : "Location"}
-                value={locationFilter}
-                onChange={(v) => { setLocationFilter(v || ""); setRegionFilter(""); setPage(1); }}
-                size="sm"
-                style={{ width: 130 }}
-                clearable
-                data={[
-                  { value: "", label: locale === "zh" ? "全部地区" : "All Locations" },
-                  { value: "United States", label: "🇺🇸 United States" },
-                  { value: "China", label: "🇨🇳 China" },
-                  { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
-                  { value: "Japan", label: "🇯🇵 Japan" },
-                  { value: "United Kingdom", label: "🇬🇧 United Kingdom" },
-                  { value: "Canada", label: "🇨🇦 Canada" },
-                  { value: "Australia", label: "🇦🇺 Australia" },
-                  { value: "France", label: "🇫🇷 France" },
-                  { value: "Germany", label: "🇩🇪 Germany" },
-                  { value: "Italy", label: "🇮🇹 Italy" },
-                ]}
-              />
-              {locationFilter === "United States" && (
-                <Select
-                  placeholder={locale === "zh" ? "州" : "State"}
-                  value={regionFilter}
-                  onChange={(v) => { setRegionFilter(v || ""); setPage(1); }}
-                  size="sm"
-                  style={{ width: 120 }}
-                  clearable
-                  data={[
-                    { value: "", label: locale === "zh" ? "全部州" : "All States" },
-                    { value: "CA", label: "California" },
-                    { value: "NY", label: "New York" },
-                    { value: "TX", label: "Texas" },
-                    { value: "FL", label: "Florida" },
-                    { value: "IL", label: "Illinois" },
-                    { value: "PA", label: "Pennsylvania" },
-                    { value: "OH", label: "Ohio" },
-                    { value: "GA", label: "Georgia" },
-                    { value: "NC", label: "North Carolina" },
-                    { value: "MI", label: "Michigan" },
-                    { value: "NJ", label: "New Jersey" },
-                    { value: "VA", label: "Virginia" },
-                    { value: "WA", label: "Washington" },
-                    { value: "MA", label: "Massachusetts" },
-                    { value: "AZ", label: "Arizona" },
-                  ]}
-                />
-              )}
               <Select
                 placeholder={locale === "zh" ? "品相" : "Condition"}
                 value={conditionFilter}
@@ -345,6 +373,7 @@ export default function MarketWatchPage() {
                   { value: "", label: locale === "zh" ? "全部类型" : "All" },
                   { value: "AUCTION", label: locale === "zh" ? "拍卖" : "Auction" },
                   { value: "FIXED_PRICE", label: locale === "zh" ? "直购" : "Buy Now" },
+                  { value: "BEST_OFFER", label: locale === "zh" ? "议价" : "Best Offer" },
                 ]}
               />
               <Select
@@ -360,15 +389,166 @@ export default function MarketWatchPage() {
               />
             </Group>
 
+            {/* Filters — Row 2: advanced (collapsible on mobile) */}
+            {(!isTablet || showMoreFilters) && (
+              <Group spacing="sm" noWrap={!isMobile}>
+                <Select
+                  placeholder={locale === "zh" ? "地区" : "Location"}
+                  value={locationFilter}
+                  onChange={(v) => { setLocationFilter(v || ""); setRegionFilter(""); setPage(1); }}
+                  size="sm"
+                  style={{ width: 140 }}
+                  clearable
+                  data={[
+                    { value: "", label: locale === "zh" ? "全部地区" : "All" },
+                    { value: "United States", label: "🇺🇸 US" },
+                    { value: "China", label: "🇨🇳 China" },
+                    { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
+                    { value: "Japan", label: "🇯🇵 Japan" },
+                    { value: "United Kingdom", label: "🇬🇧 UK" },
+                    { value: "Canada", label: "🇨🇦 Canada" },
+                    { value: "Australia", label: "🇦🇺 Australia" },
+                    { value: "France", label: "🇫🇷 France" },
+                    { value: "Germany", label: "🇩🇪 Germany" },
+                    { value: "Italy", label: "🇮🇹 Italy" },
+                  ]}
+                />
+                {locationFilter === "United States" && (
+                  <Select
+                    placeholder={locale === "zh" ? "州" : "State"}
+                    value={regionFilter}
+                    onChange={(v) => { setRegionFilter(v || ""); setPage(1); }}
+                    size="sm"
+                    style={{ width: 120 }}
+                    clearable
+                    data={[
+                      { value: "", label: locale === "zh" ? "全部州" : "All" },
+                      { value: "CA", label: "California" },
+                      { value: "NY", label: "New York" },
+                      { value: "TX", label: "Texas" },
+                      { value: "FL", label: "Florida" },
+                      { value: "IL", label: "Illinois" },
+                      { value: "PA", label: "Pennsylvania" },
+                      { value: "OH", label: "Ohio" },
+                      { value: "GA", label: "Georgia" },
+                      { value: "NC", label: "North Carolina" },
+                      { value: "MI", label: "Michigan" },
+                      { value: "NJ", label: "New Jersey" },
+                      { value: "VA", label: "Virginia" },
+                      { value: "WA", label: "Washington" },
+                      { value: "MA", label: "Massachusetts" },
+                      { value: "AZ", label: "Arizona" },
+                    ]}
+                  />
+                )}
+                <Select
+                  placeholder={locale === "zh" ? "结束时间" : "Ending"}
+                  value={endingSoonFilter}
+                  onChange={(v) => { setEndingSoonFilter(v || ""); setPage(1); }}
+                  size="sm"
+                  style={{ width: 120 }}
+                  clearable
+                  data={[
+                    { value: "", label: locale === "zh" ? "全部时间" : "Any" },
+                    { value: "1h", label: locale === "zh" ? "1小时内" : "Within 1h" },
+                    { value: "24h", label: locale === "zh" ? "24小时内" : "Within 24h" },
+                    { value: "3d", label: locale === "zh" ? "3天内" : "Within 3d" },
+                  ]}
+                />
+                <Select
+                  placeholder={locale === "zh" ? "退货" : "Returns"}
+                  value={returnsFilter}
+                  onChange={(v) => { setReturnsFilter(v || ""); setPage(1); }}
+                  size="sm"
+                  style={{ width: 110 }}
+                  clearable
+                  data={[
+                    { value: "", label: locale === "zh" ? "全部" : "All" },
+                    { value: "true", label: locale === "zh" ? "✅ 可退" : "✅ Accepted" },
+                    { value: "false", label: locale === "zh" ? "❌ 不可退" : "❌ No" },
+                  ]}
+                />
+                <TextInput
+                  placeholder={locale === "zh" ? "卖家信誉≥" : "Rating ≥"}
+                  value={minFeedbackFilter}
+                  onChange={(e) => { setMinFeedbackFilter(e.currentTarget.value); setPage(1); }}
+                  size="sm"
+                  style={{ width: 100 }}
+                />
+                {hasActiveFilters && (
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    onClick={clearFilters}
+                    sx={(theme) => ({
+                      color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                      "&:hover": { color: "#c4a255" },
+                    })}
+                  >
+                    {locale === "zh" ? "清除筛选" : "Clear"}
+                  </Button>
+                )}
+              </Group>
+            )}
+
+            {/* Toggle more filters button (tablet/mobile) */}
+            {isTablet && (
+              <Button
+                variant="subtle"
+                size="xs"
+                onClick={() => setShowMoreFilters(!showMoreFilters)}
+                sx={(theme) => ({
+                  color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+                  alignSelf: "flex-start",
+                })}
+              >
+                {showMoreFilters
+                  ? (locale === "zh" ? "收起筛选 ▲" : "Less filters ▲")
+                  : (locale === "zh" ? "更多筛选 ▼" : "More filters ▼")}
+              </Button>
+            )}
+
             {/* Grid */}
             {loading ? (
-              <Text align="center" color="dimmed" py={60}>
-                {locale === "zh" ? "加载中..." : "Loading..."}
-              </Text>
+              <SimpleGrid
+                cols={3}
+                spacing="lg"
+                breakpoints={[
+                  { maxWidth: "md", cols: 2, spacing: "sm" },
+                  { maxWidth: "sm", cols: 1, spacing: "sm" },
+                ]}
+              >
+                {skeletonCards}
+              </SimpleGrid>
             ) : listings.length === 0 ? (
-              <Text align="center" color="dimmed" py={60}>
-                {locale === "zh" ? "暂无匹配结果。请先配置规则并同步。" : "No results yet. Configure rules and sync first."}
-              </Text>
+              <Center py={80}>
+                <Stack align="center" spacing="md">
+                  <IconSearchOff size={48} style={{ opacity: 0.3 }} />
+                  <Text size="lg" color="dimmed" align="center">
+                    {locale === "zh" ? "暂无匹配结果" : "No matching listings"}
+                  </Text>
+                  <Text size="sm" color="dimmed" align="center" maw={400}>
+                    {hasActiveFilters
+                      ? (locale === "zh"
+                        ? "尝试调整或清除筛选条件"
+                        : "Try adjusting or clearing your filters")
+                      : (locale === "zh"
+                        ? "请先在管理后台配置监控规则并执行同步"
+                        : "Configure monitoring rules in the admin panel and run a sync first")}
+                  </Text>
+                  {hasActiveFilters ? (
+                    <Button variant="subtle" onClick={clearFilters}>
+                      {locale === "zh" ? "清除所有筛选" : "Clear all filters"}
+                    </Button>
+                  ) : (
+                    user && (
+                      <Button component={Link} href="/admin" variant="subtle">
+                        {locale === "zh" ? "前往管理后台 →" : "Go to Admin →"}
+                      </Button>
+                    )
+                  )}
+                </Stack>
+              </Center>
             ) : (
               <Box ref={gridRef}>
               <SimpleGrid
@@ -383,45 +563,46 @@ export default function MarketWatchPage() {
                     const endInfo = formatEndsAt(item.ends_at);
                     const isAuction = item.buying_options?.includes("AUCTION");
                     const isFixedPrice = item.buying_options?.includes("FIXED_PRICE");
+                    const isBestOffer = item.buying_options?.includes("BEST_OFFER");
+                    const returnsAccepted = item.return_terms?.returnsAccepted;
                     return (
                   <Anchor
                     key={item.id}
                     component={Link}
                     href={`/market-watch/${item.id}`}
                     underline={false}
-                    sx={(theme) => ({
-                      display: "block",
-                      textDecoration: "none",
-                    })}
+                    sx={{ display: "block", textDecoration: "none" }}
                   >
                     <Box
                       sx={(theme) => ({
-                        background: appSurfaceBackground(theme),
-                        color: appTextColor(theme),
-                        border: `1px solid ${appSurfaceBorder(theme)}`,
-                        borderRadius: 2,
+                        background: "transparent",
+                        border: "1px solid transparent",
+                        borderRadius: isMobile ? 10 : 12,
                         overflow: "hidden",
-                        boxShadow: theme.colorScheme === "dark"
-                          ? "0 4px 14px rgba(0,0,0,0.18)"
-                          : "0 2px 4px rgba(0,0,0,0.04), 0 8px 16px rgba(0,0,0,0.04)",
-                        transition: "box-shadow 0.2s, transform 0.2s",
+                        boxShadow: "none",
+                        transition: "border-color 0.25s, transform 0.25s, box-shadow 0.25s",
                         "&:hover": {
+                          transform: "translateY(-4px)",
+                          borderColor: "rgba(196,162,85,0.25)",
                           boxShadow: theme.colorScheme === "dark"
-                            ? "0 10px 28px rgba(0,0,0,0.24)"
-                            : "0 4px 8px rgba(0,0,0,0.06), 0 16px 32px rgba(0,0,0,0.06)",
-                          transform: "translateY(-2px)",
+                            ? "0 8px 24px rgba(0,0,0,0.30)"
+                            : "0 4px 16px rgba(0,0,0,0.06), 0 12px 28px rgba(0,0,0,0.04)",
                         },
                       })}
                     >
                       {/* Image */}
                       <Box
-                        sx={{
+                        sx={(theme) => ({
                           height: 220,
                           background: item.images?.[0]
                             ? `url(${item.images[0].url}) center/cover`
-                            : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
+                            : theme.colorScheme === "dark"
+                              ? "linear-gradient(180deg, #2a2620, #1f1c17)"
+                              : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
+                          backgroundPosition: item.images?.[0] ? "center 15%" : undefined,
                           position: "relative",
-                        }}
+                          borderRadius: isMobile ? "10px 10px 0 0" : "12px 12px 0 0",
+                        })}
                       >
                         <Group spacing={6} sx={{ position: "absolute", top: 8, left: 8 }}>
                           <Badge size="sm" variant="filled" color="blue" sx={{ fontWeight: 400 }}>
@@ -435,6 +616,16 @@ export default function MarketWatchPage() {
                           {isFixedPrice && (
                             <Badge size="sm" variant="filled" color="green" sx={{ fontWeight: 400 }}>
                               {locale === "zh" ? "直购" : "BUY NOW"}
+                            </Badge>
+                          )}
+                          {isBestOffer && (
+                            <Badge size="sm" variant="filled" color="orange" sx={{ fontWeight: 400 }}>
+                              {locale === "zh" ? "议价" : "OFFER"}
+                            </Badge>
+                          )}
+                          {item.watch_count != null && item.watch_count > 0 && (
+                            <Badge size="sm" variant="filled" sx={{ fontWeight: 400, backgroundColor: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                              👁 {item.watch_count}
                             </Badge>
                           )}
                         </Group>
@@ -453,26 +644,26 @@ export default function MarketWatchPage() {
                               toggleSave(item.id, item.is_saved || false);
                             }}
                             disabled={!user}
-                            sx={{
+                            sx={(theme) => ({
                               position: "absolute",
                               top: 8,
                               right: 8,
                               backgroundColor: item.is_saved
                                 ? "rgba(231,76,60,0.85)"
-                                : "rgba(0,0,0,0.4)",
+                                : theme.colorScheme === "dark"
+                                  ? "rgba(255,255,255,0.15)"
+                                  : "rgba(0,0,0,0.4)",
                               color: "#fff",
                               "&:hover": {
                                 backgroundColor: item.is_saved
                                   ? "rgba(231,76,60,0.95)"
-                                  : "rgba(0,0,0,0.6)",
+                                  : theme.colorScheme === "dark"
+                                    ? "rgba(255,255,255,0.22)"
+                                    : "rgba(0,0,0,0.6)",
                               },
-                            }}
+                            })}
                           >
-                            {item.is_saved ? (
-                              <IconHeartFilled size={16} />
-                            ) : (
-                              <IconHeart size={16} />
-                            )}
+                            {item.is_saved ? <IconHeartFilled size={16} /> : <IconHeart size={16} />}
                           </ActionIcon>
                         </Tooltip>
                         {/* Image count badge */}
@@ -481,16 +672,11 @@ export default function MarketWatchPage() {
                           if (totalImgs > 1) {
                             return (
                               <Badge
-                                size="xs"
-                                variant="filled"
+                                size="xs" variant="filled"
                                 sx={{
-                                  position: "absolute",
-                                  bottom: 8,
-                                  left: 8,
-                                  backgroundColor: "rgba(0,0,0,0.55)",
-                                  color: "#fff",
-                                  fontWeight: 400,
-                                  fontSize: 11,
+                                  position: "absolute", bottom: 8, left: 8,
+                                  backgroundColor: "rgba(0,0,0,0.55)", color: "#fff",
+                                  fontWeight: 400, fontSize: 11,
                                 }}
                               >
                                 📷 {totalImgs}
@@ -505,34 +691,24 @@ export default function MarketWatchPage() {
                       <Box p="sm">
                         {/* Title */}
                         <Text
-                          size="sm"
-                          weight={500}
-                          lineClamp={2}
+                          size="sm" weight={500} lineClamp={2}
                           sx={(theme) => ({
-                            fontFamily: "inherit",
-                            lineHeight: 1.35,
-                            minHeight: 36,
-                            color: appTextColor(theme),
+                            fontFamily: "inherit", lineHeight: 1.35,
+                            minHeight: 36, color: appTextColor(theme),
                           })}
                         >
                           {item.title}
                         </Text>
 
-                        {/* Matched keywords — WHY this item matched */}
+                        {/* Matched keywords */}
                         {item.matched_keywords?.length > 0 && (
                           <Group spacing={4} mt={6}>
                             {item.matched_keywords.map((kw) => (
-                              <Badge
-                                key={kw}
-                                size="xs"
-                                variant="light"
+                              <Badge key={kw} size="xs" variant="light"
                                 sx={(theme) => ({
                                   backgroundColor: theme.colorScheme === "dark"
-                                    ? "rgba(196,162,85,0.15)"
-                                    : "rgba(196,162,85,0.12)",
-                                  color: "#c4a255",
-                                  fontWeight: 400,
-                                  textTransform: "none",
+                                    ? "rgba(196,162,85,0.15)" : "rgba(196,162,85,0.12)",
+                                  color: "#c4a255", fontWeight: 400, textTransform: "none",
                                 })}
                               >
                                 {kw}
@@ -561,6 +737,11 @@ export default function MarketWatchPage() {
                                 {item.bid_count} {locale === "zh" ? "次出价" : "bids"}
                               </Badge>
                             )}
+                            {item.estimated_sold != null && item.estimated_sold > 0 && (
+                              <Badge size="xs" variant="light" color="violet.4">
+                                {item.estimated_sold} {locale === "zh" ? "已售" : "sold"}
+                              </Badge>
+                            )}
                             {item.condition && (
                               <Badge size="xs" variant="light" color="dark.3">
                                 {item.condition}
@@ -569,52 +750,67 @@ export default function MarketWatchPage() {
                           </Group>
                         </Group>
 
-                        {/* Auction reserve status */}
+                        {/* Reserve not met */}
                         {isAuction && item.reserve_price_met === false && (
                           <Text size="xs" mt={4} color="red">
                             {locale === "zh" ? "⚠️ 未达底价" : "⚠️ Reserve not met"}
                           </Text>
                         )}
 
-                        {/* Short description snippet */}
+                        {/* Short description */}
                         {item.short_description && (
-                          <Text
-                            size="xs"
-                            mt={4}
-                            lineClamp={2}
+                          <Text size="xs" mt={4} lineClamp={2}
                             sx={(theme) => ({
-                              color: appMutedTextColor(theme),
-                              fontStyle: "italic",
-                              lineHeight: 1.4,
+                              color: appMutedTextColor(theme), fontStyle: "italic", lineHeight: 1.4,
                             })}
                           >
                             {item.short_description}
                           </Text>
                         )}
 
-                        {/* Ends at countdown */}
+                        {/* Ends at countdown + progress bar */}
                         {endInfo.text && (
-                          <Text
-                            size="xs"
-                            mt={6}
-                            sx={(theme) => ({
-                              color: endInfo.urgent
-                                ? theme.colors.red[6]
-                                : appMutedTextColor(theme),
-                              fontWeight: endInfo.urgent ? 500 : 400,
-                            })}
-                          >
-                            ⏰ {endInfo.text}
-                          </Text>
+                          <Box mt={6}>
+                            <Text size="xs" mb={2}
+                              sx={(theme) => ({
+                                color: endInfo.urgent ? theme.colors.red[6] : appMutedTextColor(theme),
+                                fontWeight: endInfo.urgent ? 500 : 400,
+                              })}
+                            >
+                              ⏰ {endInfo.text}
+                            </Text>
+                            {item.ends_at && item.item_creation_date && (
+                              <Progress
+                                value={(() => {
+                                  const start = new Date(item.item_creation_date).getTime();
+                                  const end = new Date(item.ends_at).getTime();
+                                  const now = Date.now();
+                                  if (end <= start) return 100;
+                                  const pct = ((now - start) / (end - start)) * 100;
+                                  return Math.min(100, Math.max(0, pct));
+                                })()}
+                                size="xs"
+                                color={endInfo.urgent ? "red" : "yellow"}
+                                sx={{ maxWidth: 120 }}
+                              />
+                            )}
+                          </Box>
                         )}
 
-                        {/* Location + Seller row */}
+                        {/* Location + Seller + Returns */}
                         <Group position="apart" mt={4}>
-                          {item.location && (
-                            <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                              📍 {item.location}
-                            </Text>
-                          )}
+                          <Group spacing={6}>
+                            {item.location && (
+                              <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                                📍 {item.location}
+                              </Text>
+                            )}
+                            {returnsAccepted && (
+                              <Text size="xs" color="green">
+                                ✅ {locale === "zh" ? "可退" : "Returns"}
+                              </Text>
+                            )}
+                          </Group>
                           {item.seller && (
                             <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
                               {item.seller}
@@ -652,8 +848,7 @@ export default function MarketWatchPage() {
                   value={jumpValue}
                   onChange={setJumpValue}
                   placeholder={String(page)}
-                  min={1}
-                  max={Math.ceil(total / 15)}
+                  min={1} max={Math.ceil(total / 15)}
                   size="sm"
                   styles={{ input: { width: 60, textAlign: "center" } }}
                   onKeyDown={(e) => {

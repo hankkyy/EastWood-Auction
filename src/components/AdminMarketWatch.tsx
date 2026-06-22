@@ -8,12 +8,13 @@ import {
   TextInput,
   NumberInput,
   MultiSelect,
+  Select,
   Switch,
   Paper,
   Title,
   ActionIcon,
   Modal,
-  Divider,
+  Badge,
 } from "@mantine/core";
 import { IconPlus, IconEdit, IconTrash, IconRefresh } from "@tabler/icons-react";
 import { useI18n } from "@/i18n";
@@ -26,6 +27,7 @@ import {
   appTextColor,
 } from "@/components/artworkStyles";
 import { supabase } from "@/lib/supabase/client";
+import { EBAY_ANTIQUE_CATEGORIES } from "@/lib/ebay";
 
 interface Rule {
   id: string;
@@ -49,6 +51,16 @@ interface Rule {
 const conditionValues = ["NEW", "USED", "NEW_OTHER"] as const;
 const listingTypeValues = ["AUCTION", "FIXED_PRICE"] as const;
 
+// Reverse lookup: category name -> ID
+const categoryNameToId = Object.fromEntries(
+  Object.entries(EBAY_ANTIQUE_CATEGORIES).map(([name, id]) => [name, id])
+);
+
+// Map category ID back to name for display
+const categoryIdToName = Object.fromEntries(
+  Object.entries(EBAY_ANTIQUE_CATEGORIES).map(([name, id]) => [id, name])
+);
+
 export default function AdminMarketWatch() {
   const { t, locale } = useI18n();
 
@@ -56,12 +68,21 @@ export default function AdminMarketWatch() {
     { value: "NEW", label: locale === "zh" ? "全新" : "New" },
     { value: "USED", label: locale === "zh" ? "二手" : "Used" },
     { value: "NEW_OTHER", label: locale === "zh" ? "全新（其他）" : "New (Other)" },
+    { value: "SELLER_REFURBISHED", label: locale === "zh" ? "翻新" : "Refurbished" },
   ], [locale]);
 
   const listingTypeOptions = useMemo(() => [
     { value: "AUCTION", label: locale === "zh" ? "拍卖" : "Auction" },
     { value: "FIXED_PRICE", label: locale === "zh" ? "一口价" : "Buy It Now" },
+    { value: "BEST_OFFER", label: locale === "zh" ? "议价" : "Best Offer" },
   ], [locale]);
+
+  const categoryOptions = useMemo(() => [
+    ...Object.entries(EBAY_ANTIQUE_CATEGORIES).map(([name, id]) => ({
+      value: id,
+      label: `${name} (${id})`,
+    })),
+  ], []);
 
   const countryOptions = useMemo(() => [
     { value: "US", label: "🇺🇸 United States" },
@@ -95,6 +116,26 @@ export default function AdminMarketWatch() {
     { value: "MA", label: "Massachusetts" },
     { value: "AZ", label: "Arizona" },
   ], []);
+
+  // Labels for display
+  const conditionLabel = (c: string) => {
+    const map: Record<string, string> = {
+      NEW: locale === "zh" ? "全新" : "New",
+      USED: locale === "zh" ? "二手" : "Used",
+      NEW_OTHER: locale === "zh" ? "全新(其他)" : "New Other",
+      SELLER_REFURBISHED: locale === "zh" ? "翻新" : "Refurbished",
+    };
+    return map[c] || c;
+  };
+  const listingTypeLabel = (t: string) => {
+    const map: Record<string, string> = {
+      AUCTION: locale === "zh" ? "拍卖" : "Auction",
+      FIXED_PRICE: locale === "zh" ? "直购" : "Buy Now",
+      BEST_OFFER: locale === "zh" ? "议价" : "Best Offer",
+    };
+    return map[t] || t;
+  };
+
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncMsg, setSyncMsg] = useState("");
@@ -105,7 +146,7 @@ export default function AdminMarketWatch() {
   // Form state
   const [formName, setFormName] = useState("");
   const [formKeywords, setFormKeywords] = useState("");
-  const [formCategoryIds, setFormCategoryIds] = useState("");
+  const [formCategoryIds, setFormCategoryIds] = useState<string[]>([]);
   const [formPriceMin, setFormPriceMin] = useState<number | "">("");
   const [formPriceMax, setFormPriceMax] = useState<number | "">("");
   const [formConditions, setFormConditions] = useState<string[]>([]);
@@ -159,7 +200,7 @@ export default function AdminMarketWatch() {
     setEditingRule(null);
     setFormName("");
     setFormKeywords("");
-    setFormCategoryIds("");
+    setFormCategoryIds([]);
     setFormPriceMin("");
     setFormPriceMax("");
     setFormConditions([]);
@@ -173,20 +214,20 @@ export default function AdminMarketWatch() {
   };
 
   const openEdit = (rule: Rule) => {
-  setEditingRule(rule);
-  setFormName(rule.name);
-  setFormKeywords(rule.keywords.join(", "));
-  setFormCategoryIds(rule.category_ids?.join(", ") || "");
-  setFormPriceMin(rule.price_min ?? "");
-  setFormPriceMax(rule.price_max ?? "");
-  setFormConditions(rule.conditions || []);
-  setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
-  setFormReturnsAccepted(rule.returns_accepted_only || false);
-  setFormItemLocationCountries(rule.item_location_countries || []);
-  setFormItemLocationRegions(rule.item_location_regions || []);
-  setFormMinFeedbackScore(rule.min_feedback_score ?? "");
-  setFormExcludeSellers((rule.exclude_sellers || []).join(", "));
-  setModalOpen(true);
+    setEditingRule(rule);
+    setFormName(rule.name);
+    setFormKeywords(rule.keywords.join(", "));
+    setFormCategoryIds(rule.category_ids || []);
+    setFormPriceMin(rule.price_min ?? "");
+    setFormPriceMax(rule.price_max ?? "");
+    setFormConditions(rule.conditions || []);
+    setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
+    setFormReturnsAccepted(rule.returns_accepted_only || false);
+    setFormItemLocationCountries(rule.item_location_countries || []);
+    setFormItemLocationRegions(rule.item_location_regions || []);
+    setFormMinFeedbackScore(rule.min_feedback_score ?? "");
+    setFormExcludeSellers((rule.exclude_sellers || []).join(", "));
+    setModalOpen(true);
   };
 
   const saveRule = async () => {
@@ -196,9 +237,7 @@ export default function AdminMarketWatch() {
     const body = {
       name: formName,
       keywords,
-      category_ids: formCategoryIds
-        ? formCategoryIds.split(",").map((c) => c.trim()).filter(Boolean)
-        : [],
+      category_ids: formCategoryIds,
       price_min: formPriceMin === "" ? null : Number(formPriceMin),
       price_max: formPriceMax === "" ? null : Number(formPriceMax),
       conditions: formConditions,
@@ -353,15 +392,45 @@ export default function AdminMarketWatch() {
                       onChange={() => toggleRule(rule)}
                     />
                   </Group>
-                  <Text size="xs" color="dimmed">
+                  <Text size="xs" color="dimmed" mb={4}>
                     {rule.keywords.join(", ")}
-                    {rule.price_min && ` · $${rule.price_min}`}
-                    {rule.price_max && `-$${rule.price_max}`}
-                    {rule.returns_accepted_only && " · 可退货"}
-                    {rule.item_location_countries?.length > 0 && ` · 📍${rule.item_location_countries.join(",")}`}
-                    {rule.min_feedback_score && ` · ★≥${rule.min_feedback_score}`}
-                    {rule.exclude_sellers?.length > 0 && ` · 🚫${rule.exclude_sellers.join(",")}`}
                   </Text>
+                  {/* Badge row: conditions, listing types, category */}
+                  <Group spacing={4}>
+                    {rule.conditions?.length > 0 && rule.conditions.map((c) => (
+                      <Badge key={c} size="xs" variant="light" color="yellow">
+                        {conditionLabel(c)}
+                      </Badge>
+                    ))}
+                    {rule.listing_types?.length > 0 && rule.listing_types.map((t) => (
+                      <Badge key={t} size="xs" variant="light" color="violet.5">
+                        {listingTypeLabel(t)}
+                      </Badge>
+                    ))}
+                    {rule.category_ids?.length > 0 && rule.category_ids.map((cid) => (
+                      <Badge key={cid} size="xs" variant="light" color="dark.3">
+                        {categoryIdToName[cid] || cid}
+                      </Badge>
+                    ))}
+                    {rule.price_min && (
+                      <Text size="xs" color="dimmed">· ${rule.price_min}</Text>
+                    )}
+                    {rule.price_max && (
+                      <Text size="xs" color="dimmed">-${rule.price_max}</Text>
+                    )}
+                    {rule.returns_accepted_only && (
+                      <Text size="xs" color="dimmed">· {locale === "zh" ? "可退货" : "returns OK"}</Text>
+                    )}
+                    {rule.item_location_countries?.length > 0 && (
+                      <Text size="xs" color="dimmed">· 📍{rule.item_location_countries.join(",")}</Text>
+                    )}
+                    {rule.min_feedback_score && (
+                      <Text size="xs" color="dimmed">· ★≥{rule.min_feedback_score}</Text>
+                    )}
+                    {rule.exclude_sellers?.length > 0 && (
+                      <Text size="xs" color="dimmed">· 🚫{rule.exclude_sellers.join(",")}</Text>
+                    )}
+                  </Group>
                 </Box>
                 <Group spacing={4}>
                   <ActionIcon size="sm" variant="subtle" onClick={() => openEdit(rule)}>
@@ -409,15 +478,17 @@ export default function AdminMarketWatch() {
               },
             })}
           />
-          <TextInput
-            label={locale === "zh" ? "eBay 分类 ID（逗号分隔）" : "eBay Category IDs"}
+          <MultiSelect
+            label={locale === "zh" ? "eBay 分类（可选）" : "eBay Categories (optional)"}
+            data={categoryOptions}
             value={formCategoryIds}
-            onChange={(e) => setFormCategoryIds(e.currentTarget.value)}
-            placeholder="37978 (optional)"
+            onChange={setFormCategoryIds}
+            placeholder={locale === "zh" ? "选择分类..." : "Select categories..."}
+            clearable
+            searchable
+            nothingFound={locale === "zh" ? "无匹配分类" : "No matching category"}
             styles={(theme) => ({
-              label: {
-                color: appFieldLabelColor(theme),
-              },
+              label: { color: appFieldLabelColor(theme) },
             })}
           />
           <Group grow>

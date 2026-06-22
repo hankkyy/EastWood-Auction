@@ -81,6 +81,15 @@ export default async function handler(
           ? [{ url: ebayFullResUrl(item.image.imageUrl), width: item.image.width, height: item.image.height }]
           : [];
 
+        // Build location string with state/province when available
+        let locationStr: string | null = null;
+        if (item.itemLocation) {
+          const parts = [item.itemLocation.city];
+          if (item.itemLocation.stateOrProvince) parts.push(item.itemLocation.stateOrProvince);
+          parts.push(item.itemLocation.country);
+          locationStr = parts.join(", ");
+        }
+
         const { error: upsertErr } = await supabase
           .from("external_listings")
           .upsert(
@@ -96,9 +105,7 @@ export default async function handler(
               seller: item.seller?.username || null,
               seller_rating: item.seller?.feedbackScore || null,
               condition: item.condition || null,
-              location: item.itemLocation
-                ? `${item.itemLocation.city}, ${item.itemLocation.country}`
-                : null,
+              location: locationStr,
               matched_keywords: keywords.filter((kw: string) =>
                 item.title?.toLowerCase().includes(kw.toLowerCase())
               ),
@@ -112,37 +119,81 @@ export default async function handler(
         if (!upsertErr) {
           inserted++;
 
-          // Enrich auction listings with bid count, current bid, description
-          if (item.buyingOptions?.includes("AUCTION")) {
-            try {
-              const detail: EBayItemDetail = await getEBayItem(item.itemId);
-              await supabase
-                .from("external_listings")
-                .update({
-                  current_bid: detail.currentBidPrice
-                    ? parseFloat(detail.currentBidPrice.value)
-                    : null,
-                  bid_count: detail.bidCount ?? null,
-                  reserve_price_met: detail.reservePriceMet ?? null,
-                  short_description: detail.shortDescription || null,
-                  description: detail.description || null,
-                  extra_images: detail.additionalImages?.map((img) => ({
-                    url: ebayFullResUrl(img.imageUrl),
-                    width: img.width,
-                    height: img.height,
-                  })) || [],
-                  item_specifics: detail.localizedAspects || [],
-                  feedback_pct: detail.seller?.feedbackPercentage || null,
-                  estimated_sold: detail.estimatedAvailabilities?.[0]
-                    ?.estimatedSoldQuantity ?? null,
-                })
-                .eq("source", "ebay")
-                .eq("external_id", item.itemId);
-            } catch (detailErr: any) {
-              console.warn(
-                `[sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
-              );
-            }
+          // Enrich ALL listings with full details from getEBayItem
+          try {
+            const detail: EBayItemDetail = await getEBayItem(item.itemId);
+
+            await supabase
+              .from("external_listings")
+              .update({
+                // Auction-specific
+                current_bid: detail.currentBidPrice
+                  ? parseFloat(detail.currentBidPrice.value)
+                  : null,
+                bid_count: detail.bidCount ?? null,
+                reserve_price_met: detail.reservePriceMet ?? null,
+
+                // Descriptions
+                short_description: detail.shortDescription || null,
+                description: detail.description || null,
+
+                // Images
+                extra_images: detail.additionalImages?.map((img) => ({
+                  url: ebayFullResUrl(img.imageUrl),
+                  width: img.width,
+                  height: img.height,
+                })) || [],
+
+                // Item specifics (localizedAspects)
+                item_specifics: detail.localizedAspects || [],
+
+                // Seller details
+                feedback_pct: detail.seller?.feedbackPercentage || null,
+                feedback_rating_star: detail.seller?.feedbackRatingStar || null,
+
+                // Availability
+                estimated_sold: detail.estimatedAvailabilities?.[0]
+                  ?.estimatedSoldQuantity ?? null,
+                estimated_available_qty: detail.estimatedAvailabilities?.[0]
+                  ?.estimatedAvailableQuantity ?? null,
+
+                // Condition
+                condition_description: detail.conditionDescription || null,
+
+                // Category
+                category_path: detail.categoryPath || null,
+                category_id: detail.categoryId || null,
+
+                // Engagement
+                watch_count: detail.watchCount ?? null,
+
+                // Listing metadata
+                item_creation_date: detail.itemCreationDate || null,
+                listing_duration: detail.listingDuration || null,
+                quantity: detail.quantity ?? null,
+
+                // Policies
+                return_terms: detail.returnTerms || {},
+                shipping_options: detail.shippingOptions || [],
+                marketing_price: detail.marketingPrice || {},
+
+                // Update location with full detail (includes state + postal when available)
+                location: detail.itemLocation
+                  ? [
+                      detail.itemLocation.city,
+                      detail.itemLocation.stateOrProvince,
+                      detail.itemLocation.country,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")
+                  : locationStr,
+              })
+              .eq("source", "ebay")
+              .eq("external_id", item.itemId);
+          } catch (detailErr: any) {
+            console.warn(
+              `[sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
+            );
           }
         }
       }

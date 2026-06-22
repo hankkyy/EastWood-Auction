@@ -45,6 +45,9 @@ export default async function handler(
     location_region,
     condition,
     buying_option,
+    ending_soon,
+    returns_accepted,
+    min_seller_rating,
   } = req.query;
 
   // Attempt auth (optional — succeeds silently if no token)
@@ -71,6 +74,34 @@ export default async function handler(
   if (location_region) query = query.ilike("location", `%${String(location_region)}%`);
   if (condition) query = query.eq("condition", String(condition));
   if (buying_option) query = query.contains("buying_options", [String(buying_option)]);
+
+  // Filter by ending time
+  if (ending_soon) {
+    const now = new Date().toISOString();
+    query = query.gt("ends_at", now); // not yet ended
+    if (ending_soon === "1h") {
+      const in1h = new Date(Date.now() + 3600000).toISOString();
+      query = query.lte("ends_at", in1h);
+    } else if (ending_soon === "24h") {
+      const in24h = new Date(Date.now() + 86400000).toISOString();
+      query = query.lte("ends_at", in24h);
+    } else if (ending_soon === "3d") {
+      const in3d = new Date(Date.now() + 259200000).toISOString();
+      query = query.lte("ends_at", in3d);
+    }
+  }
+
+  // Filter by returns accepted
+  if (returns_accepted === "true") {
+    query = query.filter("return_terms->>returnsAccepted", "eq", "true");
+  } else if (returns_accepted === "false") {
+    query = query.filter("return_terms->>returnsAccepted", "eq", "false");
+  }
+
+  // Filter by minimum seller rating
+  if (min_seller_rating) {
+    query = query.gte("seller_rating", Number(min_seller_rating));
+  }
 
   // Filter by saved listings only
   if (saved_only === "true" && userId) {
