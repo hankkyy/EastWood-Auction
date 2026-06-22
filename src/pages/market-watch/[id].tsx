@@ -46,7 +46,9 @@ interface ListingDetail {
   seller: string | null;
   seller_rating: number | null;
   feedback_pct?: string | null;
+  feedback_rating_star?: string | null;
   condition: string | null;
+  condition_description?: string | null;
   location: string | null;
   discovered_at: string;
   ends_at: string | null;
@@ -56,6 +58,7 @@ interface ListingDetail {
   description?: string | null;
   item_specifics?: { name: string; value: string }[];
   estimated_sold?: number | null;
+  estimated_available_qty?: number | null;
   is_saved?: boolean;
 }
 
@@ -369,6 +372,11 @@ export default function MarketWatchDetailPage() {
                       {locale === "zh" ? "一口价" : "Buy It Now"}: {formatPrice(listing.price, listing.currency)}
                     </Text>
                   )}
+                  {!isAuction && listing.estimated_available_qty != null && listing.estimated_available_qty > 0 && (
+                    <Text size="xs" color="dimmed" mt={2}>
+                      {listing.estimated_available_qty} {locale === "zh" ? "件可售" : "available"}
+                    </Text>
+                  )}
                 </Box>
 
                 {/* Auction details */}
@@ -482,6 +490,11 @@ export default function MarketWatchDetailPage() {
                     <Box>
                       <Text size="xs" color="dimmed">{locale === "zh" ? "品相" : "Condition"}</Text>
                       <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>{listing.condition}</Text>
+                      {listing.condition_description && (
+                        <Text size="xs" mt={2} sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.5 })}>
+                          {listing.condition_description}
+                        </Text>
+                      )}
                     </Box>
                   )}
                   {listing.location && (
@@ -500,6 +513,7 @@ export default function MarketWatchDetailPage() {
                       {listing.feedback_pct && (
                         <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
                           {t("marketWatch.feedback")}: {listing.feedback_pct}
+                          {listing.feedback_rating_star && ` · ${listing.feedback_rating_star}`}
                         </Text>
                       )}
                     </Box>

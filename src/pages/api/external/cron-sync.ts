@@ -119,9 +119,16 @@ export default async function handler(
               listing_url: item.itemWebUrl,
               seller: item.seller?.username || null,
               seller_rating: item.seller?.feedbackScore || null,
+              feedback_pct: item.seller?.feedbackPercentage || null,
               condition: item.condition || null,
               location: item.itemLocation
-                ? `${item.itemLocation.city}, ${item.itemLocation.country}`
+                ? [
+                    item.itemLocation.city,
+                    item.itemLocation.stateOrProvince,
+                    item.itemLocation.country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")
                 : null,
               matched_keywords: keywords.filter((kw: string) =>
                 item.title?.toLowerCase().includes(kw.toLowerCase())
@@ -139,7 +146,7 @@ export default async function handler(
           // Get the listing ID for price history and enrichment
           const { data: listing } = await supabase
             .from("external_listings")
-            .select("id, price, current_bid")
+            .select("id, price, current_bid, description")
             .eq("source", "ebay")
             .eq("external_id", item.itemId)
             .single();
@@ -176,8 +183,14 @@ export default async function handler(
             }
           }
 
-          // Enrich auction listings with bid count, current bid, description
-          if (item.buyingOptions?.includes("AUCTION")) {
+          // Enrich listings with eBay item detail (bid count, description, specifics, etc.)
+          // - AUCTION items: always enrich (to get fresh bid data)
+          // - FIXED_PRICE items: enrich once (check if description is missing)
+          const needsEnrichment =
+            item.buyingOptions?.includes("AUCTION") ||
+            !listing?.description;
+
+          if (needsEnrichment) {
             try {
               const detail: EBayItemDetail = await getEBayItem(item.itemId);
               await supabase
@@ -197,8 +210,21 @@ export default async function handler(
                   })) || [],
                   item_specifics: detail.localizedAspects || [],
                   feedback_pct: detail.seller?.feedbackPercentage || null,
+                  feedback_rating_star: detail.seller?.feedbackRatingStar || null,
+                  condition_description: detail.conditionDescription || null,
                   estimated_sold: detail.estimatedAvailabilities?.[0]
                     ?.estimatedSoldQuantity ?? null,
+                  estimated_available_qty: detail.estimatedAvailabilities?.[0]
+                    ?.estimatedAvailableQuantity ?? null,
+                  location: detail.itemLocation
+                    ? [
+                        detail.itemLocation.city,
+                        detail.itemLocation.stateOrProvince,
+                        detail.itemLocation.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")
+                    : undefined,
                 })
                 .eq("source", "ebay")
                 .eq("external_id", item.itemId);

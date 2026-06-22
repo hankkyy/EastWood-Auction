@@ -46,6 +46,7 @@ export interface EBayItemSummary {
   condition?: string;
   itemLocation?: {
     city: string;
+    stateOrProvince?: string;
     country: string;
   };
   itemEndDate?: string;
