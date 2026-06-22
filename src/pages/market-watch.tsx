@@ -104,6 +104,7 @@ export default function MarketWatchPage() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState("");
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -115,6 +116,7 @@ export default function MarketWatchPage() {
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
     if (locationFilter) params.set("location", locationFilter);
+    if (regionFilter) params.set("location_region", regionFilter);
 
     // Auth + saved filter
     const headers: Record<string, string> = {};
@@ -139,7 +141,7 @@ export default function MarketWatchPage() {
     setListings(data.listings);
     setTotal(data.total);
     setLoading(false);
-  }, [page, sort, search, minPrice, maxPrice, locationFilter, savedOnly, user]);
+  }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, savedOnly, user]);
 
   useEffect(() => {
     fetchListings();
@@ -258,13 +260,13 @@ export default function MarketWatchPage() {
               <Select
                 placeholder={locale === "zh" ? "地区" : "Location"}
                 value={locationFilter}
-                onChange={(v) => { setLocationFilter(v || ""); setPage(1); }}
+                onChange={(v) => { setLocationFilter(v || ""); setRegionFilter(""); setPage(1); }}
                 size="sm"
                 style={{ width: 130 }}
                 clearable
                 data={[
                   { value: "", label: locale === "zh" ? "全部地区" : "All Locations" },
-                  { value: "US", label: "🇺🇸 United States" },
+                  { value: "United States", label: "🇺🇸 United States" },
                   { value: "China", label: "🇨🇳 China" },
                   { value: "Hong Kong", label: "🇭🇰 Hong Kong" },
                   { value: "Japan", label: "🇯🇵 Japan" },
@@ -276,6 +278,34 @@ export default function MarketWatchPage() {
                   { value: "Italy", label: "🇮🇹 Italy" },
                 ]}
               />
+              {locationFilter === "United States" && (
+                <Select
+                  placeholder={locale === "zh" ? "州" : "State"}
+                  value={regionFilter}
+                  onChange={(v) => { setRegionFilter(v || ""); setPage(1); }}
+                  size="sm"
+                  style={{ width: 120 }}
+                  clearable
+                  data={[
+                    { value: "", label: locale === "zh" ? "全部州" : "All States" },
+                    { value: "CA", label: "California" },
+                    { value: "NY", label: "New York" },
+                    { value: "TX", label: "Texas" },
+                    { value: "FL", label: "Florida" },
+                    { value: "IL", label: "Illinois" },
+                    { value: "PA", label: "Pennsylvania" },
+                    { value: "OH", label: "Ohio" },
+                    { value: "GA", label: "Georgia" },
+                    { value: "NC", label: "North Carolina" },
+                    { value: "MI", label: "Michigan" },
+                    { value: "NJ", label: "New Jersey" },
+                    { value: "VA", label: "Virginia" },
+                    { value: "WA", label: "Washington" },
+                    { value: "MA", label: "Massachusetts" },
+                    { value: "AZ", label: "Arizona" },
+                  ]}
+                />
+              )}
               <Select
                 value={sort}
                 onChange={(v) => { setSort(v || "newest"); setPage(1); }}

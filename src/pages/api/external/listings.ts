@@ -38,6 +38,7 @@ export default async function handler(
     saved_only,
     with_saved,
     location,
+    location_region,
   } = req.query;
 
   // Attempt auth (optional — succeeds silently if no token)
@@ -61,6 +62,7 @@ export default async function handler(
   if (min_price) query = query.gte("price", Number(min_price));
   if (max_price) query = query.lte("price", Number(max_price));
   if (location) query = query.ilike("location", `%${String(location)}%`);
+  if (location_region) query = query.ilike("location", `%${String(location_region)}%`);
 
   // Filter by saved listings only
   if (saved_only === "true" && userId) {
