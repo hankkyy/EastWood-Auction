@@ -703,7 +703,11 @@ export default function MarketWatchPage() {
                             return null;
                           })()}
                         </Group>
-                        {/* Save button */}
+                        {/* Save button — wrapper stops propagation even when disabled */}
+                        <Box
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{ position: "absolute", top: 8, right: 8, zIndex: 2 }}
+                        >
                         <Tooltip
                           label={user ? "" : t("marketWatch.loginToSave")}
                           disabled={!!user}
@@ -713,15 +717,11 @@ export default function MarketWatchPage() {
                             size="md"
                             radius="xl"
                             onClick={(e) => {
-                              e.preventDefault();
                               e.stopPropagation();
                               toggleSave(item.id, item.is_saved || false);
                             }}
                             disabled={!user}
                             sx={(theme) => ({
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
                               backgroundColor: item.is_saved
                                 ? "rgba(231,76,60,0.85)"
                                 : theme.colorScheme === "dark"
@@ -740,6 +740,7 @@ export default function MarketWatchPage() {
                             {item.is_saved ? <IconHeartFilled size={16} /> : <IconHeart size={16} />}
                           </ActionIcon>
                         </Tooltip>
+                        </Box>
                         {/* Image count badge */}
                         {(() => {
                           const totalImgs = (item.images?.length || 0) + (item.extra_images?.length || 0);
