@@ -1,4 +1,8 @@
 {
+  "github": {
+    "enabled": true,
+    "silent": false
+  },
   "crons": [
     {
       "path": "/api/external/cron-sync",
