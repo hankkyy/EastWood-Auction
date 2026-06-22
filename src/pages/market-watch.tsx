@@ -103,6 +103,7 @@ export default function MarketWatchPage() {
   const [search, setSearch] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
@@ -113,6 +114,7 @@ export default function MarketWatchPage() {
     if (search) params.set("search", search);
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
+    if (locationFilter) params.set("location", locationFilter);
 
     // Auth + saved filter
     const headers: Record<string, string> = {};
@@ -137,7 +139,7 @@ export default function MarketWatchPage() {
     setListings(data.listings);
     setTotal(data.total);
     setLoading(false);
-  }, [page, sort, search, minPrice, maxPrice, savedOnly, user]);
+  }, [page, sort, search, minPrice, maxPrice, locationFilter, savedOnly, user]);
 
   useEffect(() => {
     fetchListings();
@@ -252,6 +254,13 @@ export default function MarketWatchPage() {
                 onChange={(e) => { setMaxPrice(e.currentTarget.value); setPage(1); }}
                 size="sm"
                 style={{ width: 100 }}
+              />
+              <TextInput
+                placeholder={locale === "zh" ? "地区筛选..." : "Location..."}
+                value={locationFilter}
+                onChange={(e) => { setLocationFilter(e.currentTarget.value); setPage(1); }}
+                size="sm"
+                style={{ width: 160 }}
               />
               <Select
                 value={sort}

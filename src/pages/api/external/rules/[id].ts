@@ -32,22 +32,34 @@ export default async function handler(
       conditions,
       listing_types,
       enabled,
+      returns_accepted_only,
+      item_location_countries,
+      item_location_regions,
+      min_feedback_score,
+      exclude_sellers,
     } = req.body;
+
+    const updateData: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (name !== undefined) updateData.name = name;
+    if (keywords !== undefined) updateData.keywords = keywords;
+    if (category_ids !== undefined) updateData.category_ids = category_ids;
+    if (price_min !== undefined) updateData.price_min = price_min;
+    if (price_max !== undefined) updateData.price_max = price_max;
+    if (currency !== undefined) updateData.currency = currency;
+    if (conditions !== undefined) updateData.conditions = conditions;
+    if (listing_types !== undefined) updateData.listing_types = listing_types;
+    if (enabled !== undefined) updateData.enabled = enabled;
+    if (returns_accepted_only !== undefined) updateData.returns_accepted_only = returns_accepted_only;
+    if (item_location_countries !== undefined) updateData.item_location_countries = item_location_countries;
+    if (item_location_regions !== undefined) updateData.item_location_regions = item_location_regions;
+    if (min_feedback_score !== undefined) updateData.min_feedback_score = min_feedback_score;
+    if (exclude_sellers !== undefined) updateData.exclude_sellers = exclude_sellers;
 
     const { data, error } = await supabase
       .from("external_rules")
-      .update({
-        ...(name !== undefined && { name }),
-        ...(keywords !== undefined && { keywords }),
-        ...(category_ids !== undefined && { category_ids }),
-        ...(price_min !== undefined && { price_min }),
-        ...(price_max !== undefined && { price_max }),
-        ...(currency !== undefined && { currency }),
-        ...(conditions !== undefined && { conditions }),
-        ...(listing_types !== undefined && { listing_types }),
-        ...(enabled !== undefined && { enabled }),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

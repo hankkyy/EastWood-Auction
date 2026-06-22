@@ -39,6 +39,7 @@ interface Rule {
   listing_types: string[];
   returns_accepted_only: boolean;
   item_location_countries: string[];
+  item_location_regions: string[];
   min_feedback_score: number | null;
   exclude_sellers: string[];
   enabled: boolean;
@@ -78,6 +79,7 @@ export default function AdminMarketWatch() {
   const [formListingTypes, setFormListingTypes] = useState<string[]>([]);
   const [formReturnsAccepted, setFormReturnsAccepted] = useState(false);
   const [formItemLocationCountries, setFormItemLocationCountries] = useState("");
+  const [formItemLocationRegions, setFormItemLocationRegions] = useState("");
   const [formMinFeedbackScore, setFormMinFeedbackScore] = useState<number | "">("");
   const [formExcludeSellers, setFormExcludeSellers] = useState("");
 
@@ -131,6 +133,7 @@ export default function AdminMarketWatch() {
     setFormListingTypes([]);
     setFormReturnsAccepted(false);
     setFormItemLocationCountries("");
+    setFormItemLocationRegions("");
     setFormMinFeedbackScore("");
     setFormExcludeSellers("");
     setModalOpen(true);
@@ -147,6 +150,7 @@ export default function AdminMarketWatch() {
   setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
   setFormReturnsAccepted(rule.returns_accepted_only || false);
   setFormItemLocationCountries((rule.item_location_countries || []).join(", "));
+  setFormItemLocationRegions((rule.item_location_regions || []).join(", "));
   setFormMinFeedbackScore(rule.min_feedback_score ?? "");
   setFormExcludeSellers((rule.exclude_sellers || []).join(", "));
   setModalOpen(true);
@@ -169,6 +173,9 @@ export default function AdminMarketWatch() {
       returns_accepted_only: formReturnsAccepted,
       item_location_countries: formItemLocationCountries
         ? formItemLocationCountries.split(",").map((c) => c.trim().toUpperCase()).filter(Boolean)
+        : [],
+      item_location_regions: formItemLocationRegions
+        ? formItemLocationRegions.split(",").map((r) => r.trim().toUpperCase()).filter(Boolean)
         : [],
       min_feedback_score: formMinFeedbackScore === "" ? null : Number(formMinFeedbackScore),
       exclude_sellers: formExcludeSellers
@@ -445,6 +452,17 @@ export default function AdminMarketWatch() {
             value={formItemLocationCountries}
             onChange={(e) => setFormItemLocationCountries(e.currentTarget.value)}
             placeholder="US,CN"
+            styles={(theme) => ({
+              label: {
+                color: appFieldLabelColor(theme),
+              },
+            })}
+          />
+          <TextInput
+            label={locale === "zh" ? "物品所在地州/省（逗号分隔，如 CA,NY,TX）" : "Item Location States (comma-separated, e.g. CA,NY,TX)"}
+            value={formItemLocationRegions}
+            onChange={(e) => setFormItemLocationRegions(e.currentTarget.value)}
+            placeholder="CA,NY"
             styles={(theme) => ({
               label: {
                 color: appFieldLabelColor(theme),

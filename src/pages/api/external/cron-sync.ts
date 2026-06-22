@@ -77,6 +77,9 @@ export default async function handler(
         itemLocationCountries: (rule.item_location_countries as string[])?.length
           ? (rule.item_location_countries as string[])
           : undefined,
+        itemLocationRegions: (rule.item_location_regions as string[])?.length
+          ? (rule.item_location_regions as string[])
+          : undefined,
         minFeedbackScore: rule.min_feedback_score ?? undefined,
         excludeSellers: (rule.exclude_sellers as string[])?.length
           ? (rule.exclude_sellers as string[])

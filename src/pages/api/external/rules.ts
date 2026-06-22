@@ -39,6 +39,11 @@ export default async function handler(
       currency,
       conditions,
       listing_types,
+      returns_accepted_only,
+      item_location_countries,
+      item_location_regions,
+      min_feedback_score,
+      exclude_sellers,
     } = req.body;
 
     if (!name || !keywords || keywords.length === 0) {
@@ -55,7 +60,12 @@ export default async function handler(
         price_max: price_max || null,
         currency: currency || "USD",
         conditions: conditions || [],
-        listing_types: listing_types || ["AUCTION", "FIXED_PRICE"],
+        listing_types: listing_types || [],
+        returns_accepted_only: returns_accepted_only || false,
+        item_location_countries: item_location_countries || [],
+        item_location_regions: item_location_regions || [],
+        min_feedback_score: min_feedback_score || null,
+        exclude_sellers: exclude_sellers || [],
         created_by: auth.userId,
       })
       .select()

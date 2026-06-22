@@ -256,6 +256,7 @@ export function buildEBayFilter(params: {
   listingTypes?: string[];
   returnsAccepted?: boolean;
   itemLocationCountries?: string[];
+  itemLocationRegions?: string[];
   minFeedbackScore?: number;
   excludeSellers?: string[];
 }): string {
@@ -292,6 +293,12 @@ export function buildEBayFilter(params: {
   if (params.itemLocationCountries && params.itemLocationCountries.length > 0) {
     const countries = params.itemLocationCountries.map((c) => `{${c}}`).join(",");
     parts.push(`itemLocationCountry:${countries}`);
+  }
+
+  // Item location regions (states)
+  if (params.itemLocationRegions && params.itemLocationRegions.length > 0) {
+    const regions = params.itemLocationRegions.map((r) => `{${r}}`).join(",");
+    parts.push(`itemLocationRegion:${regions}`);
   }
 
   // Minimum feedback score
