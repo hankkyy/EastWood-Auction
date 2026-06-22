@@ -104,6 +104,9 @@ export default async function handler(
       .eq("user_id", userId);
     const savedSet = new Set((savedRows || []).map((r: any) => r.listing_id));
     listings = listings.map((l: any) => ({ ...l, is_saved: savedSet.has(l.id) }));
+  } else if (saved_only === "true" && userId) {
+    // All results in saved_only are saved by definition
+    listings = listings.map((l: any) => ({ ...l, is_saved: true }));
   }
 
   return res.status(200).json({
