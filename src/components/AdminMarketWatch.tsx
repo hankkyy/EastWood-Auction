@@ -307,15 +307,38 @@ export default function AdminMarketWatch() {
 
   const toggleRule = async (rule: Rule) => {
     const headers = await getAuthHeaders(true);
+    const enabling = !rule.enabled;
     const res = await fetch(`/api/external/rules/${rule.id}`, {
       method: "PUT",
       headers,
-      body: JSON.stringify({ enabled: !rule.enabled }),
+      body: JSON.stringify({ enabled: enabling }),
     });
     if (!res.ok) {
       const payload = await res.json().catch(() => ({}));
       throw new Error(payload.error || "Unable to update rule.");
     }
+
+    // If re-enabling a previously disabled rule, auto-sync it
+    if (enabling) {
+      setSyncMsg(locale === "zh" ? `正在同步「${rule.name}」...` : `Syncing "${rule.name}"...`);
+      try {
+        const syncRes = await fetch(`/api/external/sync?rule_id=${rule.id}`, {
+          method: "POST",
+          headers: await getAuthHeaders(),
+        });
+        const syncData = await syncRes.json();
+        if (syncRes.ok) {
+          setSyncMsg(syncData.message || (locale === "zh" ? "同步完成" : "Sync done"));
+        } else {
+          setSyncMsg("");
+          setError(syncData.error || (locale === "zh" ? "同步失败" : "Sync failed"));
+        }
+      } catch (err: any) {
+        setSyncMsg("");
+      }
+      setTimeout(() => setSyncMsg(""), 4000);
+    }
+
     void fetchRules();
   };
 
@@ -454,7 +477,7 @@ export default function AdminMarketWatch() {
                       <Text size="xs" color="dimmed">· 🚫{rule.exclude_sellers.join(",")}</Text>
                     )}
                   </Group>
-                  {rule.last_synced_at && (
+                  {rule.last_synced_at ? (
                     <Text size="xs" mt={4} color="dimmed" sx={{ opacity: 0.6 }}>
                       {locale === "zh" ? "上次同步" : "Last sync"}: {
                         new Date(rule.last_synced_at).toLocaleString(
@@ -462,6 +485,10 @@ export default function AdminMarketWatch() {
                           { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
                         )
                       }
+                    </Text>
+                  ) : (
+                    <Text size="xs" mt={4} color="dimmed" sx={{ opacity: 0.4 }}>
+                      {locale === "zh" ? "从未同步" : "Never synced"}
                     </Text>
                   )}
                 </Box>
