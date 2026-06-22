@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Box,
   Button,
@@ -45,19 +45,22 @@ interface Rule {
   created_at: string;
 }
 
-const conditionOptions = [
-  { value: "NEW", label: "New" },
-  { value: "USED", label: "Used" },
-  { value: "NEW_OTHER", label: "New (Other)" },
-];
-
-const listingTypeOptions = [
-  { value: "AUCTION", label: "Auction" },
-  { value: "FIXED_PRICE", label: "Buy It Now" },
-];
+const conditionValues = ["NEW", "USED", "NEW_OTHER"] as const;
+const listingTypeValues = ["AUCTION", "FIXED_PRICE"] as const;
 
 export default function AdminMarketWatch() {
   const { t, locale } = useI18n();
+
+  const conditionOptions = useMemo(() => [
+    { value: "NEW", label: locale === "zh" ? "全新" : "New" },
+    { value: "USED", label: locale === "zh" ? "二手" : "Used" },
+    { value: "NEW_OTHER", label: locale === "zh" ? "全新（其他）" : "New (Other)" },
+  ], [locale]);
+
+  const listingTypeOptions = useMemo(() => [
+    { value: "AUCTION", label: locale === "zh" ? "拍卖" : "Auction" },
+    { value: "FIXED_PRICE", label: locale === "zh" ? "一口价" : "Buy It Now" },
+  ], [locale]);
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncMsg, setSyncMsg] = useState("");
@@ -71,8 +74,8 @@ export default function AdminMarketWatch() {
   const [formCategoryIds, setFormCategoryIds] = useState("");
   const [formPriceMin, setFormPriceMin] = useState<number | "">("");
   const [formPriceMax, setFormPriceMax] = useState<number | "">("");
-  const [formConditions, setFormConditions] = useState<string[]>(["USED"]);
-  const [formListingTypes, setFormListingTypes] = useState<string[]>(["AUCTION", "FIXED_PRICE"]);
+  const [formConditions, setFormConditions] = useState<string[]>([]);
+  const [formListingTypes, setFormListingTypes] = useState<string[]>([]);
   const [formReturnsAccepted, setFormReturnsAccepted] = useState(false);
   const [formItemLocationCountries, setFormItemLocationCountries] = useState("");
   const [formMinFeedbackScore, setFormMinFeedbackScore] = useState<number | "">("");
@@ -124,8 +127,8 @@ export default function AdminMarketWatch() {
     setFormCategoryIds("");
     setFormPriceMin("");
     setFormPriceMax("");
-    setFormConditions(["USED"]);
-    setFormListingTypes(["AUCTION", "FIXED_PRICE"]);
+    setFormConditions([]);
+    setFormListingTypes([]);
     setFormReturnsAccepted(false);
     setFormItemLocationCountries("");
     setFormMinFeedbackScore("");
