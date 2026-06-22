@@ -502,6 +502,7 @@ export default function AdminMarketWatch() {
           />
           <MultiSelect
             label={locale === "zh" ? "eBay 分类（可选）" : "eBay Categories (optional)"}
+            description={locale === "zh" ? "不选即不限分类" : "Leave empty to search all categories"}
             data={categoryOptions}
             value={formCategoryIds}
             onChange={setFormCategoryIds}
@@ -516,6 +517,7 @@ export default function AdminMarketWatch() {
           <Group grow>
             <NumberInput
               label={locale === "zh" ? "最低价" : "Min Price"}
+              description={locale === "zh" ? "不填即不限" : "No limit if empty"}
               value={formPriceMin}
               onChange={setFormPriceMin}
               placeholder="100"
@@ -527,6 +529,7 @@ export default function AdminMarketWatch() {
             />
             <NumberInput
               label={locale === "zh" ? "最高价" : "Max Price"}
+              description={locale === "zh" ? "不填即不限" : "No limit if empty"}
               value={formPriceMax}
               onChange={setFormPriceMax}
               placeholder="5000"
@@ -539,6 +542,7 @@ export default function AdminMarketWatch() {
           </Group>
           <MultiSelect
             label={locale === "zh" ? "商品状态" : "Condition"}
+            description={locale === "zh" ? "不选即不限" : "All conditions if empty"}
             data={conditionOptions}
             value={formConditions}
             onChange={setFormConditions}
@@ -550,6 +554,7 @@ export default function AdminMarketWatch() {
           />
           <MultiSelect
             label={locale === "zh" ? "上架类型" : "Listing Type"}
+            description={locale === "zh" ? "不选即不限" : "All types if empty"}
             data={listingTypeOptions}
             value={formListingTypes}
             onChange={setFormListingTypes}
@@ -571,6 +576,7 @@ export default function AdminMarketWatch() {
           />
           <MultiSelect
             label={locale === "zh" ? "物品所在地区" : "Item Location"}
+            description={locale === "zh" ? "不选即不限" : "All locations if empty"}
             data={countryOptions}
             value={formItemLocationCountries}
             onChange={(v) => {
@@ -587,6 +593,7 @@ export default function AdminMarketWatch() {
           {formItemLocationCountries.includes("US") && (
             <MultiSelect
               label={locale === "zh" ? "物品所在地州/省" : "Item Location States"}
+              description={locale === "zh" ? "不选即不限" : "All states if empty"}
               data={regionOptions}
               value={formItemLocationRegions}
               onChange={setFormItemLocationRegions}
@@ -600,6 +607,7 @@ export default function AdminMarketWatch() {
           )}
           <NumberInput
             label={locale === "zh" ? "卖家最低信用分" : "Min Seller Feedback Score"}
+            description={locale === "zh" ? "不填即不限" : "No limit if empty"}
             value={formMinFeedbackScore}
             onChange={setFormMinFeedbackScore}
             placeholder="100"
@@ -612,6 +620,7 @@ export default function AdminMarketWatch() {
           />
           <TextInput
             label={locale === "zh" ? "排除卖家（逗号分隔）" : "Exclude Sellers (comma-separated)"}
+            description={locale === "zh" ? "不填即不限" : "No exclusions if empty"}
             value={formExcludeSellers}
             onChange={(e) => setFormExcludeSellers(e.currentTarget.value)}
             placeholder="seller1, seller2"
