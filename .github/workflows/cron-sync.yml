@@ -11,8 +11,13 @@ jobs:
     steps:
       - name: Trigger eBay sync
         run: |
+          if [ -z "${{ secrets.CRON_SYNC_SECRET }}" ]; then
+            echo "::error::CRON_SYNC_SECRET is empty or not set"
+            exit 1
+          fi
+
           curl -s -X POST "https://eastwoodauction.vercel.app/api/external/cron-sync" \
-            -H "Authorization: Bearer *** secrets.CRON_SYNC_SECRET }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
             -H "Content-Type: application/json" \
             -w "\n%{http_code}" \
             -o /tmp/cron-sync-response.json
