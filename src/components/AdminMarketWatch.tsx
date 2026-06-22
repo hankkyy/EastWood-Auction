@@ -225,7 +225,7 @@ export default function AdminMarketWatch() {
     setFormPriceMin(rule.price_min ?? "");
     setFormPriceMax(rule.price_max ?? "");
     setFormConditions(rule.conditions || []);
-    setFormListingTypes(rule.listing_types || ["AUCTION", "FIXED_PRICE"]);
+    setFormListingTypes(rule.listing_types || []);
     setFormReturnsAccepted(rule.returns_accepted_only || false);
     setFormItemLocationCountries(rule.item_location_countries || []);
     setFormItemLocationRegions(rule.item_location_regions || []);
