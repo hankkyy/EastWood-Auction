@@ -427,7 +427,8 @@ export default function MarketWatchDetailPage() {
                   <>
                     <ActionIcon
                       variant="filled" radius="xl" size="lg"
-                      onClick={(e) => { e.preventDefault(); goToPrevImage(); }}
+                      tabIndex={-1}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToPrevImage(); }}
                       sx={{
                         position: "absolute", top: "50%", left: 8,
                         transform: "translateY(-50%)",
@@ -439,7 +440,8 @@ export default function MarketWatchDetailPage() {
                     </ActionIcon>
                     <ActionIcon
                       variant="filled" radius="xl" size="lg"
-                      onClick={(e) => { e.preventDefault(); goToNextImage(); }}
+                      tabIndex={-1}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); goToNextImage(); }}
                       sx={{
                         position: "absolute", top: "50%", right: 8,
                         transform: "translateY(-50%)",
@@ -500,7 +502,8 @@ export default function MarketWatchDetailPage() {
                       <>
                         <ActionIcon
                           size="sm" variant="filled" radius="xl"
-                          onClick={() => scrollThumbnails("left")}
+                          tabIndex={-1}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollThumbnails("left"); }}
                           sx={{
                             position: "absolute", left: 0, top: "50%",
                             transform: "translateY(-50%)",
@@ -512,7 +515,8 @@ export default function MarketWatchDetailPage() {
                         </ActionIcon>
                         <ActionIcon
                           size="sm" variant="filled" radius="xl"
-                          onClick={() => scrollThumbnails("right")}
+                          tabIndex={-1}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); scrollThumbnails("right"); }}
                           sx={{
                             position: "absolute", right: 0, top: "50%",
                             transform: "translateY(-50%)",
