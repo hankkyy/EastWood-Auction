@@ -12,6 +12,8 @@ const STRIP_TAGS = new Set([
   "style",
   // Audio/video embeds from eBay
   "audio", "video",
+  // Self-closing img — already shown in gallery, duplicates are noise
+  "img",
 ]);
 
 // Tags to unwrap (remove the tag, keep its inner content)

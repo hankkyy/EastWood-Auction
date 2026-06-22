@@ -819,13 +819,8 @@ export default function MarketWatchDetailPage() {
                         sx={(theme) => ({
                           color: appTextColor(theme), lineHeight: 1.7, fontSize: 14,
                           wordBreak: "break-word", overflowWrap: "break-word",
-                          maxHeight: 600, overflowY: "auto",
-                          border: `1px solid ${appSurfaceBorder(theme)}`,
-                          borderRadius: 4, padding: 12,
                           "& *": { maxWidth: "100%" },
-                          "& p": { margin: "0 0 0.5em" },
                           "& ul, & ol": { paddingLeft: 20, margin: "0 0 0.5em" },
-                          "& img": { maxWidth: "100%", height: "auto" },
                           "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
                           "& a": { color: "#c4a255" },
                           // Kill all hardcoded background/color from eBay HTML
