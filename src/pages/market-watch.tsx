@@ -898,7 +898,7 @@ export default function MarketWatchPage() {
                         <Group spacing={6} mt={4}>
                           {item.location && (
                             <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                              📍 {item.location}
+                              {locale === "zh" ? "地区" : "Location"}: {item.location}
                             </Text>
                           )}
                           {returnsAccepted && (
@@ -910,7 +910,7 @@ export default function MarketWatchPage() {
                         {/* Seller — always on its own line, never wraps with location */}
                         {item.seller && (
                           <Text size="xs" mt={2} sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                            🏪 {item.seller}
+                            {locale === "zh" ? "卖家" : "Seller"}: {item.seller}
                             {item.seller_rating && ` · ★ ${item.seller_rating}`}
                           </Text>
                         )}
