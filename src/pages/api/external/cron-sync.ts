@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { searchEBayItems, buildEBayFilter, getEBayItem, type EBayItemSummary, type EBayItemDetail } from "@/lib/ebay";
+import { searchEBayItems, buildEBayFilter, getEBayItem, ebayFullResUrl, type EBayItemSummary, type EBayItemDetail } from "@/lib/ebay";
 
 /**
  * POST /api/external/cron-sync
@@ -90,7 +90,7 @@ export default async function handler(
         const images = item.image
           ? [
               {
-                url: item.image.imageUrl,
+                url: ebayFullResUrl(item.image.imageUrl),
                 width: item.image.width,
                 height: item.image.height,
               },
@@ -143,7 +143,7 @@ export default async function handler(
                   short_description: detail.shortDescription || null,
                   description: detail.description || null,
                   extra_images: detail.additionalImages?.map((img) => ({
-                    url: img.imageUrl,
+                    url: ebayFullResUrl(img.imageUrl),
                     width: img.width,
                     height: img.height,
                   })) || [],

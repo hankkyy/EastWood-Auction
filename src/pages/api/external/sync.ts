@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { verifySupabaseUser } from "@/lib/supabase/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { searchEBayItems, buildEBayFilter, getEBayItem, type EBayItemSummary, type EBayItemDetail } from "@/lib/ebay";
+import { searchEBayItems, buildEBayFilter, getEBayItem, ebayFullResUrl, type EBayItemSummary, type EBayItemDetail } from "@/lib/ebay";
 
 /**
  * POST /api/external/sync
@@ -70,7 +70,7 @@ export default async function handler(
 
       for (const item of items) {
         const images = item.image
-          ? [{ url: item.image.imageUrl, width: item.image.width, height: item.image.height }]
+          ? [{ url: ebayFullResUrl(item.image.imageUrl), width: item.image.width, height: item.image.height }]
           : [];
 
         const { error: upsertErr } = await supabase
@@ -119,7 +119,7 @@ export default async function handler(
                   short_description: detail.shortDescription || null,
                   description: detail.description || null,
                   extra_images: detail.additionalImages?.map((img) => ({
-                    url: img.imageUrl,
+                    url: ebayFullResUrl(img.imageUrl),
                     width: img.width,
                     height: img.height,
                   })) || [],

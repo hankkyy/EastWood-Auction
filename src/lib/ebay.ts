@@ -210,6 +210,14 @@ export async function getEBayItem(
 }
 
 /**
+ * Convert eBay image URL to full resolution.
+ * eBay URLs use size codes like s-l500, s-l64 — replace with s-l1600.
+ */
+export function ebayFullResUrl(imageUrl: string): string {
+  return imageUrl.replace(/\/s-l\d+(\.\w+)$/, "/s-l1600$1");
+}
+
+/**
  * Build a filter string from rule config.
  * eBay filter syntax: https://developer.ebay.com/api-docs/buy/static/ref-buy-browse-filters.html
  */
