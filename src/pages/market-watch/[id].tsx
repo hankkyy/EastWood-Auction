@@ -385,6 +385,18 @@ export default function MarketWatchDetailPage() {
             </Tooltip>
           </Group>
 
+          {/* Translate guidance + disclaimer */}
+          {locale === "zh" && (
+            <Box mb="lg">
+              <Text size="xs" color="dimmed" lh={1.5}>
+                点击下拉菜单选择翻译语言，或点击「恢复原文」按钮取消翻译
+              </Text>
+              <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
+                ⚠️ 翻译由 Google 第三方提供，可能存在误翻或滞后。商品描述、属性、退货政策等关键信息请以英文原文为准。
+              </Text>
+            </Box>
+          )}
+
           {/* Two-column layout */}
           <Box sx={{ display: "flex", gap: 40, flexDirection: isMobile ? "column" : "row" }}>
             {/* Left — Images */}

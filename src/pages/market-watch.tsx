@@ -304,8 +304,13 @@ export default function MarketWatchPage() {
                       恢复原文
                     </Button>
                   </Group>
-                  <Text size="xs" color="dimmed" mt={6}>
+                  <Text size="xs" color="dimmed" mt={6} lh={1.5}>
                     点击下拉菜单选择翻译语言，或点击「恢复原文」按钮取消翻译
+                  </Text>
+                  <Text size="xs" mt={4} sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.55, lineHeight: 1.5 })}>
+                    {locale === "zh"
+                      ? "⚠️ 翻译由 Google 第三方提供，可能存在误翻或滞后。商品描述、属性、退货政策等关键信息请以英文原文为准。"
+                      : "⚠️ Translation powered by Google. Errors may occur. Refer to the original English listing for accurate item details, policies, and descriptions."}
                   </Text>
                 </Box>
               )}
