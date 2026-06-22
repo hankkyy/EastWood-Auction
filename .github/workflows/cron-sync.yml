@@ -2,7 +2,6 @@ name: eBay Market Watch Cron Sync
 
 on:
   schedule:
-    # 每 5 分钟触发一次（UTC 时间）
     - cron: "*/5 * * * *"
   workflow_dispatch:
 
@@ -12,8 +11,20 @@ jobs:
     steps:
       - name: Trigger eBay sync
         run: |
-          curl -X POST "${{ vars.PROD_URL || 'https://east-wood-auction.vercel.app' }}/api/external/cron-sync" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
+          curl -s -X POST "https://eastwoodauction.vercel.app/api/external/cron-sync" \
+            -H "Authorization: Bearer *** secrets.CRON_SYNC_SECRET }}" \
             -H "Content-Type: application/json" \
-            -w "\nHTTP %{http_code}\n" \
-            -f
+            -w "\n%{http_code}" \
+            -o /tmp/cron-sync-response.json
+
+          HTTP_CODE=$(tail -1 /tmp/cron-sync-response.json)
+          echo "HTTP status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Sync failed with HTTP $HTTP_CODE"
+            cat /tmp/cron-sync-response.json
+            exit 1
+          fi
+
+          echo "Sync response:"
+          head -n -1 /tmp/cron-sync-response.json | python3 -m json.tool 2>/dev/null || head -n -1 /tmp/cron-sync-response.json
