@@ -35,6 +35,7 @@ interface Listing {
   bid_count: number | null;
   reserve_price_met: boolean | null;
   images: { url: string }[];
+  extra_images?: { url: string }[];
   listing_url: string;
   seller: string | null;
   seller_rating: number | null;
@@ -380,6 +381,30 @@ export default function MarketWatchPage() {
                             )}
                           </ActionIcon>
                         </Tooltip>
+                        {/* Image count badge */}
+                        {(() => {
+                          const totalImgs = (item.images?.length || 0) + (item.extra_images?.length || 0);
+                          if (totalImgs > 1) {
+                            return (
+                              <Badge
+                                size="xs"
+                                variant="filled"
+                                sx={{
+                                  position: "absolute",
+                                  bottom: 8,
+                                  left: 8,
+                                  backgroundColor: "rgba(0,0,0,0.55)",
+                                  color: "#fff",
+                                  fontWeight: 400,
+                                  fontSize: 11,
+                                }}
+                              >
+                                📷 {totalImgs}
+                              </Badge>
+                            );
+                          }
+                          return null;
+                        })()}
                       </Box>
 
                       {/* Info */}

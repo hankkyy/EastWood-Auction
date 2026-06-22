@@ -210,10 +210,17 @@ export default function MarketWatchDetailPage() {
     ? listing.current_bid
     : listing.price;
 
-  const allImages = [
-    ...(listing.images || []),
-    ...(listing.extra_images || []),
-  ];
+  const allImages = (() => {
+    const seen = new Set<string>();
+    const result: { url: string; width?: number; height?: number }[] = [];
+    for (const img of [...(listing.images || []), ...(listing.extra_images || [])]) {
+      if (!seen.has(img.url)) {
+        seen.add(img.url);
+        result.push(img);
+      }
+    }
+    return result;
+  })();
 
   return (
     <>
@@ -302,9 +309,9 @@ export default function MarketWatchDetailPage() {
                     {t("marketWatch.extraImages")} ({allImages.length})
                   </Text>
                   <Group spacing={8}>
-                    {allImages.map((img, i) => (
+                    {allImages.map((img) => (
                       <Box
-                        key={i}
+                        key={img.url}
                         onClick={() => setSelectedImage(img.url)}
                         sx={(theme) => ({
                           width: 72,
