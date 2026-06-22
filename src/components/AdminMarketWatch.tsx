@@ -480,7 +480,10 @@ export default function AdminMarketWatch() {
             label={locale === "zh" ? "物品所在地国家" : "Item Location Countries"}
             data={countryOptions}
             value={formItemLocationCountries}
-            onChange={setFormItemLocationCountries}
+            onChange={(v) => {
+              setFormItemLocationCountries(v);
+              if (!v.includes("US")) setFormItemLocationRegions([]);
+            }}
             placeholder={locale === "zh" ? "选择国家..." : "Select countries..."}
             clearable
             searchable
@@ -488,18 +491,20 @@ export default function AdminMarketWatch() {
               label: { color: appFieldLabelColor(theme) },
             })}
           />
-          <MultiSelect
-            label={locale === "zh" ? "物品所在地州/省" : "Item Location States"}
-            data={regionOptions}
-            value={formItemLocationRegions}
-            onChange={setFormItemLocationRegions}
-            placeholder={locale === "zh" ? "选择州/省..." : "Select states..."}
-            clearable
-            searchable
-            styles={(theme) => ({
-              label: { color: appFieldLabelColor(theme) },
-            })}
-          />
+          {formItemLocationCountries.includes("US") && (
+            <MultiSelect
+              label={locale === "zh" ? "物品所在地州/省" : "Item Location States"}
+              data={regionOptions}
+              value={formItemLocationRegions}
+              onChange={setFormItemLocationRegions}
+              placeholder={locale === "zh" ? "选择州/省..." : "Select states..."}
+              clearable
+              searchable
+              styles={(theme) => ({
+                label: { color: appFieldLabelColor(theme) },
+              })}
+            />
+          )}
           <NumberInput
             label={locale === "zh" ? "卖家最低信用分" : "Min Seller Feedback Score"}
             value={formMinFeedbackScore}
