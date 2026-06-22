@@ -142,6 +142,8 @@ export default function AdminMarketWatch() {
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Partial<Rule> | null>(null);
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -198,6 +200,7 @@ export default function AdminMarketWatch() {
 
   const openCreate = () => {
     setEditingRule(null);
+    setFormError("");
     setFormName("");
     setFormKeywords("");
     setFormCategoryIds([]);
@@ -215,6 +218,7 @@ export default function AdminMarketWatch() {
 
   const openEdit = (rule: Rule) => {
     setEditingRule(rule);
+    setFormError("");
     setFormName(rule.name);
     setFormKeywords(rule.keywords.join(", "));
     setFormCategoryIds(rule.category_ids || []);
@@ -231,45 +235,63 @@ export default function AdminMarketWatch() {
   };
 
   const saveRule = async () => {
+    setFormError("");
+
     const keywords = formKeywords.split(",").map((k) => k.trim()).filter(Boolean);
-    if (!formName || keywords.length === 0) return;
 
-    const body = {
-      name: formName,
-      keywords,
-      category_ids: formCategoryIds,
-      price_min: formPriceMin === "" ? null : Number(formPriceMin),
-      price_max: formPriceMax === "" ? null : Number(formPriceMax),
-      conditions: formConditions,
-      listing_types: formListingTypes,
-      returns_accepted_only: formReturnsAccepted,
-      item_location_countries: formItemLocationCountries,
-      item_location_regions: formItemLocationRegions,
-      min_feedback_score: formMinFeedbackScore === "" ? null : Number(formMinFeedbackScore),
-      exclude_sellers: formExcludeSellers
-        ? formExcludeSellers.split(",").map((s) => s.trim()).filter(Boolean)
-        : [],
-    };
-
-    const url = editingRule?.id
-      ? `/api/external/rules/${editingRule.id}`
-      : "/api/external/rules";
-    const method = editingRule?.id ? "PUT" : "POST";
-
-    const headers = await getAuthHeaders(true);
-    const res = await fetch(url, {
-      method,
-      headers,
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const payload = await res.json().catch(() => ({}));
-      throw new Error(payload.error || "Unable to save rule.");
+    // Validation
+    if (!formName.trim()) {
+      setFormError(locale === "zh" ? "请输入规则名称" : "Rule name is required");
+      return;
+    }
+    if (keywords.length === 0) {
+      setFormError(locale === "zh" ? "请输入至少一个搜索关键词" : "At least one keyword is required");
+      return;
     }
 
-    setModalOpen(false);
-    void fetchRules();
+    setSaving(true);
+    try {
+      const body = {
+        name: formName,
+        keywords,
+        category_ids: formCategoryIds,
+        price_min: formPriceMin === "" ? null : Number(formPriceMin),
+        price_max: formPriceMax === "" ? null : Number(formPriceMax),
+        conditions: formConditions,
+        listing_types: formListingTypes,
+        returns_accepted_only: formReturnsAccepted,
+        item_location_countries: formItemLocationCountries,
+        item_location_regions: formItemLocationRegions,
+        min_feedback_score: formMinFeedbackScore === "" ? null : Number(formMinFeedbackScore),
+        exclude_sellers: formExcludeSellers
+          ? formExcludeSellers.split(",").map((s) => s.trim()).filter(Boolean)
+          : [],
+      };
+
+      const url = editingRule?.id
+        ? `/api/external/rules/${editingRule.id}`
+        : "/api/external/rules";
+      const method = editingRule?.id ? "PUT" : "POST";
+
+      const headers = await getAuthHeaders(true);
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || (locale === "zh" ? "保存失败，请重试" : "Save failed, please retry"));
+      }
+
+      setModalOpen(false);
+      void fetchRules();
+    } catch (err: any) {
+      setFormError(err.message || (locale === "zh" ? "保存失败" : "Save failed"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const deleteRule = async (id: string) => {
@@ -599,7 +621,10 @@ export default function AdminMarketWatch() {
               },
             })}
           />
-          <Button onClick={saveRule} mt="sm" sx={primaryActionButtonSx}>
+          {formError && (
+            <Text size="sm" color="red">{formError}</Text>
+          )}
+          <Button onClick={saveRule} mt="sm" sx={primaryActionButtonSx} loading={saving}>
             {editingRule?.id
               ? (locale === "zh" ? "保存" : "Save")
               : (locale === "zh" ? "创建" : "Create")}
