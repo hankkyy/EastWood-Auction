@@ -605,7 +605,13 @@ export default function MarketWatchPage() {
                   { maxWidth: "sm", cols: 1, spacing: "sm" },
                 ]}
               >
-                {listings.map((item) => {
+                {listings
+                  .filter((item) => {
+                    if (!newOnly) return true;
+                    const discovered = new Date(item.discovered_at).getTime();
+                    return (Date.now() - discovered) / 3600000 <= 24;
+                  })
+                  .map((item) => {
                     const endInfo = formatEndsAt(item.ends_at);
                     const isAuction = item.buying_options?.includes("AUCTION");
                     const isFixedPrice = item.buying_options?.includes("FIXED_PRICE");
