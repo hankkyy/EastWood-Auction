@@ -59,6 +59,8 @@ interface ListingDetail {
   item_specifics?: { name: string; value: string }[];
   estimated_sold?: number | null;
   estimated_available_qty?: number | null;
+  category_path?: string | null;
+  watch_count?: number | null;
   is_saved?: boolean;
 }
 
@@ -341,6 +343,13 @@ export default function MarketWatchDetailPage() {
                   {listing.title}
                 </Title>
 
+                {/* eBay category path */}
+                {listing.category_path && (
+                  <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
+                    {listing.category_path}
+                  </Text>
+                )}
+
                 {/* Matched keywords */}
                 {listing.matched_keywords?.length > 0 && (
                   <Group spacing={6}>
@@ -424,6 +433,14 @@ export default function MarketWatchDetailPage() {
                         <Text size="xs" color="dimmed">{t("marketWatch.estimatedSold")}</Text>
                         <Text size="lg" weight={600} sx={(theme) => ({ color: appTextColor(theme) })}>
                           {listing.estimated_sold}
+                        </Text>
+                      </Box>
+                    )}
+                    {listing.watch_count != null && listing.watch_count > 0 && (
+                      <Box>
+                        <Text size="xs" color="dimmed">{locale === "zh" ? "关注人数" : "Watchers"}</Text>
+                        <Text size="lg" weight={600} sx={(theme) => ({ color: appTextColor(theme) })}>
+                          👁 {listing.watch_count}
                         </Text>
                       </Box>
                     )}

@@ -96,6 +96,8 @@ export interface EBayItemDetail {
     estimatedAvailableQuantity?: number;
     estimatedSoldQuantity?: number;
   }[];
+  categoryPath?: string;
+  watchCount?: number;
 }
 
 export interface EBaySearchResponse {

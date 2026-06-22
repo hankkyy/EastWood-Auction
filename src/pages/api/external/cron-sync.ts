@@ -216,6 +216,8 @@ export default async function handler(
                     ?.estimatedSoldQuantity ?? null,
                   estimated_available_qty: detail.estimatedAvailabilities?.[0]
                     ?.estimatedAvailableQuantity ?? null,
+                  category_path: detail.categoryPath || null,
+                  watch_count: detail.watchCount ?? null,
                   location: detail.itemLocation
                     ? [
                         detail.itemLocation.city,
