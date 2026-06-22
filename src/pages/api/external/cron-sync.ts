@@ -192,7 +192,7 @@ export default async function handler(
           const needsEnrichment =
             item.buyingOptions?.includes("AUCTION") ||
             !listing?.description ||
-            !listing?.return_terms ||
+            !listing?.return_terms || Object.keys(listing.return_terms as Record<string, unknown>).length === 0 ||
             ((listing?.shipping_options as any[]) || []).length === 0 ||
             ((listing?.item_specifics as any[]) || []).length === 0;
 
