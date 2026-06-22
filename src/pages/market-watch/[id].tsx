@@ -342,7 +342,7 @@ export default function MarketWatchDetailPage() {
             </Box>
 
             {/* Right — Info */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               <Stack spacing="md">
                 {/* Title */}
                 <Title order={3} sx={(theme) => ({ color: appTextColor(theme), fontWeight: 500, fontFamily: "inherit" })}>
@@ -498,9 +498,14 @@ export default function MarketWatchDetailPage() {
                           color: appTextColor(theme),
                           lineHeight: 1.7,
                           fontSize: 14,
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          overflow: "hidden",
+                          "& *": { maxWidth: "100%" },
                           "& p": { margin: "0 0 0.5em" },
                           "& ul, & ol": { paddingLeft: 20, margin: "0 0 0.5em" },
                           "& img": { maxWidth: "100%", height: "auto" },
+                          "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
                           "& a": { color: "#c4a255" },
                         })}
                         dangerouslySetInnerHTML={{ __html: listing.description }}
@@ -522,6 +527,7 @@ export default function MarketWatchDetailPage() {
                     <Table
                       fontSize="sm"
                       sx={(theme) => ({
+                        "&": { display: "block", overflowX: "auto" },
                         "& td": {
                           borderBottom: `1px solid ${appSurfaceBorder(theme)}`,
                           padding: "6px 12px",
@@ -656,7 +662,7 @@ export default function MarketWatchDetailPage() {
               <Box
                 sx={(theme) => ({
                   overflowX: "auto",
-                  "& table": { width: "100%", borderCollapse: "collapse" },
+                  "& table": { width: "100%", borderCollapse: "collapse", minWidth: 400 },
                   "& th, & td": {
                     padding: "8px 16px",
                     textAlign: "left",
