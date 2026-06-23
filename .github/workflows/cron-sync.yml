@@ -16,7 +16,7 @@ jobs:
             exit 1
           fi
 
-          curl -s -X POST "https://eastwoodauction.vercel.app/api/external/cron-sync" \
+          curl -s --max-time 90 -X POST "https://eastwoodauction.vercel.app/api/external/cron-sync" \
             -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
             -H "Content-Type: application/json" \
             -w "\n%{http_code}" \
