@@ -129,7 +129,13 @@ export default async function handler(
   switch (sort) {
     case "price_asc": query = query.order("price", { ascending: true }); break;
     case "price_desc": query = query.order("price", { ascending: false }); break;
-    default: query = query.order("discovered_at", { ascending: false });
+    default:
+      // "newest" — sort by eBay listing creation date first (what user
+      // thinks of as "最新"), then by discovery date as tiebreaker.
+      // NULLs last so items without creation_date don't appear on top.
+      query = query
+        .order("item_creation_date", { ascending: false, nullsFirst: false })
+        .order("discovered_at", { ascending: false });
   }
 
   query = query.range(offset, offset + limitNum - 1);

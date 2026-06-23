@@ -120,6 +120,7 @@ export default function MarketWatchPage() {
   }, [page]);
 
   const [loading, setLoading] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [sort, setSort] = useState("newest");
   const [search, setSearch] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -205,7 +206,12 @@ export default function MarketWatchPage() {
         setLoading(false);
       }
     } finally {
-      setLoading(false);
+      // Only update loading/done if this request hasn't been superseded
+      // (prevents aborted requests from overwriting a new request's loading=true)
+      if (abortRef.current === controller) {
+        setLoading(false);
+        setInitialLoadDone(true);
+      }
     }
   }, [page, sort, search, minPrice, maxPrice, locationFilter, regionFilter, conditionFilter, buyingOptionFilter, endingSoonFilter, returnsFilter, minFeedbackFilter, savedOnly, user]);
 
@@ -582,7 +588,7 @@ export default function MarketWatchPage() {
               >
                 {skeletonCards}
               </SimpleGrid>
-            ) : listings.length === 0 ? (
+            ) : initialLoadDone && listings.length === 0 ? (
               <Center py={80}>
                 <Stack align="center" spacing="md">
                   <IconSearchOff size={48} style={{ opacity: 0.3 }} />
@@ -919,6 +925,27 @@ export default function MarketWatchPage() {
                           <Text size="xs" mt={2} sx={(theme) => ({ color: appMutedTextColor(theme) })}>
                             {locale === "zh" ? "卖家" : "Seller"}: {item.seller}
                             {item.seller_rating && ` · ★ ${item.seller_rating}`}
+                          </Text>
+                        )}
+                        {/* eBay listing date — shows how fresh the item is */}
+                        {item.item_creation_date && (
+                          <Text size="xs" mt={2} sx={(theme) => ({
+                            color: (() => {
+                              const created = new Date(item.item_creation_date!).getTime();
+                              const hoursAgo = (Date.now() - created) / 3600000;
+                              if (hoursAgo <= 24) return theme.colorScheme === "dark" ? "#c4a255" : "#8b7744";
+                              return appMutedTextColor(theme);
+                            })(),
+                          })}>
+                            {locale === "zh" ? "上架" : "Listed"}: {(() => {
+                              const created = new Date(item.item_creation_date!);
+                              const now = new Date();
+                              const diffDays = Math.floor((now.getTime() - created.getTime()) / 86400000);
+                              if (diffDays === 0) return locale === "zh" ? "今天" : "Today";
+                              if (diffDays === 1) return locale === "zh" ? "昨天" : "Yesterday";
+                              if (diffDays <= 7) return `${diffDays}${locale === "zh" ? "天前" : "d ago"}`;
+                              return created.toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", { month: "short", day: "numeric" });
+                            })()}
                           </Text>
                         )}
                       </Box>

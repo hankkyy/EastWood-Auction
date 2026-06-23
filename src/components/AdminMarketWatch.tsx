@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Box,
   Button,
@@ -15,8 +15,9 @@ import {
   ActionIcon,
   Modal,
   Badge,
+  Progress,
 } from "@mantine/core";
-import { IconPlus, IconEdit, IconTrash, IconRefresh } from "@tabler/icons-react";
+import { IconPlus, IconEdit, IconTrash, IconRefresh, IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react";
 import { useI18n } from "@/i18n";
 import {
   appFieldLabelColor,
@@ -140,6 +141,11 @@ export default function AdminMarketWatch() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncMsg, setSyncMsg] = useState("");
+  const [syncRunning, setSyncRunning] = useState(false);
+  const [syncPaused, setSyncPaused] = useState(false);
+  const [syncProgress, setSyncProgress] = useState({ current: 0, total: 0 });
+  const syncAbortRef = useRef(false);
+  const syncProgressRef = useRef({ current: 0, total: 0 });
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Partial<Rule> | null>(null);
@@ -175,6 +181,24 @@ export default function AdminMarketWatch() {
     };
   }, [locale]);
 
+  // localStorage key for sync progress persistence
+  const SYNC_PROGRESS_KEY = "eastwood_sync_progress";
+
+  // On mount, check for an in-progress sync and auto-resume
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SYNC_PROGRESS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.total > 0 && parsed.current < parsed.total) {
+          // There's an unfinished sync — resume after rules load
+          setSyncProgress({ current: parsed.current, total: parsed.total });
+          syncProgressRef.current = { current: parsed.current, total: parsed.total };
+        }
+      }
+    } catch (_) {}
+  }, []);
+
   const fetchRules = useCallback(async () => {
     try {
       setLoading(true);
@@ -198,6 +222,16 @@ export default function AdminMarketWatch() {
   }, [getAuthHeaders, locale]);
 
   useEffect(() => { fetchRules(); }, [fetchRules]);
+
+  // Auto-resume sync if there was an in-progress sync from a previous visit
+  useEffect(() => {
+    if (loading || rules.length === 0) return;
+    const { current, total } = syncProgressRef.current;
+    if (current > 0 && current < total && !syncRunning) {
+      // Resume the sync
+      continueSync(current, total);
+    }
+  }, [loading, rules]);
 
   const openCreate = () => {
     setEditingRule(null);
@@ -376,50 +410,121 @@ export default function AdminMarketWatch() {
     void fetchRules();
   };
 
-  const triggerSync = async () => {
-    try {
-      setError("");
-      setSyncMsg(locale === "zh" ? "同步中..." : "Syncing...");
-      const headers = await getAuthHeaders();
-      const res = await fetch("/api/external/sync", { method: "POST", headers });
-      const data = await res.json();
+  const continueSync = useCallback(async (startIndex: number, total: number) => {
+    setSyncRunning(true);
+    setSyncPaused(false);
+    syncAbortRef.current = false;
 
-      if (!res.ok) {
-        throw new Error(data.error || "Sync failed.");
+    for (let i = startIndex; i < total; i++) {
+      if (syncAbortRef.current) {
+        // Paused or cancelled — save progress and stop
+        setSyncPaused(true);
+        setSyncRunning(false);
+        localStorage.setItem(SYNC_PROGRESS_KEY, JSON.stringify({ current: i, total }));
+        syncProgressRef.current = { current: i, total };
+        return;
       }
 
-      // Build a detailed per-rule result message
-      const parts: string[] = [];
-      if (data.results) {
-        for (const r of data.results) {
-          if (r.timed_out) {
-            parts.push(`${r.rule_name}: ${locale === "zh" ? "超时跳过" : "timeout"}`);
-          } else if (r.error) {
-            parts.push(`${r.rule_name}: ${r.error}`);
+      // Update progress UI
+      const progressText = locale === "zh"
+        ? `同步中... (${i + 1}/${total})`
+        : `Syncing... (${i + 1}/${total})`;
+      setSyncMsg(progressText);
+      setSyncProgress({ current: i + 1, total });
+      syncProgressRef.current = { current: i + 1, total };
+      localStorage.setItem(SYNC_PROGRESS_KEY, JSON.stringify({ current: i, total }));
+
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`/api/external/sync?rule_index=${i}`, {
+          method: "POST",
+          headers,
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Build per-rule detail message
+        if (data.result) {
+          const r = data.result;
+          if (r.error) {
+            setSyncMsg(
+              locale === "zh"
+                ? `同步「${r.rule_name}」失败: ${r.error} (${i + 1}/${total})`
+                : `"${r.rule_name}" failed: ${r.error} (${i + 1}/${total})`
+            );
           } else {
             const enriched = r.enriched || 0;
-            parts.push(
-              `${r.rule_name}: ${r.inserted} ${locale === "zh" ? "条" : "found"}${enriched > 0 ? ` (${enriched} ${locale === "zh" ? "条已丰富" : "enriched"})` : ""}`
+            setSyncMsg(
+              locale === "zh"
+                ? `✓「${r.rule_name}」: ${r.inserted} 条${enriched > 0 ? ` (${enriched} 已丰富)` : ""} (${i + 1}/${total})`
+                : `✓ "${r.rule_name}": ${r.inserted} found${enriched > 0 ? ` (${enriched} enriched)` : ""} (${i + 1}/${total})`
             );
           }
         }
+
+        if (data.done) break;
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          setSyncPaused(true);
+          setSyncRunning(false);
+          return;
+        }
+        // Error on one rule — continue to next
+        setSyncMsg(
+          locale === "zh"
+            ? `同步出错 (${i + 1}/${total})，继续下一个...`
+            : `Sync error (${i + 1}/${total}), continuing...`
+        );
       }
-
-      const summary = locale === "zh"
-        ? `同步完成：共 ${data.synced} 条 (${data.enriched || 0} 已丰富)`
-        : `Sync done: ${data.synced} results (${data.enriched || 0} enriched)`;
-
-      setSyncMsg(
-        parts.length > 0
-          ? `${summary} — ${parts.join(" | ")}`
-          : summary
-      );
-      void fetchRules();
-    } catch (err: any) {
-      setSyncMsg("");
-      setError(err.message || (locale === "zh" ? "同步失败。" : "Sync failed."));
     }
-    // Don't clear the message automatically — let the user read it
+
+    // All done
+    setSyncRunning(false);
+    setSyncPaused(false);
+    localStorage.removeItem(SYNC_PROGRESS_KEY);
+    syncProgressRef.current = { current: 0, total: 0 };
+    setSyncProgress({ current: 0, total: 0 });
+    setSyncMsg(
+      locale === "zh"
+        ? `同步完成！${total} 条规则已处理。`
+        : `Sync complete! ${total} rules processed.`
+    );
+    void fetchRules();
+  }, [getAuthHeaders, locale, fetchRules, SYNC_PROGRESS_KEY]);
+
+  const triggerSync = async () => {
+    if (syncRunning && !syncPaused) {
+      // Pause the running sync
+      syncAbortRef.current = true;
+      return;
+    }
+
+    if (syncPaused) {
+      // Resume from where we left off
+      const { current, total } = syncProgressRef.current;
+      if (current < total) {
+        void continueSync(current, total);
+      }
+      return;
+    }
+
+    // Fresh start: use already-loaded rules from state
+    const enabledRules = rules.filter((r) => r.enabled);
+    const totalRules = enabledRules.length;
+
+    if (totalRules === 0) {
+      setSyncMsg(locale === "zh" ? "没有启用的规则。" : "No enabled rules.");
+      return;
+    }
+
+    syncAbortRef.current = false;
+    syncProgressRef.current = { current: 0, total: totalRules };
+    void continueSync(0, totalRules);
   };
 
   if (loading) return <Text color="dimmed">Loading...</Text>;
@@ -432,13 +537,17 @@ export default function AdminMarketWatch() {
         </Title>
         <Group spacing="xs">
           <Button
-            leftIcon={<IconRefresh size={16} />}
+            leftIcon={syncRunning && !syncPaused ? <IconPlayerPause size={16} /> : <IconRefresh size={16} />}
             variant="outline"
             size="sm"
             onClick={triggerSync}
             sx={(theme) => secondaryActionButtonSx(theme)}
           >
-            {locale === "zh" ? "立即同步" : "Sync Now"}
+            {syncRunning && !syncPaused
+              ? (locale === "zh" ? "暂停同步" : "Pause Sync")
+              : syncPaused
+                ? (locale === "zh" ? "继续同步" : "Resume Sync")
+                : (locale === "zh" ? "立即同步" : "Sync Now")}
           </Button>
           <Button
             leftIcon={<IconPlus size={16} />}
@@ -451,19 +560,33 @@ export default function AdminMarketWatch() {
         </Group>
       </Group>
 
-      {syncMsg && (
-        <Text
-          size="sm"
-          sx={(theme) => ({
-            color: syncMsg.includes(locale === "zh" ? "同步中" : "Syncing")
-              ? (theme.colorScheme === "dark" ? "#e6e2db" : "#5a4a2a")
-              : (theme.colorScheme === "dark" ? "#c4a255" : "#7a6e56"),
-            fontWeight: syncMsg.includes(locale === "zh" ? "同步中" : "Syncing") ? 500 : 400,
-          })}
-          mb="sm"
-        >
-          {syncMsg}
-        </Text>
+      {(syncMsg || syncProgress.total > 0) && (
+        <Box mb="sm">
+          {syncProgress.total > 0 && (
+            <Progress
+              value={(syncProgress.current / syncProgress.total) * 100}
+              size="sm"
+              mb="xs"
+              color={syncRunning ? "yellow" : "green"}
+              sx={{ borderRadius: 2 }}
+            />
+          )}
+          {syncMsg && (
+            <Text
+              size="sm"
+              sx={(theme) => ({
+                color: syncRunning
+                  ? (theme.colorScheme === "dark" ? "#e6e2db" : "#5a4a2a")
+                  : syncPaused
+                    ? (theme.colorScheme === "dark" ? "#f0b85e" : "#b8851f")
+                    : (theme.colorScheme === "dark" ? "#c4a255" : "#7a6e56"),
+                fontWeight: syncRunning ? 500 : 400,
+              })}
+            >
+              {syncMsg}
+            </Text>
+          )}
+        </Box>
       )}
 
       {error && (
