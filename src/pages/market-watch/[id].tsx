@@ -182,9 +182,29 @@ export default function MarketWatchDetailPage() {
 
     // Collect texts to translate: title, descriptions, specifics, etc.
     const textsToTranslate: string[] = [];
+    // Tracks stripped/truncated text → original key for remapping after API response
+    const keyRemap: Record<string, string> = {};
+
     if (listing.title && !translatedMap[listing.title]) textsToTranslate.push(listing.title);
     if (listing.short_description && !translatedMap[listing.short_description]) textsToTranslate.push(listing.short_description);
-    if (listing.description && !translatedMap[listing.description]) textsToTranslate.push(listing.description);
+
+    // Description is HTML — strip tags so the translation API receives plain text.
+    // eBay descriptions are often 5-15KB of HTML; Google's GET endpoint rejects URLs
+    // that long. We render translated description as plain text anyway (whiteSpace: pre-wrap).
+    if (listing.description && !translatedMap[listing.description]) {
+      const plain = listing.description
+        .replace(/<[^>]*>/g, "")           // strip HTML tags
+        .replace(/&[a-z]+;/g, " ")        // entities → space
+        .replace(/\s+/g, " ")             // collapse whitespace
+        .trim();
+      if (plain) {
+        // Truncate to ~2800 chars to stay under Google's URL length limit
+        const send = plain.length > 2800 ? plain.slice(0, 2800) + "..." : plain;
+        textsToTranslate.push(send);
+        keyRemap[send] = listing.description;
+      }
+    }
+
     if (listing.condition_description && !translatedMap[listing.condition_description]) textsToTranslate.push(listing.condition_description);
     if (listing.condition && !translatedMap[listing.condition]) textsToTranslate.push(listing.condition);
     if (listing.marketing_price?.priceTreatment && !translatedMap[listing.marketing_price.priceTreatment]) textsToTranslate.push(listing.marketing_price.priceTreatment);
@@ -217,7 +237,13 @@ export default function MarketWatchDetailPage() {
       });
       if (resp.ok) {
         const data = await resp.json();
-        setTranslatedMap((prev) => ({ ...prev, ...data.translations }));
+        // Remap stripped/truncated text keys back to original keys
+        const remapped: Record<string, string> = {};
+        for (const [k, v] of Object.entries(data.translations || {})) {
+          const target = keyRemap[k] || k;
+          remapped[target] = v as string;
+        }
+        setTranslatedMap((prev) => ({ ...prev, ...remapped }));
       }
     } catch (err) {
       console.error("Translation failed:", err);
