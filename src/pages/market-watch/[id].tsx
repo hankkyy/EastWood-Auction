@@ -397,8 +397,10 @@ export default function MarketWatchDetailPage() {
     if (priceHistory.length < 2) return null;
     const first = priceHistory[priceHistory.length - 1];
     const last = priceHistory[0];
-    const firstVal = first.current_bid ?? first.price;
-    const lastVal = last.current_bid ?? last.price;
+    // Only AUCTION items have meaningful current_bid — FIXED_PRICE
+    // items may have stale/incorrect current_bid from eBay detail fetch.
+    const firstVal = isAuction ? (first.current_bid ?? first.price) : first.price;
+    const lastVal = isAuction ? (last.current_bid ?? last.price) : last.price;
     if (firstVal == null || lastVal == null || firstVal === 0) return null;
     const change = ((lastVal - firstVal) / firstVal) * 100;
     return { up: change > 0, pct: Math.abs(change).toFixed(1) };

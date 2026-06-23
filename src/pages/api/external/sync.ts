@@ -178,10 +178,11 @@ export default async function handler(
             : null;
 
           try {
+            const isAuction = item?.buyingOptions?.includes("AUCTION");
             await supabase
               .from("external_listings")
               .update({
-                current_bid: detail.currentBidPrice
+                current_bid: isAuction && detail.currentBidPrice
                   ? parseFloat(detail.currentBidPrice.value)
                   : null,
                 bid_count: detail.bidCount ?? null,

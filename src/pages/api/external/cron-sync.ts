@@ -173,15 +173,19 @@ export default async function handler(
           if (needsEnrichment) {
             try {
               const detail: EBayItemDetail = await getEBayItem(item.itemId);
+              const isAuction = item.buyingOptions?.includes("AUCTION");
               enrichedPrice = item.price ? parseFloat(item.price.value) : null;
-              enrichedBid = detail.currentBidPrice
+              // Only AUCTION items have meaningful current_bid — FIXED_PRICE
+              // items may have a slightly different currentBidPrice from eBay
+              // that creates fake ±0.1% trends in price history.
+              enrichedBid = isAuction && detail.currentBidPrice
                 ? parseFloat(detail.currentBidPrice.value)
                 : null;
               enrichedCurrency = (item.price || detail.currentBidPrice)?.currency || "USD";
               await supabase
                 .from("external_listings")
                 .update({
-                  current_bid: detail.currentBidPrice
+                  current_bid: isAuction && detail.currentBidPrice
                     ? parseFloat(detail.currentBidPrice.value)
                     : null,
                   bid_count: detail.bidCount ?? null,
