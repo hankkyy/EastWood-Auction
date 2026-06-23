@@ -180,16 +180,27 @@ export default function MarketWatchDetailPage() {
 
     if (!listing) return;
 
-    // Collect texts to translate: title, short_description, description
+    // Collect texts to translate: title, descriptions, specifics, etc.
     const textsToTranslate: string[] = [];
     if (listing.title && !translatedMap[listing.title]) textsToTranslate.push(listing.title);
     if (listing.short_description && !translatedMap[listing.short_description]) textsToTranslate.push(listing.short_description);
     if (listing.description && !translatedMap[listing.description]) textsToTranslate.push(listing.description);
+    if (listing.condition_description && !translatedMap[listing.condition_description]) textsToTranslate.push(listing.condition_description);
+    if (listing.condition && !translatedMap[listing.condition]) textsToTranslate.push(listing.condition);
+    if (listing.marketing_price?.priceTreatment && !translatedMap[listing.marketing_price.priceTreatment]) textsToTranslate.push(listing.marketing_price.priceTreatment);
 
     // Item specifics (name-value pairs)
     const specifics = listing.item_specifics || [];
     for (const spec of specifics) {
       if (spec.value && !translatedMap[spec.value]) textsToTranslate.push(spec.value);
+      if (spec.name && !translatedMap[spec.name]) textsToTranslate.push(spec.name);
+    }
+
+    // Shipping service names
+    const shippingOpts = listing.shipping_options || [];
+    for (const opt of shippingOpts) {
+      const code = opt.shippingServiceCode;
+      if (code && !translatedMap[code]) textsToTranslate.push(code);
     }
 
     if (textsToTranslate.length === 0) {
@@ -681,7 +692,7 @@ export default function MarketWatchDetailPage() {
                     </Text>
                   )}
                   {listing.marketing_price?.priceTreatment && (
-                    <Text size="xs" color="dimmed" mt={2}>{listing.marketing_price.priceTreatment}</Text>
+                    <Text size="xs" color="dimmed" mt={2}>{showTranslation && translatedMap[listing.marketing_price.priceTreatment] ? translatedMap[listing.marketing_price.priceTreatment] : listing.marketing_price.priceTreatment}</Text>
                   )}
                   {/* Shipping options */}
                   {(() => {
@@ -702,7 +713,8 @@ export default function MarketWatchDetailPage() {
                       ExpeditedShipping: locale === "zh" ? "加急物流" : "Expedited",
                     };
                     const svcCode = cheapest?.shippingServiceCode || "";
-                    const serviceName = serviceLabels[svcCode] || svcCode;
+                    const translatedCode = showTranslation && translatedMap[svcCode] ? translatedMap[svcCode] : null;
+                    const serviceName = translatedCode || serviceLabels[svcCode] || svcCode;
                     const estDelivery = cheapest?.estimatedDeliveryDates;
                     const formatEstDate = (d?: string) => {
                       if (!d) return "";
@@ -742,7 +754,7 @@ export default function MarketWatchDetailPage() {
                     {listing.condition && (
                       <Box>
                         <Text size="xs" color="#c4a255" weight={500} mb={2}>{locale === "zh" ? "品相" : "Condition"}</Text>
-                        <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>{listing.condition}</Text>
+                        <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>{showTranslation && translatedMap[listing.condition!] ? translatedMap[listing.condition!] : listing.condition}</Text>
                       </Box>
                     )}
                     {listing.listing_duration && (
@@ -893,7 +905,7 @@ export default function MarketWatchDetailPage() {
                       <tbody>
                         {listing.item_specifics.map((spec, i) => (
                           <tr key={i}>
-                            <td>{spec.name}</td>
+                            <td>{showTranslation && translatedMap[spec.name] ? translatedMap[spec.name] : spec.name}</td>
                             <td>{showTranslation && translatedMap[spec.value] ? translatedMap[spec.value] : spec.value}</td>
                           </tr>
                         ))}
@@ -908,7 +920,7 @@ export default function MarketWatchDetailPage() {
                     <Box>
                       <Text size="xs" color="dimmed">{locale === "zh" ? "品相详情" : "Condition Details"}</Text>
                       <Text size="sm" sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.5 })}>
-                        {listing.condition_description}
+                        {showTranslation && translatedMap[listing.condition_description] ? translatedMap[listing.condition_description] : listing.condition_description}
                       </Text>
                     </Box>
                   )}
