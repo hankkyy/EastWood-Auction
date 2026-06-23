@@ -93,8 +93,6 @@ async function translateGoogle(text: string): Promise<string | null> {
     return null;
   }
 }
-  }
-}
 
 async function translateMyMemory(text: string): Promise<string | null> {
   try {
