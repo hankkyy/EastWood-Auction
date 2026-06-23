@@ -58,12 +58,15 @@ export default function PriceChart({ data, currency, height = 220 }: PriceChartP
     const maxV = Math.max(...pts.map((p) => p.val));
     const range = maxV - minV || 1;
 
-    // Nice round Y ticks
-    const rawStep = range / 4;
+    // Nice round Y ticks — ensure at least 3 distinct values
+    const pad = Math.max(range * 0.1, 1);
+    const lo = minV - pad;
+    const hi = maxV + pad;
+    const rawStep = (hi - lo) / 4;
     const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
     const step = rawStep / mag <= 1 ? mag : rawStep / mag <= 2 ? 2 * mag : rawStep / mag <= 5 ? 5 * mag : 10 * mag;
-    const floor = Math.floor(minV / step) * step;
-    const ceil = Math.ceil(maxV / step) * step;
+    const floor = Math.floor(lo / step) * step;
+    const ceil = Math.ceil(hi / step) * step;
     const ticks: number[] = [];
     for (let v = floor; v <= ceil + step * 0.01; v += step) ticks.push(v);
 
