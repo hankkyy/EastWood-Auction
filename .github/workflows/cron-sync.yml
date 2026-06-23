@@ -19,10 +19,8 @@ jobs:
 
       - name: Sync each rule individually (stay under Vercel 10s limit)
         run: |
-          set -e
-
-          # Fetch enabled rule IDs
-          RULE_IDS=$(curl -s --max-time 10 \
+          # Fetch enabled rule IDs (with retry — Vercel Hobby cold starts can take 5-10s)
+          RULE_IDS=$(curl -s --max-time 30 --retry 2 --retry-delay 15 --connect-timeout 15 \
             "https://eastwoodauction.vercel.app/api/external/rules/ids" \
             -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}")
 
@@ -37,7 +35,8 @@ jobs:
           FAILED=0
           for RULE_ID in $(echo "$RULE_IDS" | jq -r '.[]'); do
             echo "::group::Syncing rule $RULE_ID"
-            HTTP_CODE=$(curl -s --max-time 15 -X POST \
+            HTTP_CODE=$(curl -s --max-time 30 --retry 2 --retry-delay 10 --connect-timeout 15 \
+              -X POST \
               "https://eastwoodauction.vercel.app/api/external/cron-sync?rule_id=$RULE_ID" \
               -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
               -H "Content-Type: application/json" \
@@ -49,6 +48,7 @@ jobs:
             echo "::endgroup::"
 
             if [ "$HTTP_CODE" != "200" ]; then
+              echo "::warning::Rule $RULE_ID returned HTTP $HTTP_CODE"
               FAILED=$((FAILED + 1))
             fi
           done
