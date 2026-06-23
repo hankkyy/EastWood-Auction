@@ -62,18 +62,37 @@ async function translateGoogle(text: string): Promise<string | null> {
 
     const raw = await resp.text();
 
-    // Google returns nested arrays: [[["translated","original",...]],...]
-    // Parse manually to avoid json quirks
-    const pieces: string[] = [];
-    const matches = raw.matchAll(/\[\[\["(.*?)"/g);
-    for (const m of matches) {
-      if (m[1]) pieces.push(m[1]);
+    // Try JSON.parse first (most reliable)
+    try {
+      const parsed = JSON.parse(raw);
+      // Response format: [[["translated","original",...],...],...]
+      // The first array contains sentence-level translations
+      if (Array.isArray(parsed) && Array.isArray(parsed[0])) {
+        const pieces: string[] = [];
+        for (const segment of parsed[0]) {
+          if (Array.isArray(segment) && typeof segment[0] === "string") {
+            pieces.push(segment[0]);
+          }
+        }
+        const result = pieces.join("");
+        if (result) return result;
+      }
+    } catch {
+      // Fallback: regex parse for malformed responses
+      const pieces: string[] = [];
+      const matches = raw.matchAll(/\[\[\["(.*?)"/g);
+      for (const m of matches) {
+        if (m[1]) pieces.push(m[1]);
+      }
+      const result = pieces.join("");
+      if (result) return result;
     }
 
-    const result = pieces.join("");
-    return result || null;
+    return null;
   } catch {
     return null;
+  }
+}
   }
 }
 
