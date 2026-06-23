@@ -101,134 +101,169 @@ export default async function handler(
       let inserted = 0;
       let enriched = 0;
 
-      // Step 1: Upsert basic listing info (fast, no item-detail call needed)
-      for (const item of items) {
-        const images = item.image
-          ? [{ url: ebayFullResUrl(item.image.imageUrl), width: item.image.width, height: item.image.height }]
-          : [];
+      // Step 1: Upsert basic listing info in parallel (fast, no item-detail call needed)
+      const upsertResults = await Promise.allSettled(
+        items.map(async (item) => {
+          const images = item.image
+            ? [{ url: ebayFullResUrl(item.image.imageUrl), width: item.image.width, height: item.image.height }]
+            : [];
 
-        // Build location string with state/province when available
-        let locationStr: string | null = null;
-        if (item.itemLocation) {
-          const parts = [item.itemLocation.city];
-          if (item.itemLocation.stateOrProvince) parts.push(item.itemLocation.stateOrProvince);
-          parts.push(item.itemLocation.country);
-          locationStr = parts.join(", ");
-        }
+          // Build location string with state/province when available
+          let locationStr: string | null = null;
+          if (item.itemLocation) {
+            const parts = [item.itemLocation.city];
+            if (item.itemLocation.stateOrProvince) parts.push(item.itemLocation.stateOrProvince);
+            parts.push(item.itemLocation.country);
+            locationStr = parts.join(", ");
+          }
 
-        const { error: upsertErr } = await supabase
-          .from("external_listings")
-          .upsert(
-            {
-              rule_id: rule.id,
-              source: "ebay",
-              external_id: item.itemId,
-              title: item.title,
-              price: item.price ? parseFloat(item.price.value) : null,
-              currency: item.price?.currency || "USD",
-              images,
-              listing_url: item.itemWebUrl,
-              seller: item.seller?.username || null,
-              seller_rating: item.seller?.feedbackScore || null,
-              condition: item.condition || null,
-              location: locationStr,
-              matched_keywords: keywords.filter((kw: string) =>
-                item.title?.toLowerCase().includes(kw.toLowerCase())
-              ),
-              ends_at: item.itemEndDate || null,
-              buying_options: item.buyingOptions || [],
-              discovered_at: new Date().toISOString(),
-            },
-            { onConflict: "source,external_id" }
-          );
+          const { error: upsertErr, data: upserted } = await supabase
+            .from("external_listings")
+            .upsert(
+              {
+                rule_id: rule.id,
+                source: "ebay",
+                external_id: item.itemId,
+                title: item.title,
+                price: item.price ? parseFloat(item.price.value) : null,
+                currency: item.price?.currency || "USD",
+                images,
+                listing_url: item.itemWebUrl,
+                seller: item.seller?.username || null,
+                seller_rating: item.seller?.feedbackScore || null,
+                condition: item.condition || null,
+                location: locationStr,
+                matched_keywords: keywords.filter((kw: string) =>
+                  item.title?.toLowerCase().includes(kw.toLowerCase())
+                ),
+                ends_at: item.itemEndDate || null,
+                buying_options: item.buyingOptions || [],
+                discovered_at: new Date().toISOString(),
+              },
+              { onConflict: "source,external_id" }
+            );
 
-        if (!upsertErr) {
+          return { item, upsertErr, upserted };
+        })
+      );
+
+      let inserted = 0;
+      const enrichedIds: { itemId: string; item: EBayItemSummary; listingId: string; isAuction: boolean }[] = [];
+
+      for (const r of upsertResults) {
+        if (r.status === "fulfilled" && !r.value.upsertErr) {
           inserted++;
+          const { item, upserted } = r.value;
+
+          // Check if this item needs enrichment (same logic as cron-sync.ts)
+          if (upserted?.[0]?.id) {
+            const listingId = upserted[0].id;
+            const { data: listing } = await supabase
+              .from("external_listings")
+              .select("id, description, return_terms, shipping_options, item_specifics")
+              .eq("id", listingId)
+              .single();
+
+            const isAuction = item.buyingOptions?.includes("AUCTION");
+            const needsEnrichment =
+              isAuction ||
+              !listing?.description ||
+              !listing?.return_terms || Object.keys(listing.return_terms as Record<string, unknown>).length === 0 ||
+              ((listing?.shipping_options as any[]) || []).length === 0 ||
+              ((listing?.item_specifics as any[]) || []).length === 0;
+
+            if (needsEnrichment) {
+              enrichedIds.push({ itemId: item.itemId, item, listingId, isAuction });
+            }
+          }
         }
       }
 
-      // Step 2: Enrich ALL listings in parallel with concurrency cap
-      // 5 concurrent calls prevent eBay rate limiting while being much faster than serial
-      const CONCURRENCY = 5;
-      const itemIds = items.map((i) => i.itemId);
+      // Step 2: Only enrich items that actually need it (massive speedup vs enriching all 50)
+      let enriched = 0;
+      if (enrichedIds.length > 0) {
+        const CONCURRENCY = 5;
 
-      for (let i = 0; i < itemIds.length; i += CONCURRENCY) {
-        if (hasTimedOut()) break;
+        for (let i = 0; i < enrichedIds.length; i += CONCURRENCY) {
+          if (hasTimedOut()) break;
 
-        const batch = itemIds.slice(i, i + CONCURRENCY);
-        const detailResults = await Promise.allSettled(
-          batch.map(async (itemId) => {
-            const detail: EBayItemDetail = await getEBayItem(itemId);
-            return { itemId, detail };
-          })
-        );
+          const batch = enrichedIds.slice(i, i + CONCURRENCY);
+          const detailResults = await Promise.allSettled(
+            batch.map(async ({ itemId }) => {
+              const detail: EBayItemDetail = await getEBayItem(itemId);
+              return { itemId, detail };
+            })
+          );
 
-        for (const result of detailResults) {
-          if (result.status === "rejected") {
-            console.warn(`[sync] Failed to fetch item detail: ${result.reason?.message || result.reason}`);
-            continue;
-          }
+          for (const result of detailResults) {
+            if (result.status === "rejected") {
+              console.warn(`[sync] Failed to fetch item detail: ${result.reason?.message || result.reason}`);
+              continue;
+            }
 
-          const { itemId, detail } = result.value;
-          const item = items.find((i) => i.itemId === itemId);
-          const locationStr = item?.itemLocation
-            ? [item.itemLocation.city, item.itemLocation.stateOrProvince, item.itemLocation.country]
-                .filter(Boolean)
-                .join(", ")
-            : null;
+            const { itemId, detail } = result.value;
+            const entry = enrichedIds.find((e) => e.itemId === itemId);
+            if (!entry) continue;
 
-          try {
-            const isAuction = item?.buyingOptions?.includes("AUCTION");
-            await supabase
-              .from("external_listings")
-              .update({
-                current_bid: isAuction && detail.currentBidPrice
-                  ? parseFloat(detail.currentBidPrice.value)
-                  : null,
-                bid_count: detail.bidCount ?? null,
-                reserve_price_met: detail.reservePriceMet ?? null,
-                short_description: detail.shortDescription || null,
-                description: detail.description || null,
-                extra_images: detail.additionalImages?.map((img) => ({
-                  url: ebayFullResUrl(img.imageUrl),
-                  width: img.width,
-                  height: img.height,
-                })) || [],
-                item_specifics: detail.localizedAspects || [],
-                feedback_pct: detail.seller?.feedbackPercentage || null,
-                feedback_rating_star: detail.seller?.feedbackRatingStar || null,
-                estimated_sold: detail.estimatedAvailabilities?.[0]
-                  ?.estimatedSoldQuantity ?? null,
-                estimated_available_qty: detail.estimatedAvailabilities?.[0]
-                  ?.estimatedAvailableQuantity ?? null,
-                condition_description: detail.conditionDescription || null,
-                category_path: detail.categoryPath || null,
-                category_id: detail.categoryId || null,
-                watch_count: detail.watchCount ?? null,
-                item_creation_date: detail.itemCreationDate || null,
-                listing_duration: detail.listingDuration || null,
-                quantity: detail.quantity ?? null,
-                return_terms: detail.returnTerms || {},
-                shipping_options: detail.shippingOptions || [],
-                marketing_price: detail.marketingPrice || {},
-                location: detail.itemLocation
-                  ? [
-                      detail.itemLocation.city,
-                      detail.itemLocation.stateOrProvince,
-                      detail.itemLocation.country,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")
-                  : locationStr,
-              })
-              .eq("source", "ebay")
-              .eq("external_id", itemId);
+            const { item, listingId, isAuction } = entry;
+            const locationStr = item?.itemLocation
+              ? [item.itemLocation.city, item.itemLocation.stateOrProvince, item.itemLocation.country]
+                  .filter(Boolean)
+                  .join(", ")
+              : null;
 
-            enriched++;
-          } catch (detailErr: any) {
-            console.warn(
-              `[sync] Failed to update DB for item ${itemId}: ${detailErr.message}`
-            );
+            try {
+              await supabase
+                .from("external_listings")
+                .update({
+                  current_bid: isAuction && detail.currentBidPrice
+                    ? parseFloat(detail.currentBidPrice.value)
+                    : null,
+                  bid_count: detail.bidCount ?? null,
+                  reserve_price_met: detail.reservePriceMet ?? null,
+                  short_description: detail.shortDescription || null,
+                  description: detail.description || null,
+                  extra_images: detail.additionalImages?.map((img) => ({
+                    url: ebayFullResUrl(img.imageUrl),
+                    width: img.width,
+                    height: img.height,
+                  })) || [],
+                  item_specifics: detail.localizedAspects || [],
+                  feedback_pct: detail.seller?.feedbackPercentage || null,
+                  feedback_rating_star: detail.seller?.feedbackRatingStar || null,
+                  estimated_sold: detail.estimatedAvailabilities?.[0]
+                    ?.estimatedSoldQuantity ?? null,
+                  estimated_available_qty: detail.estimatedAvailabilities?.[0]
+                    ?.estimatedAvailableQuantity ?? null,
+                  condition_description: detail.conditionDescription || null,
+                  category_path: detail.categoryPath || null,
+                  category_id: detail.categoryId || null,
+                  watch_count: detail.watchCount ?? null,
+                  item_creation_date: detail.itemCreationDate || null,
+                  listing_duration: detail.listingDuration || null,
+                  quantity: detail.quantity ?? null,
+                  return_terms: detail.returnTerms || {},
+                  shipping_options: detail.shippingOptions || [],
+                  marketing_price: detail.marketingPrice || {},
+                  location: detail.itemLocation
+                    ? [
+                        detail.itemLocation.city,
+                        detail.itemLocation.stateOrProvince,
+                        detail.itemLocation.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")
+                    : locationStr,
+                })
+                .eq("source", "ebay")
+                .eq("external_id", itemId);
+
+              enriched++;
+            } catch (detailErr: any) {
+              console.warn(
+                `[sync] Failed to update DB for item ${itemId}: ${detailErr.message}`
+              );
+            }
           }
         }
       }
