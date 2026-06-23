@@ -838,26 +838,39 @@ export default function MarketWatchDetailPage() {
                   <Box>
                     <Text size="xs" color="dimmed" mb={4}>{t("marketWatch.fullDescription")}</Text>
                     {listing.description ? (
-                      <Box
-                        sx={(theme) => ({
-                          color: appTextColor(theme), lineHeight: 1.7, fontSize: 14,
-                          wordBreak: "break-word", overflowWrap: "break-word",
-                          "& *": { maxWidth: "100%" },
-                          "& ul, & ol": { paddingLeft: 20, margin: "0 0 0.5em" },
-                          "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
-                          "& a": { color: "#c4a255" },
-                          // Kill all hardcoded background/color from eBay HTML
-                          "& *, & td, & th, & tr, & table, & div, & span, & p, & li": {
-                            backgroundColor: "transparent !important",
-                            background: "none !important",
-                          },
-                          // Ensure text inherits the container color
-                          "& td, & th, & div, & span, & p, & li, & font": {
-                            color: `${appTextColor(theme)} !important`,
-                          },
-                        })}
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(listing.description) }}
-                      />
+                      showTranslation && translatedMap[listing.description] ? (
+                        <Text
+                          size="sm"
+                          sx={(theme) => ({
+                            color: appTextColor(theme),
+                            lineHeight: 1.7,
+                            fontSize: 14,
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                          })}
+                        >
+                          {translatedMap[listing.description]}
+                        </Text>
+                      ) : (
+                        <Box
+                          sx={(theme) => ({
+                            color: appTextColor(theme), lineHeight: 1.7, fontSize: 14,
+                            wordBreak: "break-word", overflowWrap: "break-word",
+                            "& *": { maxWidth: "100%" },
+                            "& ul, & ol": { paddingLeft: 20, margin: "0 0 0.5em" },
+                            "& table": { display: "block", maxWidth: "100%", overflowX: "auto" },
+                            "& a": { color: "#c4a255" },
+                            "& *, & td, & th, & tr, & table, & div, & span, & p, & li": {
+                              backgroundColor: "transparent !important",
+                              background: "none !important",
+                            },
+                            "& td, & th, & div, & span, & p, & li, & font": {
+                              color: `${appTextColor(theme)} !important`,
+                            },
+                          })}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(listing.description) }}
+                        />
+                      )
                     ) : (
                       <Text size="sm" sx={(theme) => ({ color: appTextColor(theme), lineHeight: 1.6 })}>
                         {showTranslation && translatedMap[listing.short_description!] ? translatedMap[listing.short_description!] : listing.short_description}
