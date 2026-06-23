@@ -724,7 +724,7 @@ export default function MarketWatchPage() {
                               router.push("/login");
                             }
                           }}
-                          sx={{ position: "absolute", top: 8, right: 8, zIndex: 2 }}
+                          sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
                         >
                         <Tooltip
                           label={user ? "" : t("marketWatch.loginToSave")}
