@@ -156,36 +156,6 @@ export default async function handler(
 
           const listingId = listing?.id;
 
-          // Record price history
-          if (listingId) {
-            try {
-              const { data: lastRecord } = await supabase
-                .from("listing_price_history")
-                .select("price, current_bid")
-                .eq("listing_id", listingId)
-                .order("recorded_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-              const price = item.price ? parseFloat(item.price.value) : null;
-              const shouldRecord =
-                !lastRecord ||
-                lastRecord.price !== price ||
-                (lastRecord.current_bid !== null);
-
-              if (shouldRecord) {
-                await supabase.from("listing_price_history").insert({
-                  listing_id: listingId,
-                  price,
-                  current_bid: null,
-                  currency: item.price?.currency || "USD",
-                });
-              }
-            } catch (_) {
-              // Non-critical — don't fail sync over price history
-            }
-          }
-
           // Enrich listings with eBay item detail (bid count, description, specifics, etc.)
           // - AUCTION items: always enrich (to get fresh bid data)
           // - FIXED_PRICE items: enrich if any key field is missing
@@ -196,9 +166,18 @@ export default async function handler(
             ((listing?.shipping_options as any[]) || []).length === 0 ||
             ((listing?.item_specifics as any[]) || []).length === 0;
 
+          let enrichedPrice: number | null = null;
+          let enrichedBid: number | null = null;
+          let enrichedCurrency = item.price?.currency || "USD";
+
           if (needsEnrichment) {
             try {
               const detail: EBayItemDetail = await getEBayItem(item.itemId);
+              enrichedPrice = item.price ? parseFloat(item.price.value) : null;
+              enrichedBid = detail.currentBidPrice
+                ? parseFloat(detail.currentBidPrice.value)
+                : null;
+              enrichedCurrency = (item.price || detail.currentBidPrice)?.currency || "USD";
               await supabase
                 .from("external_listings")
                 .update({
@@ -245,23 +224,41 @@ export default async function handler(
                 .eq("source", "ebay")
                 .eq("external_id", item.itemId);
 
-            // Record current_bid in price history after enrichment
-            if (listingId && detail.currentBidPrice) {
-              try {
-                await supabase.from("listing_price_history").insert({
-                  listing_id: listingId,
-                  price: item.price ? parseFloat(item.price.value) : null,
-                  current_bid: parseFloat(detail.currentBidPrice.value),
-                  currency: detail.currentBidPrice.currency || "USD",
-                });
-              } catch (_) {
-                // Non-critical
-              }
-            }
           } catch (detailErr: any) {
               console.warn(
                 `[cron-sync] Failed to fetch item detail for ${item.itemId}: ${detailErr.message}`
               );
+            }
+          }
+
+          // Record price history (unified — single row with both price and current_bid)
+          if (listingId) {
+            try {
+              const { data: lastRecord } = await supabase
+                .from("listing_price_history")
+                .select("price, current_bid")
+                .eq("listing_id", listingId)
+                .order("recorded_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              const price = enrichedPrice ?? (item.price ? parseFloat(item.price.value) : null);
+              const bid = enrichedBid ?? (item.buyingOptions?.includes("AUCTION") ? (listing?.current_bid ?? null) : null);
+              const currency = enrichedCurrency;
+
+              const priceChanged = !lastRecord || lastRecord.price !== price;
+              const bidChanged = !lastRecord || (lastRecord.current_bid ?? null) !== (bid ?? null);
+
+              if (priceChanged || bidChanged) {
+                await supabase.from("listing_price_history").insert({
+                  listing_id: listingId,
+                  price,
+                  current_bid: bid,
+                  currency,
+                });
+              }
+            } catch (_) {
+              // Non-critical — don't fail sync over price history
             }
           }
         }

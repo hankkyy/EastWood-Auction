@@ -37,6 +37,7 @@ import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { ebayFullResUrl } from "@/lib/ebay";
+import PriceChart from "@/components/PriceChart";
 import {
   appMutedTextColor,
   appSurfaceBackground,
@@ -973,7 +974,14 @@ export default function MarketWatchDetailPage() {
               )}
             </Title>
             {priceHistory.length > 0 ? (
-              <Box
+              <div>
+                <Box mb="lg">
+                  <PriceChart
+                    data={priceHistory}
+                    currency={listing?.currency || "USD"}
+                  />
+                </Box>
+                <Box
                 sx={(theme) => ({
                   overflowX: "auto",
                   "& table": { width: "100%", borderCollapse: "collapse", minWidth: 400 },
@@ -1014,6 +1022,7 @@ export default function MarketWatchDetailPage() {
                   </tbody>
                 </table>
               </Box>
+              </div>
             ) : (
               <Text size="sm" color="dimmed">{t("marketWatch.noPriceHistory")}</Text>
             )}
