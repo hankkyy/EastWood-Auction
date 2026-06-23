@@ -3,11 +3,6 @@
     "enabled": true,
     "silent": false
   },
-  "functions": {
-    "src/pages/api/external/cron-sync.ts": {
-      "maxDuration": 60
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",

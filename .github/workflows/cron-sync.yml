@@ -3,34 +3,56 @@ name: eBay Market Watch Cron Sync
 on:
   schedule:
     - cron: "*/30 * * * *"     # primary: every 30 min
-    - cron: "15,45 * * * *"    # backup: offset 15 min (catches delays)
+    - cron: "15,45 * * * *"    # backup: offset 15 min
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger eBay sync
+      - name: Check secret
         run: |
           if [ -z "${{ secrets.CRON_SYNC_SECRET }}" ]; then
             echo "::error::CRON_SYNC_SECRET is empty or not set"
             exit 1
           fi
 
-          curl -s --max-time 90 -X POST "https://eastwoodauction.vercel.app/api/external/cron-sync" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -w "\n%{http_code}" \
-            -o /tmp/cron-sync-response.json
+      - name: Sync each rule individually (stay under Vercel 10s limit)
+        run: |
+          set -e
 
-          HTTP_CODE=$(tail -1 /tmp/cron-sync-response.json)
-          echo "HTTP status: $HTTP_CODE"
+          # Fetch enabled rule IDs
+          RULE_IDS=$(curl -s --max-time 10 \
+            "https://eastwoodauction.vercel.app/api/external/rules/ids" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}")
 
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Sync failed with HTTP $HTTP_CODE"
-            cat /tmp/cron-sync-response.json
-            exit 1
+          if [ -z "$RULE_IDS" ] || [ "$RULE_IDS" = "[]" ]; then
+            echo "No enabled rules found — nothing to sync."
+            exit 0
           fi
 
-          echo "Sync response:"
-          head -n -1 /tmp/cron-sync-response.json | python3 -m json.tool 2>/dev/null || head -n -1 /tmp/cron-sync-response.json
+          echo "Enabled rules: $RULE_IDS"
+
+          # Sync each rule one at a time
+          FAILED=0
+          for RULE_ID in $(echo "$RULE_IDS" | jq -r '.[]'); do
+            echo "::group::Syncing rule $RULE_ID"
+            HTTP_CODE=$(curl -s --max-time 15 -X POST \
+              "https://eastwoodauction.vercel.app/api/external/cron-sync?rule_id=$RULE_ID" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SYNC_SECRET }}" \
+              -H "Content-Type: application/json" \
+              -w "%{http_code}" \
+              -o /tmp/sync-$RULE_ID.json)
+
+            echo "HTTP $HTTP_CODE"
+            cat /tmp/sync-$RULE_ID.json | python3 -m json.tool 2>/dev/null || cat /tmp/sync-$RULE_ID.json
+            echo "::endgroup::"
+
+            if [ "$HTTP_CODE" != "200" ]; then
+              FAILED=$((FAILED + 1))
+            fi
+          done
+
+          if [ $FAILED -gt 0 ]; then
+            echo "::warning::$FAILED rule(s) failed to sync"
+          fi
