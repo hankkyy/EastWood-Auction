@@ -1,5 +1,5 @@
-import { Box, Text, Tooltip } from "@mantine/core";
-import { useState } from "react";
+import { Box } from "@mantine/core";
+import { useMemo, useState } from "react";
 
 interface PricePoint {
   price: number | null;
@@ -14,7 +14,7 @@ interface PriceChartProps {
   height?: number;
 }
 
-function formatPrice(val: number, currency: string) {
+function formatCurrency(val: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency || "USD",
@@ -23,182 +23,160 @@ function formatPrice(val: number, currency: string) {
   }).format(val);
 }
 
-export default function PriceChart({ data, currency, height = 200 }: PriceChartProps) {
+function formatDate(iso: string, locale: "zh" | "en") {
+  return new Date(iso).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatDateTime(iso: string, locale: "zh" | "en") {
+  return new Date(iso).toLocaleString(locale === "zh" ? "zh-CN" : "en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default function PriceChart({ data, currency, height = 220 }: PriceChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
-  if (data.length < 2) return null;
+  // Detect locale from document
+  const locale = typeof document !== "undefined" && document.documentElement.lang === "en" ? "en" : "zh";
 
-  // Normalize + reverse: newest first (left to right)
-  const points = [...data].reverse().map((p) => ({
-    val: p.current_bid ?? p.price ?? 0,
-    label: new Date(p.recorded_at).toLocaleDateString("zh-CN", {
-      month: "short",
-      day: "numeric",
-    }),
-    fullLabel: new Date(p.recorded_at).toLocaleString("zh-CN", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  }));
+  const chart = useMemo(() => {
+    if (data.length < 2) return null;
 
-  const minVal = Math.min(...points.map((p) => p.val));
-  const maxVal = Math.max(...points.map((p) => p.val));
-  const range = maxVal - minVal || 1;
+    const pts = data.map((p) => ({
+      val: p.current_bid ?? p.price ?? 0,
+      label: formatDate(p.recorded_at, locale),
+      full: formatDateTime(p.recorded_at, locale),
+    }));
 
-  // Compute nice round tick values
-  const tickCount = 4;
-  const roughStep = range / (tickCount - 1);
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
-  const niceStep = (() => {
-    const ratio = roughStep / magnitude;
-    if (ratio <= 1) return magnitude;
-    if (ratio <= 2) return 2 * magnitude;
-    if (ratio <= 5) return 5 * magnitude;
-    return 10 * magnitude;
-  })();
-  const niceMin = Math.floor(minVal / niceStep) * niceStep;
-  const niceMax = Math.ceil(maxVal / niceStep) * niceStep;
-  const tickValues: number[] = [];
-  for (let v = niceMin; v <= niceMax + niceStep * 0.1; v += niceStep) {
-    tickValues.push(v);
-  }
+    const minV = Math.min(...pts.map((p) => p.val));
+    const maxV = Math.max(...pts.map((p) => p.val));
+    const range = maxV - minV || 1;
 
-  const padH = 32;
-  const padV = 20;
-  const w = 600;
-  const h = height;
-  const chartW = w - padH * 2;
-  const chartH = h - padV * 2;
+    // Nice round Y ticks
+    const rawStep = range / 4;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const step = rawStep / mag <= 1 ? mag : rawStep / mag <= 2 ? 2 * mag : rawStep / mag <= 5 ? 5 * mag : 10 * mag;
+    const floor = Math.floor(minV / step) * step;
+    const ceil = Math.ceil(maxV / step) * step;
+    const ticks: number[] = [];
+    for (let v = floor; v <= ceil + step * 0.01; v += step) ticks.push(v);
 
-  const xScale = (i: number) => padH + (i / Math.max(points.length - 1, 1)) * chartW;
-  const yScale = (v: number) => {
-    const displayRange = niceMax - niceMin || 1;
-    return padV + chartH - ((v - niceMin) / displayRange) * chartH;
-  };
+    // Chart dimensions
+    const padL = 60;
+    const padR = 12;
+    const padT = 12;
+    const padB = 28;
+    const W = 600;
+    const H = height;
+    const cw = W - padL - padR;
+    const ch = H - padT - padB;
 
-  // Build SVG path
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${xScale(i).toFixed(1)} ${yScale(p.val).toFixed(1)}`)
-    .join(" ");
+    const x = (i: number) => padL + (i / Math.max(pts.length - 1, 1)) * cw;
+    const y = (v: number) => padT + ch - ((v - floor) / (ceil - floor || 1)) * ch;
 
-  // Area fill
-  const areaPath = `${linePath} L ${xScale(points.length - 1).toFixed(1)} ${padV + chartH} L ${padH} ${padV + chartH} Z`;
+    const line = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(p.val).toFixed(1)}`).join(" ");
+    const area = `${line} L ${x(pts.length - 1).toFixed(1)} ${padT + ch} L ${padL} ${padT + ch} Z`;
+
+    return { pts, ticks, padL, padR, padT, padB, W, H, cw, ch, x, y, line, area, minV, maxV, floor, ceil };
+  }, [data, height, locale]);
+
+  if (!chart) return null;
+
+  const { pts, ticks, padL, padR, padT, padB, W, H, cw, ch, x, y, line, area } = chart;
+
+  // Show date labels: first, every Nth, last
+  const labelStep = Math.max(1, Math.floor(pts.length / 6));
+  const xLabels = pts.map((p, i) => ({ ...p, i, show: i === 0 || i === pts.length - 1 || i % labelStep === 0 }));
 
   return (
     <Box
       sx={(theme) => ({
-        position: "relative",
         background: theme.colorScheme === "dark"
           ? "rgba(255,255,255,0.02)"
-          : "rgba(0,0,0,0.01)",
+          : "rgba(0,0,0,0.015)",
         borderRadius: 8,
         border: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}`,
-        overflow: "hidden",
+        overflow: "visible",
       })}
     >
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        style={{ width: "100%", height: "auto", display: "block" }}
-      >
-        {/* Grid lines */}
-        {tickValues.map((tv, i) => (
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+        {/* Grid + Y labels */}
+        {ticks.map((tv, i) => (
           <g key={i}>
-            <line
-              x1={padH} y1={yScale(tv)} x2={w - padH} y2={yScale(tv)}
-              stroke="rgba(128,128,128,0.12)" strokeDasharray="4 4"
-            />
-            <text
-              x={padH - 6} y={yScale(tv) + 4}
-              textAnchor="end" fontSize={10} fill="rgba(128,128,128,0.6)"
-            >
-              ${formatPrice(tv, currency)}
+            <line x1={padL} y1={y(tv)} x2={W - padR} y2={y(tv)} stroke="rgba(128,128,128,0.12)" strokeDasharray="4 4" />
+            <text x={padL - 8} y={y(tv) + 4} textAnchor="end" fontSize={11} fill="rgba(128,128,128,0.6)">
+              {formatCurrency(tv, currency)}
             </text>
           </g>
         ))}
 
-        {/* Area fill */}
-        <path d={areaPath} fill="rgba(196,162,85,0.08)" />
+        {/* Area */}
+        <path d={area} fill="rgba(196,162,85,0.07)" />
 
         {/* Line */}
-        <path
-          d={linePath}
-          fill="none"
-          stroke="#c4a255"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+        <path d={line} fill="none" stroke="#c4a255" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
 
-        {/* Dots */}
-        {points.map((p, i) => (
+        {/* Dots + hover */}
+        {pts.map((p, i) => (
           <g key={i}>
             <circle
-              cx={xScale(i)} cy={yScale(p.val)} r={i === hoverIdx ? 6 : 3}
-              fill={i === hoverIdx ? "#c4a255" : "rgba(196,162,85,0.5)"}
-              stroke={i === hoverIdx ? "#fff" : "none"}
+              cx={x(i)} cy={y(p.val)} r={hoverIdx === i ? 5 : 2.5}
+              fill={hoverIdx === i ? "#c4a255" : "rgba(196,162,85,0.45)"}
+              stroke={hoverIdx === i ? "#fff" : "none"}
               strokeWidth={2}
-              style={{ cursor: "pointer", transition: "r 0.15s" }}
+              style={{ cursor: "pointer" }}
               onMouseEnter={() => setHoverIdx(i)}
               onMouseLeave={() => setHoverIdx(null)}
             />
-            {hoverIdx === i && (
-              <g>
-                <rect
-                  x={Math.max(padH, xScale(i) - 50)}
-                  y={yScale(p.val) - 36}
-                  width={100} height={28}
-                  rx={4}
-                  fill="rgba(0,0,0,0.75)"
-                />
-                <text
-                  x={xScale(i)}
-                  y={yScale(p.val) - 20}
-                  textAnchor="middle"
-                  fill="#fff"
-                  fontSize={11}
-                >
-                  {formatPrice(p.val, currency)}
-                </text>
-              </g>
-            )}
           </g>
         ))}
 
-        {/* X-axis labels */}
-        {points.filter((_, i) => i % Math.max(1, Math.floor(points.length / 5)) === 0 || i === points.length - 1).map((p, idx, arr) => {
-          const origIdx = points.indexOf(p);
+        {/* Hover tooltip */}
+        {hoverIdx !== null && (() => {
+          const hx = x(hoverIdx);
+          const hy = y(pts[hoverIdx].val);
+          const tw = 120;
+          const labelX = hx > W / 2 ? hx - tw - 10 : hx + 10;
+          const labelY = Math.max(padT + 4, hy - 16);
           return (
-            <text
-              key={origIdx}
-              x={xScale(origIdx)}
-              y={h - 6}
-              textAnchor="middle"
-              fontSize={10}
-              fill="rgba(128,128,128,0.6)"
-            >
-              {p.label}
-            </text>
+            <g>
+              <line x1={hx} y1={padT} x2={hx} y2={padT + ch} stroke="rgba(196,162,85,0.25)" strokeWidth={1} />
+              <rect x={labelX} y={labelY} width={tw} height={38} rx={4} fill="rgba(0,0,0,0.78)" />
+              <text x={labelX + 6} y={labelY + 15} fill="#fff" fontSize={11} fontWeight={500}>
+                {formatCurrency(pts[hoverIdx].val, currency)}
+              </text>
+              <text x={labelX + 6} y={labelY + 30} fill="rgba(255,255,255,0.6)" fontSize={10}>
+                {pts[hoverIdx].full}
+              </text>
+            </g>
           );
-        })}
-      </svg>
+        })()}
 
-      {/* Hover tooltip with full date */}
-      {hoverIdx !== null && (
-        <Tooltip label={points[hoverIdx].fullLabel} withArrow>
-          <Box
-            style={{
-              position: "absolute",
-              left: `${((hoverIdx / Math.max(points.length - 1, 1)) * 100).toFixed(1)}%`,
-              top: 0,
-              width: 1,
-              height: "100%",
-              pointerEvents: "none",
-            }}
-          />
-        </Tooltip>
-      )}
+        {/* X-axis labels */}
+        {xLabels.map((p) => (
+          <text
+            key={p.i}
+            x={x(p.i)}
+            y={H - 6}
+            textAnchor={p.i === 0 ? "start" : p.i === pts.length - 1 ? "end" : "middle"}
+            fontSize={10}
+            fill="rgba(128,128,128,0.6)"
+          >
+            {p.label}
+          </text>
+        ))}
+
+        {/* Axis titles */}
+        <text x={padL - 8} y={12} textAnchor="start" fontSize={10} fill="rgba(128,128,128,0.4)">
+          {locale === "zh" ? "价格" : "Price"}
+        </text>
+      </svg>
     </Box>
   );
 }
