@@ -99,18 +99,18 @@ const formatPrice = (price: number | null, currency: string) => {
     : `$${a.toLocaleString()}`;
 };
 
-const formatEndsAt = (endsAt: string | null): { text: string; urgent: boolean } => {
+const formatEndsAt = (endsAt: string | null, locale: "zh" | "en" = "en"): { text: string; urgent: boolean } => {
   if (!endsAt) return { text: "", urgent: false };
   const end = new Date(endsAt);
   const now = new Date();
   const diffMs = end.getTime() - now.getTime();
-  if (diffMs <= 0) return { text: "Ended", urgent: true };
+  if (diffMs <= 0) return { text: locale === "zh" ? "已结束" : "Ended", urgent: true };
   const diffH = Math.floor(diffMs / 3600000);
   const diffM = Math.floor((diffMs % 3600000) / 60000);
   const diffD = Math.floor(diffH / 24);
-  if (diffD > 0) return { text: `Ends in ${diffD}d ${diffH % 24}h`, urgent: diffD <= 1 };
-  if (diffH > 0) return { text: `Ends in ${diffH}h ${diffM}m`, urgent: diffH <= 3 };
-  return { text: `Ends in ${diffM}m`, urgent: true };
+  if (diffD > 0) return { text: locale === "zh" ? `${diffD}天${diffH % 24}小时后结束` : `Ends in ${diffD}d ${diffH % 24}h`, urgent: diffD <= 1 };
+  if (diffH > 0) return { text: locale === "zh" ? `${diffH}小时${diffM}分钟后结束` : `Ends in ${diffH}h ${diffM}m`, urgent: diffH <= 3 };
+  return { text: locale === "zh" ? `${diffM}分钟后结束` : `Ends in ${diffM}m`, urgent: true };
 };
 
 export default function MarketWatchDetailPage() {
@@ -208,6 +208,8 @@ export default function MarketWatchDetailPage() {
     if (listing.condition_description && !translatedMap[listing.condition_description]) textsToTranslate.push(listing.condition_description);
     if (listing.condition && !translatedMap[listing.condition]) textsToTranslate.push(listing.condition);
     if (listing.marketing_price?.priceTreatment && !translatedMap[listing.marketing_price.priceTreatment]) textsToTranslate.push(listing.marketing_price.priceTreatment);
+    if (listing.location && !translatedMap[listing.location]) textsToTranslate.push(listing.location);
+    if (listing.category_path && !translatedMap[listing.category_path]) textsToTranslate.push(listing.category_path);
 
     // Item specifics (name-value pairs)
     const specifics = listing.item_specifics || [];
@@ -370,7 +372,7 @@ export default function MarketWatchDetailPage() {
     );
   }
 
-  const endInfo = formatEndsAt(listing.ends_at);
+  const endInfo = formatEndsAt(listing.ends_at, locale as "zh" | "en");
   const isAuction = listing.buying_options?.includes("AUCTION");
   const isFixedPrice = listing.buying_options?.includes("FIXED_PRICE");
   const isBestOffer = listing.buying_options?.includes("BEST_OFFER");
@@ -659,7 +661,7 @@ export default function MarketWatchDetailPage() {
                 {/* eBay category path */}
                 {listing.category_path && (
                   <Text size="xs" sx={(theme) => ({ color: appMutedTextColor(theme) })}>
-                    {listing.category_path}
+                    {showTranslation && translatedMap[listing.category_path] ? translatedMap[listing.category_path] : listing.category_path}
                     {listing.category_id && (
                       <Text component="span" size="xs" sx={(theme) => ({ color: appMutedTextColor(theme), opacity: 0.6 })}>
                         {" "}· ID: {listing.category_id}
@@ -806,7 +808,7 @@ export default function MarketWatchDetailPage() {
                     {listing.location && (
                       <Box>
                         <Text size="xs" color="#c4a255" weight={500} mb={2}>{locale === "zh" ? "发货地" : "Location"}</Text>
-                        <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>{listing.location}</Text>
+                        <Text size="sm" sx={(theme) => ({ color: appTextColor(theme) })}>{showTranslation && translatedMap[listing.location] ? translatedMap[listing.location] : listing.location}</Text>
                       </Box>
                     )}
                     {listing.estimated_sold != null && listing.estimated_sold > 0 && (
@@ -1098,7 +1100,7 @@ export default function MarketWatchDetailPage() {
               >
                 {relatedListings.map((related) => {
                   const isRelatedAuction = related.buying_options?.includes("AUCTION");
-                  const rEndInfo = formatEndsAt(related.ends_at);
+                  const rEndInfo = formatEndsAt(related.ends_at, locale as "zh" | "en");
                   const relatedImg = related.images?.[0]
                     ? ebayFullResUrl(related.images[0].url)
                     : null;
