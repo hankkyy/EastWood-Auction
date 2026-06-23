@@ -2,7 +2,8 @@ name: eBay Market Watch Cron Sync
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/30 * * * *"     # primary: every 30 min
+    - cron: "15,45 * * * *"    # backup: offset 15 min (catches delays)
   workflow_dispatch:
 
 jobs:
