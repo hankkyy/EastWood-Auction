@@ -47,6 +47,24 @@ export default function PriceChart({ data, currency, height = 200 }: PriceChartP
   const maxVal = Math.max(...points.map((p) => p.val));
   const range = maxVal - minVal || 1;
 
+  // Compute nice round tick values
+  const tickCount = 4;
+  const roughStep = range / (tickCount - 1);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const niceStep = (() => {
+    const ratio = roughStep / magnitude;
+    if (ratio <= 1) return magnitude;
+    if (ratio <= 2) return 2 * magnitude;
+    if (ratio <= 5) return 5 * magnitude;
+    return 10 * magnitude;
+  })();
+  const niceMin = Math.floor(minVal / niceStep) * niceStep;
+  const niceMax = Math.ceil(maxVal / niceStep) * niceStep;
+  const tickValues: number[] = [];
+  for (let v = niceMin; v <= niceMax + niceStep * 0.1; v += niceStep) {
+    tickValues.push(v);
+  }
+
   const padH = 32;
   const padV = 20;
   const w = 600;
@@ -55,7 +73,10 @@ export default function PriceChart({ data, currency, height = 200 }: PriceChartP
   const chartH = h - padV * 2;
 
   const xScale = (i: number) => padH + (i / Math.max(points.length - 1, 1)) * chartW;
-  const yScale = (v: number) => padV + chartH - ((v - minVal) / range) * chartH;
+  const yScale = (v: number) => {
+    const displayRange = niceMax - niceMin || 1;
+    return padV + chartH - ((v - niceMin) / displayRange) * chartH;
+  };
 
   // Build SVG path
   const linePath = points
@@ -64,12 +85,6 @@ export default function PriceChart({ data, currency, height = 200 }: PriceChartP
 
   // Area fill
   const areaPath = `${linePath} L ${xScale(points.length - 1).toFixed(1)} ${padV + chartH} L ${padH} ${padV + chartH} Z`;
-
-  // Y-axis ticks
-  const yTicks = 4;
-  const tickValues = Array.from({ length: yTicks }, (_, i) =>
-    minVal + (range / (yTicks - 1)) * i
-  );
 
   return (
     <Box
@@ -98,7 +113,7 @@ export default function PriceChart({ data, currency, height = 200 }: PriceChartP
               x={padH - 6} y={yScale(tv) + 4}
               textAnchor="end" fontSize={10} fill="rgba(128,128,128,0.6)"
             >
-              ${Math.round(tv)}
+              ${formatPrice(tv, currency)}
             </text>
           </g>
         ))}
