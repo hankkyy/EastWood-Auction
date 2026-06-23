@@ -28,8 +28,8 @@ export default function PriceChart({ data, currency, height = 200 }: PriceChartP
 
   if (data.length < 2) return null;
 
-  // Normalize: use current_bid if available, otherwise price
-  const points = data.map((p) => ({
+  // Normalize + reverse: newest first (left to right)
+  const points = [...data].reverse().map((p) => ({
     val: p.current_bid ?? p.price ?? 0,
     label: new Date(p.recorded_at).toLocaleDateString("zh-CN", {
       month: "short",
