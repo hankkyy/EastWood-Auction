@@ -1002,7 +1002,7 @@ export default function MarketWatchDetailPage() {
               <div>
                 <Box mb="lg">
                   <PriceChart
-                    data={priceHistory}
+                    data={[...priceHistory].reverse()}
                     currency={listing?.currency || "USD"}
                   />
                 </Box>

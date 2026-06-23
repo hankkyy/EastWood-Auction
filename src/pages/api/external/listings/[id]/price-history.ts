@@ -30,7 +30,7 @@ export default async function handler(
 
   if (error) return res.status(500).json({ error: error.message });
 
-  // Deduplicate: merge rows within 2s of each other
+  // Deduplicate: merge rows within 2s, then reverse (newest first)
   const deduped: typeof data = [];
   const THRESHOLD_MS = 2000;
 
@@ -40,18 +40,18 @@ export default async function handler(
       const prevTime = new Date(prev.recorded_at).getTime();
       const currTime = new Date(row.recorded_at).getTime();
       if (currTime - prevTime <= THRESHOLD_MS) {
-        // Merge: keep the row with more data (current_bid wins)
         if (row.current_bid != null && prev.current_bid == null) {
           deduped[deduped.length - 1] = row;
         } else if (row.price != null && prev.price == null && row.current_bid != null) {
           deduped[deduped.length - 1] = row;
         }
-        // If both have data, keep the later one
         continue;
       }
     }
     deduped.push(row);
   }
+
+  deduped.reverse();
 
   return res.status(200).json({
     listing_id: id,
