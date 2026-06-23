@@ -152,17 +152,18 @@ export default async function handler(
       for (const r of upsertResults) {
         if (r.status === "fulfilled" && !r.value.upsertErr) {
           inserted++;
-          const { item, upserted } = r.value;
+          const { item } = r.value;
 
-          // Check if this item needs enrichment (same logic as cron-sync.ts)
-          if (upserted?.[0]?.id) {
-            const listingId = upserted[0].id;
-            const { data: listing } = await supabase
-              .from("external_listings")
-              .select("id, description, return_terms, shipping_options, item_specifics")
-              .eq("id", listingId)
-              .single();
+          // Look up the listing ID (upsert doesn't return it with the right type)
+          const { data: listing } = await supabase
+            .from("external_listings")
+            .select("id, description, return_terms, shipping_options, item_specifics")
+            .eq("source", "ebay")
+            .eq("external_id", item.itemId)
+            .single();
 
+          if (listing?.id) {
+            const listingId = listing.id;
             const isAuction = item.buyingOptions?.includes("AUCTION");
             const needsEnrichment =
               isAuction ||
