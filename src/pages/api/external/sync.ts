@@ -147,7 +147,6 @@ export default async function handler(
         })
       );
 
-      let inserted = 0;
       const enrichedIds: { itemId: string; item: EBayItemSummary; listingId: string; isAuction: boolean }[] = [];
 
       for (const r of upsertResults) {
@@ -180,7 +179,7 @@ export default async function handler(
       }
 
       // Step 2: Only enrich items that actually need it (massive speedup vs enriching all 50)
-      let enriched = 0;
+      enriched = 0;
       if (enrichedIds.length > 0) {
         const CONCURRENCY = 5;
 
