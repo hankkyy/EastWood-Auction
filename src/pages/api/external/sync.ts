@@ -173,7 +173,7 @@ export default async function handler(
               ((listing?.item_specifics as any[]) || []).length === 0;
 
             if (needsEnrichment) {
-              enrichedIds.push({ itemId: item.itemId, item, listingId, isAuction });
+              enrichedIds.push({ itemId: item.itemId, item, listingId, isAuction: isAuction || false });
             }
           }
         }
