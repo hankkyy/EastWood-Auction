@@ -12,7 +12,7 @@ export function proxyImageUrl(src: string | undefined | null): string {
   try {
     const host = new URL(src).hostname;
     // 需要代理的域名白名单
-    const PROXY_HOSTS = ["images.metmuseum.org", "images.unsplash.com"];
+    const PROXY_HOSTS = ["images.metmuseum.org", "images.unsplash.com", "i.ebayimg.com"];
     if (PROXY_HOSTS.some((h) => host === h || host.endsWith("." + h))) {
       return `/api/proxy-image?url=${encodeURIComponent(src)}`;
     }

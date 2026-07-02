@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 const ALLOWED_HOSTS = [
   "images.metmuseum.org",
   "images.unsplash.com",
+  "i.ebayimg.com",
 ];
 
 const cache = new Map<string, { data: Buffer; contentType: string; ts: number }>();

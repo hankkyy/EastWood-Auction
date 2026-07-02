@@ -28,6 +28,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import { IconHeart, IconHeartFilled, IconSearchOff, IconLanguage } from "@tabler/icons-react";
 import { Wrapper } from "@/layout";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase/client";
@@ -675,7 +676,7 @@ export default function MarketWatchPage() {
                         sx={(theme) => ({
                           height: 220,
                           background: item.images?.[0]
-                            ? `url(${item.images[0].url}) center/cover`
+                            ? `url(${proxyImageUrl(item.images[0].url)}) center/cover`
                             : theme.colorScheme === "dark"
                               ? "linear-gradient(180deg, #2a2620, #1f1c17)"
                               : "linear-gradient(180deg, #f7f2e9, #efe6d6)",

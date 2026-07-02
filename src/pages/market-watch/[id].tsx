@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import {
@@ -339,7 +340,7 @@ export default function MarketWatchDetailPage() {
     for (const img of allImages) {
       if (img.url && !preloadedRef.current.has(img.url)) {
         const imageEl = new Image();
-        imageEl.src = img.url;
+        imageEl.src = proxyImageUrl(img.url);
         preloadedRef.current.add(img.url);
       }
     }
@@ -522,7 +523,7 @@ export default function MarketWatchDetailPage() {
                     sx={{
                       width: "100%", paddingBottom: "100%", position: "relative",
                       background: selectedImage
-                        ? `url(${selectedImage}) center/contain no-repeat`
+                        ? `url(${proxyImageUrl(selectedImage)}) center/contain no-repeat`
                         : "linear-gradient(180deg, #f7f2e9, #efe6d6)",
                       backgroundColor: "#1a1815",
                     }}
@@ -600,7 +601,7 @@ export default function MarketWatchDetailPage() {
                           sx={(theme) => ({
                             width: 72, height: 72, flexShrink: 0,
                             borderRadius: 4, cursor: "pointer",
-                            background: `url(${img.url}) center/cover`,
+                            background: `url(${proxyImageUrl(img.url)}) center/cover`,
                             border: i === selectedIndex
                               ? `2px solid #c4a255`
                               : `1px solid ${appSurfaceBorder(theme)}`,
@@ -1104,7 +1105,7 @@ export default function MarketWatchDetailPage() {
                   const isRelatedAuction = related.buying_options?.includes("AUCTION");
                   const rEndInfo = formatEndsAt(related.ends_at, locale as "zh" | "en");
                   const relatedImg = related.images?.[0]
-                    ? ebayFullResUrl(related.images[0].url)
+                    ? proxyImageUrl(ebayFullResUrl(related.images[0].url))
                     : null;
                   return (
                   <Anchor key={related.id} component={Link} href={`/market-watch/${related.id}`} underline={false}>
