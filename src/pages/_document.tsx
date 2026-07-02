@@ -13,11 +13,7 @@ export default function Document() {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-        {/* Playfair Display — Sotheby's/Christie's serif DNA */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
-          rel="stylesheet"
-        />
+        {/* Playfair Display is now self-hosted via next/font in _app.tsx — no external Google Fonts request */}
 
         {/* PWA — Web App Manifest */}
         <link rel="manifest" href="/manifest.json" />

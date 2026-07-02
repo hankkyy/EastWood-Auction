@@ -5,8 +5,25 @@ import { Notifications } from "@mantine/notifications";
 import { theme } from "@/theme";
 import { RouterTransition } from "@/components/RouterTransition";
 import { I18nProvider } from "@/i18n";
+import { Playfair_Display, Poppins } from "next/font/google";
 
 import "@/styles/globals.css";
+
+// Self-host Google Fonts to avoid blocked external requests in China
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-playfair",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-poppins",
+});
 
 const COLOR_SCHEME_KEY = "eastwood-color-scheme";
 
@@ -112,7 +129,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <I18nProvider>
           <RouterTransition />
           <Notifications position="top-right" />
-          <Component {...pageProps} />
+          <div className={`${playfair.variable} ${poppins.variable}`}>
+            <Component {...pageProps} />
+          </div>
         </I18nProvider>
       </MantineProvider>
     </ColorSchemeProvider>
