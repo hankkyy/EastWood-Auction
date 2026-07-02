@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import {
   deleteImportedArtwork,
   fetchKnowledgeBase,
@@ -863,7 +864,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                 >
                   <Box
                     component="img"
-                    src={item.image}
+                    src={proxyImageUrl(item.image)}
                     alt={itemTitle}
                     sx={(theme) => ({
                       width: "100%",

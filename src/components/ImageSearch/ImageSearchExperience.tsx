@@ -24,6 +24,7 @@ import {
   readImageAsDataUrl,
   searchSimilarArtworks,
 } from "@/features/image-search/imageSearch";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import type { Artwork, ArtworkCaseRecord, ArtworkListingType } from "@/data/artworks";
 import type {
   FeatureInsight,
@@ -935,7 +936,7 @@ export default function ImageSearchExperience() {
                     breakpoints={[{ maxWidth: "sm", cols: 1, spacing: "sm" }]}
                   >
                     <Box className={classes.resultImageFrame}>
-                    <Box component="img" src={artwork.image} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
+                    <Box component="img" src={proxyImageUrl(artwork.image)} alt={getArtworkTitle(artwork, locale)} className={classes.containedImage} />
                     </Box>
                     <Stack spacing="xs">
                       <Group spacing="xs" position="apart">

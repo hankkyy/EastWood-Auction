@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { Box, Button, Container, createStyles, Group, NumberInput, Overlay, Pagination, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
@@ -580,7 +581,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                             >
                               <Box
                                 component="img"
-                                src={item.image}
+                                src={proxyImageUrl(item.image)}
                                 alt={item.title}
                                 className={classes.cardImage}
                               />

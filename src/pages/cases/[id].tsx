@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { useRouter } from "next/router";
 import { AnimatedBox, Wrapper } from "@/layout";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
@@ -785,7 +786,7 @@ export default function CaseDetailPage() {
             >
               <Box
                 component="img"
-                src={activeImage}
+                src={proxyImageUrl(activeImage)}
                 alt={title}
                 sx={{ 
                   maxWidth: "100%", 
@@ -895,7 +896,7 @@ export default function CaseDetailPage() {
                     >
                       <Box
                         component="img"
-                        src={imageUrl}
+                        src={proxyImageUrl(imageUrl)}
                         alt={`${title}-lightbox-${index + 1}`}
                         sx={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain" }}
                       />

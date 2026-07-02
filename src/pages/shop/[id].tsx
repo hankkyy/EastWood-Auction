@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { useRouter } from "next/router";
 import { AnimatedBox, Wrapper } from "@/layout";
 import { fetchKnowledgeBase } from "@/features/image-search/artworkKnowledgeBase";
@@ -677,7 +678,7 @@ export default function ShopDetailPage() {
         <Stack align="center" justify="center" sx={{ height: "100%" }}>
           <Box
             component="img"
-            src={selectedImage}
+            src={proxyImageUrl(selectedImage)}
             alt={title}
             sx={{ 
               maxWidth: "95vw", 
