@@ -105,7 +105,6 @@ const useStyles = createStyles((theme) => ({
     height: rem(38),
     flex: "0 0 auto",
     objectFit: "cover",
-    borderRadius: theme.radius.sm,
     border: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
     [theme.fn.smallerThan("sm")]: {
       width: rem(32),

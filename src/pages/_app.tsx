@@ -50,6 +50,52 @@ export default function App({ Component, pageProps }: AppProps) {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  // Register Service Worker for PWA offline support
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+    let swRegistration: ServiceWorkerRegistration | null = null;
+
+    const registerSW = async () => {
+      try {
+        swRegistration = await navigator.serviceWorker.register("/sw.js", {
+          scope: "/",
+        });
+        console.log("[PWA] Service Worker registered:", swRegistration.scope);
+
+        // Check for updates
+        swRegistration.addEventListener("updatefound", () => {
+          const installing = swRegistration?.installing;
+          if (!installing) return;
+
+          installing.addEventListener("statechange", () => {
+            if (installing.state === "installed" && navigator.serviceWorker.controller) {
+              // New SW installed and waiting — activate immediately
+              console.log("[PWA] New version available — activating");
+              installing.postMessage("skipWaiting");
+              // Reload to pick up new assets
+              window.location.reload();
+            }
+          });
+        });
+      } catch (err) {
+        console.warn("[PWA] Service Worker registration failed:", err);
+      }
+    };
+
+    registerSW();
+
+    // When the waiting SW activates, reload
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      console.log("[PWA] Controller changed — reloading");
+      window.location.reload();
+    });
+
+    return () => {
+      swRegistration = null;
+    };
+  }, []);
+
   const toggleColorScheme = useCallback((value?: ColorScheme) => {
     const next = value || (colorScheme === "dark" ? "light" : "dark");
     setColorScheme(next);

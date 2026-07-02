@@ -12,17 +12,22 @@ export default function Document() {
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        
+
         {/* Playfair Display — Sotheby's/Christie's serif DNA */}
         <link
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
           rel="stylesheet"
         />
 
-        {/* PWA 支持（不包含 viewport） */}
+        {/* PWA — Web App Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+
+        {/* PWA — iOS & Android */}
         <meta name="theme-color" content="#f5f0e9" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Eastwood" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
       </Head>
       <body>
