@@ -10,6 +10,7 @@ import {
   Divider,
   Badge,
   Box,
+  CloseButton,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useAuth, type AuthUser } from "@/hooks/useAuth";
@@ -104,9 +105,10 @@ export default function ProfileModal({
     <Modal
       opened={opened}
       onClose={onClose}
-      title={t("auth.profileTitle")}
       centered
       size="md"
+      withCloseButton={false}
+      closeOnClickOutside={false}
       fullScreen={isMobile}
       transitionProps={{ transition: "fade", duration: 200 }}
       styles={{
@@ -116,15 +118,28 @@ export default function ProfileModal({
           maxHeight: isMobile ? "100vh" : "90vh",
           overflowY: "auto",
         },
+        header: { display: "none" },
       }}
     >
       <Box
         sx={(theme) => ({
           padding: isMobile ? 16 : 24,
+          paddingTop: 12,
           backgroundColor: theme.colorScheme === "dark" ? theme.colors.dark[1] : "#fffdf9",
           color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
         })}
       >
+      {/* 显式的关闭按钮 — 移动端 fullScreen 模式下确保可见可触 */}
+      <Group position="right" mb="xs">
+        <CloseButton
+          onClick={onClose}
+          size="lg"
+          aria-label={locale === "zh" ? "关闭个人资料" : "Close profile"}
+          sx={(theme) => ({
+            color: theme.colorScheme === "dark" ? theme.colors.dark[9] : theme.colors.dark[0],
+          })}
+        />
+      </Group>
       <Stack spacing="lg">
         {/* 用户信息卡片 */}
         <Group position="apart" align="flex-start" noWrap>
