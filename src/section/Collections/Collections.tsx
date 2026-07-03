@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { proxyImageUrl } from "@/lib/proxyImage";
+import { proxyImageUrl, proxiedBgUrl } from "@/lib/proxyImage";
 import { Box, Button, Container, createStyles, Group, NumberInput, Overlay, Pagination, rem, SimpleGrid, Stack, Tabs, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
@@ -34,16 +34,14 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     position: "relative",
   },
   bg: {
-    backgroundImage: shopMode 
-      ? `url(https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1400&q=80)` // ✅ 古董商店：中式茶室/古董店风格
-      : `url(https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&w=1400&q=80)`, // ✅ 藏品展示：典雅的博物馆背景
-    backgroundColor: shopMode ? "#2c1810" : "#f5f5f0", // ✅ 添加备用背景色：古董商店深棕色，藏品展示浅米色
+    // 背景图通过 JS inline style（proxyImageUrl）设置，避免 CSS url() 直连 Unsplash 被墙
+    backgroundColor: shopMode ? "#2c1810" : "#f5f5f0",
     minHeight: rem(650),
-    backgroundAttachment: "scroll", // ✅ 改为 scroll 而不是 fixed，避免移动端兼容性问题
+    backgroundAttachment: "scroll",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
-    position: "relative", // ✅ 确保背景层正确定位
+    position: "relative",
 
     [theme.fn.smallerThan("sm")]: {
       minHeight: rem(420),
@@ -388,7 +386,16 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
     <>
       {/* Hero Section - 标题浮在背景图片左下角 */}
       <Box className={classes.wrapper}>
-        <Box className={classes.bg}>
+        <Box
+          className={classes.bg}
+          style={{
+            backgroundImage: proxiedBgUrl(
+              shopMode
+                ? "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1400&q=80"
+                : "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&w=1400&q=80"
+            ),
+          }}
+        >
           <Overlay
             gradient="linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, .65) 70%)"
             opacity={1}

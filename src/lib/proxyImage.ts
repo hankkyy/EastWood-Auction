@@ -21,3 +21,12 @@ export function proxyImageUrl(src: string | undefined | null): string {
   }
   return src;
 }
+
+/**
+ * 用于 CSS background-image 的代理 URL 包装。
+ * 典型用法：style={{ backgroundImage: proxiedBgUrl("https://images.unsplash.com/...") }}
+ * 解决 createStyles 生成的静态 CSS 中 url() 不会经过 proxyImageUrl 的问题。
+ */
+export function proxiedBgUrl(src: string): string {
+  return `url(${proxyImageUrl(src)})`;
+}

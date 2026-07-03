@@ -9,16 +9,21 @@ import {
   Title,
 } from "@mantine/core";
 import { useI18n } from "@/i18n";
+import { proxiedBgUrl } from "@/lib/proxyImage";
+
+// Unsplash 背景图原始 URL（通过 proxy 加载，避免国内被墙）
+const HERO_BG_URL = "https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1400&q=80";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
     position: "relative",
   },
   bg: {
-    backgroundImage: `url(https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1400&q=80)`,
+    // 背景图通过 JS inline style（proxyImageUrl）设置，避免 CSS url() 直连被墙
+    backgroundColor: "#2c2418", // 备用背景色，图片加载失败或不加载时显示
     minHeight: rem(650),
-    /* Create the parallax scrolling effect */
-    backgroundAttachment: "fixed",
+    /* scroll 而非 fixed — iOS Safari 对 background-attachment:fixed 支持极差 */
+    backgroundAttachment: "scroll",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
@@ -75,7 +80,7 @@ export default function HeroSection() {
 
   return (
     <div className={classes.wrapper}>
-      <div className={classes.bg}>
+      <div className={classes.bg} style={{ backgroundImage: proxiedBgUrl(HERO_BG_URL) }}>
         <Overlay
           gradient="linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, .65) 70%)"
           opacity={1}
