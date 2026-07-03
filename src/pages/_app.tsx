@@ -119,6 +119,14 @@ export default function App({ Component, pageProps }: AppProps) {
     localStorage.setItem(COLOR_SCHEME_KEY, next);
   }, [colorScheme]);
 
+  // 根据颜色方案动态更新 theme-color meta 标签，避免暗色模式下顶部亮色 bar
+  useEffect(() => {
+    const meta = document.getElementById("meta-theme-color");
+    if (!meta) return;
+    const themeColor = colorScheme === "dark" ? "#1a1815" : "#f5f0e9";
+    meta.setAttribute("content", themeColor);
+  }, [colorScheme]);
+
   return (
     <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
       <MantineProvider

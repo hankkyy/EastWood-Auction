@@ -19,9 +19,10 @@ export default function Document() {
         <link rel="manifest" href="/manifest.json" />
 
         {/* PWA — iOS & Android */}
-        <meta name="theme-color" content="#f5f0e9" />
+        {/* theme-color 由 _app.tsx 根据暗色/亮色模式动态设置 */}
+        <meta name="theme-color" content="#f5f0e9" id="meta-theme-color" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Eastwood" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
