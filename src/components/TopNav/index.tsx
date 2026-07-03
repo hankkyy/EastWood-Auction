@@ -23,7 +23,7 @@ import LanguagePicker from "@/components/LanguagePicker";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { notifications } from "@mantine/notifications";
-import { IconInbox, IconMessageCircle } from "@tabler/icons-react";
+import { IconInbox, IconMessageCircle, IconX } from "@tabler/icons-react";
 import AuthModal from "@/components/AuthModal";
 import ProfileModal from "@/components/ProfileModal";
 
@@ -552,6 +552,23 @@ export default function TopNav() {
               <Box sx={{ marginTop: 8 }}>
                 <LanguagePicker mobile />
               </Box>
+              <Divider
+                my="sm"
+                color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
+              />
+              <Button
+                variant="subtle"
+                color={theme.colorScheme === "dark" ? "dark.5" : "gray"}
+                fullWidth
+                size="md"
+                onClick={closeDrawer}
+                leftIcon={<IconX size={18} />}
+                sx={(theme) => ({
+                  color: theme.colorScheme === "dark" ? "rgba(255,255,255,0.5)" : undefined,
+                })}
+              >
+                {locale === "zh" ? "关闭菜单" : "Close menu"}
+              </Button>
             </Stack>
           </Stack>
         </ScrollArea>
