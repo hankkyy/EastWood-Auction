@@ -86,7 +86,7 @@ export default function InboxPage() {
     label: string;
   } | null>(null);
   const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(null);
-  const [mobileInboxTab, setMobileInboxTab] = useState<string>("pending");
+  const [mobileInboxTab, setMobileInboxTab] = useState<string | null>("pending");
 
   useEffect(() => {
     if (user) {
