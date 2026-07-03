@@ -52,9 +52,10 @@ export default function Wrapper({ children }: IProps) {
           width: "100%",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
+          // 使用不透明背景，避免 Drawer overlay 颜色渗透
           backgroundColor: theme.colorScheme === "dark"
             ? "#1a1815"
-            : "rgba(245,240,233,0.86)",
+            : "rgba(245,240,233,0.92)",
           borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
         })}
       >

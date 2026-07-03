@@ -148,7 +148,7 @@ export default function TopBar() {
   }, [authReady, user, router.asPath]);
 
   return (
-    <Header height="100%" sx={(theme) => ({ borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.15)" : "rgba(0, 0, 0, 0.08)"}`, backgroundColor: "transparent" })}>
+    <Header height="100%" sx={(theme) => ({ borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(196, 162, 85, 0.15)" : "rgba(0, 0, 0, 0.08)"}`, backgroundColor: theme.colorScheme === "dark" ? "#1a1815" : "transparent" })}>
       <Container className={classes.inner} fluid>
         <Group className={classes.actionGroup} noWrap>
           <Indicator
