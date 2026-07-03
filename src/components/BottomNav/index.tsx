@@ -29,7 +29,7 @@ const useStyles = createStyles((theme) => ({
         ? "rgba(255,255,255,0.06)"
         : "rgba(0,0,0,0.06)"
     }`,
-    paddingBottom: `env(safe-area-inset-bottom, 0px)`,
+    paddingBottom: `calc(env(safe-area-inset-bottom, 0px) + ${rem(4)})`,
   },
   tab: {
     display: "flex",

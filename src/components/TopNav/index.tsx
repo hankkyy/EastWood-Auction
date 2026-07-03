@@ -493,11 +493,15 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
         withinPortal
         transitionProps={{ transition: "slide-left", duration: 300 }}
         overlayProps={{ opacity: 0.6, blur: 4 }}
-        styles={{
+        styles={(theme) => ({
+          header: {
+            backgroundColor: theme.colorScheme === "dark" ? "#1a1815" : undefined,
+            borderBottom: theme.colorScheme === "dark" ? "1px solid rgba(255,255,255,0.05)" : undefined,
+          },
           body: {
             paddingBottom: `calc(${rem(24)} + env(safe-area-inset-bottom, 0px))`,
           },
-        }}
+        })}
       >
         <ScrollArea h={`calc(100vh - ${rem(80)})`} mx="-md" type="auto" className={classes.drawerBody}>
           <Stack spacing="lg" px="md" py="md">
