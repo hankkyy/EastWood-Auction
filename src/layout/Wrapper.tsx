@@ -1,5 +1,5 @@
 import TopNav from "@/components/TopNav";
-import { ReactNode } from "react";
+import { ReactNode, useState, useCallback } from "react";
 import AppFooter from "@/components/AppFooter";
 import FooterData from "@/data/footer.json";
 import TopBar from "@/components/TopBar";
@@ -12,6 +12,12 @@ interface IProps {
 }
 
 export default function Wrapper({ children }: IProps) {
+  const [drawerOpened, setDrawerOpened] = useState(false);
+
+  const handleDrawerToggle = useCallback((opened: boolean) => {
+    setDrawerOpened(opened);
+  }, []);
+
   return (
     <motion.div
       initial={false}
@@ -52,15 +58,16 @@ export default function Wrapper({ children }: IProps) {
           width: "100%",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          // 使用不透明背景，避免 Drawer overlay 颜色渗透
-          backgroundColor: theme.colorScheme === "dark"
+          backgroundColor: drawerOpened
             ? "#1a1815"
-            : "rgba(245,240,233,0.92)",
-          borderBottom: `1px solid ${theme.colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
+            : theme.colorScheme === "dark"
+              ? "#1a1815"
+              : "rgba(245,240,233,0.92)",
+          borderBottom: `1px solid ${drawerOpened ? "rgba(255,255,255,0.05)" : theme.colorScheme === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)"}`,
         })}
       >
         <TopBar />
-        <TopNav />
+        <TopNav onDrawerToggle={handleDrawerToggle} />
       </Box>
       <Box
         component="main"

@@ -151,13 +151,22 @@ const mockdata = [
   },
 ] as const;
 
-export default function TopNav() {
+interface TopNavProps {
+  onDrawerToggle?: (opened: boolean) => void;
+}
+
+export default function TopNav({ onDrawerToggle }: TopNavProps) {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
   const [authModalOpened, { open: openAuthModalRaw, close: closeAuthModal }] =
     useDisclosure(false);
   const [profileModalOpened, { open: openProfileModalRaw, close: closeProfileModal }] =
     useDisclosure(false);
+
+  // 通知父组件 drawer 状态变化，用于切换 header 背景色
+  useEffect(() => {
+    onDrawerToggle?.(drawerOpened);
+  }, [drawerOpened, onDrawerToggle]);
   
   // 自定义的 openAuthModal 函数：打开模态框时自动关闭 Drawer
   const openAuthModal = useCallback(() => {
@@ -481,6 +490,7 @@ export default function TopNav() {
         zIndex={1000000}
         position="right"
         withCloseButton
+        withinPortal
         transitionProps={{ transition: "slide-left", duration: 300 }}
         overlayProps={{ opacity: 0.6, blur: 4 }}
         styles={{
