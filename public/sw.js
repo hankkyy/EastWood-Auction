@@ -1,9 +1,10 @@
 // Eastwood Auction — Service Worker
 // Cache-first for static assets, network-first for dynamic content
 
-const CACHE_VERSION = "eastwood-v1";
+const CACHE_VERSION = "eastwood-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
+const IMAGE_CACHE = `${CACHE_VERSION}-images`;
 
 // Assets to pre-cache on install (app shell)
 const PRECACHE_ASSETS = [
@@ -40,13 +41,14 @@ self.addEventListener("install", (event) => {
 // Activate — clean old caches
 self.addEventListener("activate", (event) => {
   console.log("[SW] Activating — cleaning old caches");
+  const CURRENT_CACHES = [STATIC_CACHE, DYNAMIC_CACHE, IMAGE_CACHE];
   event.waitUntil(
     caches
       .keys()
       .then((keys) => {
         return Promise.all(
           keys
-            .filter((key) => key.startsWith("eastwood-") && key !== STATIC_CACHE && key !== DYNAMIC_CACHE)
+            .filter((key) => key.startsWith("eastwood-") && !CURRENT_CACHES.includes(key))
             .map((key) => caches.delete(key))
         );
       })
@@ -83,9 +85,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Skip external image hosts — we proxy them through /api/proxy-image
+  if (["images.unsplash.com", "images.metmuseum.org", "i.ebayimg.com"].some(
+    (h) => url.hostname === h || url.hostname.endsWith("." + h)
+  )) {
+    // Don't cache direct external requests; they should go through the proxy
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Proxy images — cache-first for offline support
+  if (url.pathname.startsWith("/api/proxy-image")) {
+    event.respondWith(cacheFirst(request, IMAGE_CACHE));
+    return;
+  }
+
   // Static assets → cache-first
   if (CACHE_FIRST_EXTS.test(url.pathname)) {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
