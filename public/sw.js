@@ -86,7 +86,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Skip external image hosts — we proxy them through /api/proxy-image
-  if (["images.unsplash.com", "images.metmuseum.org", "i.ebayimg.com"].some(
+  if (["images.unsplash.com", "plus.unsplash.com", "images.metmuseum.org", "i.ebayimg.com"].some(
     (h) => url.hostname === h || url.hostname.endsWith("." + h)
   )) {
     // Don't cache direct external requests; they should go through the proxy

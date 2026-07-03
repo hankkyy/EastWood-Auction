@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import { appMutedTextColor, primaryActionButtonSx, secondaryActionButtonSx } from "@/components/artworkStyles";
 
 const data = [
@@ -93,7 +94,7 @@ export default function VisitSection() {
               },
             })}
           >
-            <Image src={item.image} alt={t(item.titleKey)} height={320} radius="sm" />
+            <Image src={proxyImageUrl(item.image)} alt={t(item.titleKey)} height={320} radius="sm" />
             <Box
               p={smallerThan ? "md" : "lg"}
               sx={{

@@ -16,6 +16,7 @@ import {
 import { IconShieldCheck, IconMessageCircle, IconTruck } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import {
   appMutedTextColor,
   artworkCardShellBackground,
@@ -59,7 +60,7 @@ export default function InfoSection() {
       <Grid>
         <Col md={6} lg={7}>
           <Image
-            src="https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&w=735&q=80"
+            src={proxyImageUrl("https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&w=735&q=80")}
             alt=""
             height={smallerThan ? 320 : 500}
             fit="cover"

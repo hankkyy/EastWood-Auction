@@ -10,6 +10,7 @@ import React from "react";
 import EventsCard from "@/components/EventsCard";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 const data = [
   ["events.cardOneTitle", "events.dateOngoing", "events.onlineType"],
@@ -50,7 +51,7 @@ export default function EventsSection() {
         {data.map(([titleKey, dateKey, typeKey], index) => (
           <EventsCard
             item={{
-              image: images[index],
+              image: proxyImageUrl(images[index]),
               title: t(titleKey),
               date: t(dateKey),
               type: t(typeKey),

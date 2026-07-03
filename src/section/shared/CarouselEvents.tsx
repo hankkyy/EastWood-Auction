@@ -16,6 +16,7 @@ import { IconArrowLeftBar, IconArrowRightBar } from "@tabler/icons-react";
 import EventsCard from "@/components/EventsCard";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 const data = [
   {
@@ -119,7 +120,7 @@ export default function CarouselEventsSection({ title }: IProps) {
     <Carousel.Slide key={`event-item-${i}`}>
       <EventsCard
         item={{
-          image: item.image,
+          image: proxyImageUrl(item.image),
           title: t(item.titleKey),
           type: t(item.typeKey),
           date: t(item.dateKey),

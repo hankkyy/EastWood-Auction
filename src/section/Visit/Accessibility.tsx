@@ -9,6 +9,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 export default function AccessibilitySection() {
   const { t } = useI18n();
@@ -38,7 +39,7 @@ export default function AccessibilitySection() {
         </Stack>
         {!smallerThan && (
           <Image
-            src="https://images.unsplash.com/photo-1545483656-1a34ae73add1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
+            src={proxyImageUrl("https://images.unsplash.com/photo-1545483656-1a34ae73add1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80")}
             alt="accessibility image"
             height={360}
             radius="sm"

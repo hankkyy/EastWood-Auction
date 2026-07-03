@@ -17,6 +17,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import {
   appMutedTextColor,
   artworkCardShellBackground,
@@ -101,7 +102,7 @@ export default function DiscoverSection() {
         <Grid sx={{ alignItems: "center", position: "relative", zIndex: 3 }}>
           <Grid.Col lg={6} p={0}>
             <Image
-              src="https://images.unsplash.com/photo-1610494940231-a07875fb25fc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
+              src={proxyImageUrl("https://images.unsplash.com/photo-1610494940231-a07875fb25fc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80")}
               alt=""
               height={smallerThan ? 320 : 420}
               fit="cover"

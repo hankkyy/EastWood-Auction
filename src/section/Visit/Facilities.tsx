@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 const data = [
   {
@@ -63,7 +64,7 @@ export default function FacilitiesSection() {
                 : "1px solid rgba(180, 158, 120, 0.15)",
             })}
           >
-            <Image src={d.image} alt={t(d.titleKey)} height={360} radius="sm" />
+            <Image src={proxyImageUrl(d.image)} alt={t(d.titleKey)} height={360} radius="sm" />
             <Box p="md">
               <Title order={3} mb="md" transform="capitalize">
                 {t(d.titleKey)}

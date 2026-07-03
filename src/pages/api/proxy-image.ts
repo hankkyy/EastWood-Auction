@@ -4,6 +4,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 const ALLOWED_HOSTS = [
   "images.metmuseum.org",
   "images.unsplash.com",
+  "plus.unsplash.com",
   "i.ebayimg.com",
 ];
 

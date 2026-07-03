@@ -12,6 +12,7 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import Link from "next/link";
 import { useI18n } from "@/i18n";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 export default function DonationSection() {
   const smallerThan = useMediaQuery("(max-width: 600px)");
@@ -21,7 +22,7 @@ export default function DonationSection() {
     <Box pt={80} pb={120}>
       <Box sx={{ height: 560 }}>
         <BackgroundImage
-          src="https://images.unsplash.com/photo-1572953109213-3be62398eb95?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80"
+          src={proxyImageUrl("https://images.unsplash.com/photo-1572953109213-3be62398eb95?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80")}
           radius={0}
           sx={{
             height: "100%",

@@ -9,13 +9,15 @@ import {
   Title,
 } from "@mantine/core";
 import { useI18n } from "@/i18n";
+import { proxiedBgUrl } from "@/lib/proxyImage";
+
+const DONATION_HERO_BG_URL = "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80";
 
 const useStyles = createStyles((theme) => ({
   wrapper: {
     position: "relative",
   },
   bg: {
-    backgroundImage: `url(https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80)`,
     minHeight: rem(600),
     /* Create the parallax scrolling effect */
     backgroundAttachment: "fixed",
@@ -75,7 +77,7 @@ export default function HeroSection() {
 
   return (
     <div className={classes.wrapper}>
-      <div className={classes.bg}>
+      <div className={classes.bg} style={{ backgroundImage: proxiedBgUrl(DONATION_HERO_BG_URL) }}>
         <Overlay
           gradient="linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, .65) 70%)"
           opacity={1}
