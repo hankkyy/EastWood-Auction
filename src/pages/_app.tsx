@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import type { AppProps } from "next/app";
 import { MantineProvider, ColorSchemeProvider, ColorScheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import { showNotification } from "@mantine/notifications";
 import { theme } from "@/theme";
 import { RouterTransition } from "@/components/RouterTransition";
 import { I18nProvider } from "@/i18n";
@@ -87,11 +88,19 @@ export default function App({ Component, pageProps }: AppProps) {
 
           installing.addEventListener("statechange", () => {
             if (installing.state === "installed" && navigator.serviceWorker.controller) {
-              // New SW installed and waiting — activate immediately
-              console.log("[PWA] New version available — activating");
-              installing.postMessage("skipWaiting");
-              // Reload to pick up new assets
-              window.location.reload();
+              // New SW installed and waiting — notify user instead of silent reload
+              console.log("[PWA] New version available");
+              showNotification({
+                title: "内容已更新",
+                message: "新版本已就绪，点击刷新以获取最新内容。",
+                color: "#c4a255",
+                autoClose: false,
+                withCloseButton: true,
+                onClick: () => {
+                  installing.postMessage("skipWaiting");
+                  window.location.reload();
+                },
+              });
             }
           });
         });
@@ -119,12 +128,18 @@ export default function App({ Component, pageProps }: AppProps) {
     localStorage.setItem(COLOR_SCHEME_KEY, next);
   }, [colorScheme]);
 
-  // 根据颜色方案动态更新 theme-color meta 标签，避免暗色模式下顶部亮色 bar
+  // 根据颜色方案动态更新 theme-color meta 标签 + iOS 状态栏样式，避免暗色模式下顶部亮色 bar
   useEffect(() => {
     const meta = document.getElementById("meta-theme-color");
-    if (!meta) return;
-    const themeColor = colorScheme === "dark" ? "#1a1815" : "#f5f0e9";
-    meta.setAttribute("content", themeColor);
+    if (meta) {
+      const themeColor = colorScheme === "dark" ? "#1a1815" : "#f5f0e9";
+      meta.setAttribute("content", themeColor);
+    }
+    // iOS PWA 状态栏：亮色模式用 default（灰底黑字），暗色模式用 black（黑底白字）
+    const statusBar = document.getElementById("ios-status-bar-style");
+    if (statusBar) {
+      statusBar.setAttribute("content", colorScheme === "dark" ? "black" : "default");
+    }
   }, [colorScheme]);
 
   return (
@@ -136,12 +151,35 @@ export default function App({ Component, pageProps }: AppProps) {
       >
         <I18nProvider>
           <RouterTransition />
-          <Notifications position="top-right" />
+          <ResponsiveNotifications />
           <div className={`${playfair.variable} ${poppins.variable}`}>
             <Component {...pageProps} />
           </div>
         </I18nProvider>
       </MantineProvider>
     </ColorSchemeProvider>
+  );
+}
+
+/**
+ * ResponsiveNotifications: uses top-right on desktop, top-center on mobile
+ * so notifications don't overlap the fixed TopBar + TopNav header.
+ */
+function ResponsiveNotifications() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    setIsMobile(mq.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  return (
+    <Notifications
+      position={isMobile ? "top-center" : "top-right"}
+      style={{ zIndex: 999999 }}
+    />
   );
 }

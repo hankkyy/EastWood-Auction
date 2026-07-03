@@ -687,6 +687,13 @@ const messages = {
     "marketWatch.priceHistory": "Price History",
     "marketWatch.noPriceHistory": "No price history yet. Data accumulates with each sync.",
     "marketWatch.loginToSave": "Sign in to save listings",
+
+    // Bottom Navigation
+    "bottomNav.home": "Home",
+    "bottomNav.collections": "Collection",
+    "bottomNav.search": "Search",
+    "bottomNav.shop": "Shop",
+    "bottomNav.inbox": "Inbox",
   },
   zh: {
     "common.brand": "Eastwood Auction",
@@ -1353,6 +1360,13 @@ const messages = {
     "marketWatch.priceHistory": "价格历史",
     "marketWatch.noPriceHistory": "暂无价格历史。每次同步会累积数据。",
     "marketWatch.loginToSave": "登录后可收藏",
+
+    // 底部导航
+    "bottomNav.home": "首页",
+    "bottomNav.collections": "藏品",
+    "bottomNav.search": "搜索",
+    "bottomNav.shop": "商店",
+    "bottomNav.inbox": "消息",
   },
 } as const;
 

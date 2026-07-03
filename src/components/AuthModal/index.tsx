@@ -195,12 +195,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 required
                 type="email"
                 autoComplete="email"
-                styles={{
+                styles={(theme) => ({
                   input: {
-                    minHeight: 48, // 增大输入框高度
-                    fontSize: 16, // 防止 iOS 自动缩放
+                    minHeight: 48,
+                    fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <PasswordInput
                 label={t("auth.passwordLabel")}
@@ -209,12 +210,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setPassword(e.currentTarget.value)}
                 required
                 autoComplete="current-password"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                 <Text size="xs" color="dimmed">
@@ -252,12 +254,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setFirstName(e.currentTarget.value)}
                 required
                 autoComplete="given-name"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <TextInput
                 label={t("auth.lastNameLabel")}
@@ -266,12 +269,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setLastName(e.currentTarget.value)}
                 required
                 autoComplete="family-name"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <TextInput
                 label={t("auth.userIdLabel")}
@@ -280,12 +284,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setUserId(e.currentTarget.value)}
                 description={t("auth.userIdDescription")}
                 autoComplete="username"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <TextInput
                 label={t("auth.emailLabel")}
@@ -295,12 +300,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 required
                 type="email"
                 autoComplete="email"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <PasswordInput
                 label={t("auth.passwordLabel")}
@@ -309,12 +315,13 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                 onChange={(e) => setPassword(e.currentTarget.value)}
                 required
                 autoComplete="new-password"
-                styles={{
+                styles={(theme) => ({
                   input: {
                     minHeight: 48,
                     fontSize: 16,
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
-                }}
+                })}
               />
               <Text size="xs" color="dimmed" sx={{ marginTop: -8 }}>
                 {t("auth.passwordRequirement")}

@@ -37,6 +37,8 @@ export default function CollectionDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [lightboxOpened, setLightboxOpened] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [lightboxTouchStart, setLightboxTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
   const [uploaderEmail, setUploaderEmail] = useState<string | null>(null);
   const collectionId = typeof router.query.id === "string" ? router.query.id : "";
 
@@ -78,6 +80,25 @@ export default function CollectionDetailPage() {
       gallery.find((imageUrl) => imageUrl === item.image) ?? gallery[0] ?? "";
     setSelectedImage(initialImage);
   }, [item, gallery]);
+
+  // Reset zoom when image changes
+  useEffect(() => {
+    setZoomLevel(1);
+  }, [selectedImage]);
+
+  // Prevent body scroll while lightbox is open
+  useEffect(() => {
+    if (!lightboxOpened) return;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+      setZoomLevel(1);
+    };
+  }, [lightboxOpened]);
 
   useEffect(() => {
     if (!lightboxOpened || gallery.length <= 1) {
@@ -195,9 +216,6 @@ export default function CollectionDetailPage() {
 
   return (
     <>
-      <Head>
-        <title>{title} - Eastwood Auction</title>
-      </Head>
       <Head>
         <title>{title} - Eastwood Auction</title>
       </Head>
@@ -320,7 +338,7 @@ export default function CollectionDetailPage() {
                       <ActionIcon variant="light" size="sm" onClick={goToPrevious}>
                         <IconChevronLeft size={14} />
                       </ActionIcon>
-                      <ScrollArea type="hover" offsetScrollbars>
+                      <ScrollArea type="scroll" offsetScrollbars>
                         <Group spacing={6} noWrap>
                           {gallery.map((imageUrl, index) => (
                             <Box
@@ -653,7 +671,7 @@ export default function CollectionDetailPage() {
         </AnimatedBox>
       </Wrapper>      <Modal
         opened={lightboxOpened}
-        onClose={() => setLightboxOpened(false)}
+        onClose={() => { setLightboxOpened(false); setZoomLevel(1); }}
         fullScreen
         padding={isMobile ? "md" : "xl"}
         withCloseButton
@@ -668,48 +686,56 @@ export default function CollectionDetailPage() {
             component="img"
             src={proxyImageUrl(selectedImage)}
             alt={title}
-            sx={{ 
-              maxWidth: "95vw", 
-              maxHeight: "85vh", 
+            sx={{
+              maxWidth: `${95 / zoomLevel}vw`,
+              maxHeight: `${85 / zoomLevel}vh`,
               objectFit: "contain",
-              cursor: "zoom-in",
-              touchAction: "manipulation", // 优化触摸体验
-              WebkitUserSelect: "none", // 防止长按选中
+              cursor: zoomLevel > 1 ? "grab" : "zoom-in",
+              touchAction: "none", // Block all native touch — we handle everything
+              WebkitUserSelect: "none",
               userSelect: "none",
+              WebkitTouchCallout: "none",
+              transition: zoomLevel === 1 ? "max-width 200ms ease, max-height 200ms ease" : "none",
             }}
             onDoubleClick={(e) => {
-              // 双击切换缩放状态
-              const img = e.currentTarget;
-              if (img.style.transform === "scale(2)") {
-                img.style.transform = "scale(1)";
-              } else {
-                img.style.transform = "scale(2)";
-                img.style.transition = "transform 0.3s ease";
-              }
+              e.preventDefault();
+              setZoomLevel((prev) => (prev > 1 ? 1 : 2.5));
             }}
             onTouchStart={(e) => {
-              // 记录触摸起始位置（用于滑动切换）
+              // Block native zoom/scroll; record touch start
+              e.preventDefault();
               const touch = e.touches[0];
-              (e.currentTarget as any).touchStartX = touch.clientX;
+              setLightboxTouchStart({ x: touch.clientX, y: touch.clientY, time: Date.now() });
             }}
             onTouchEnd={(e) => {
-              // 检测左右滑动
+              if (!lightboxTouchStart) return;
+
               const touch = e.changedTouches[0];
-              const startX = (e.currentTarget as any).touchStartX;
-              const diff = startX - touch.clientX;
-              
-              // 滑动距离超过 50px 才触发切换
-              if (Math.abs(diff) > 50 && gallery.length > 1) {
-                if (diff > 0) {
-                  // 向左滑动 - 下一张
+              const dx = touch.clientX - lightboxTouchStart.x;
+              const dy = touch.clientY - lightboxTouchStart.y;
+              const elapsed = Date.now() - lightboxTouchStart.time;
+
+              // Double-tap detection: quick tap with minimal movement
+              if (elapsed < 300 && Math.abs(dx) < 15 && Math.abs(dy) < 15) {
+                setZoomLevel((prev) => (prev > 1 ? 1 : 2.5));
+                setLightboxTouchStart(null);
+                return;
+              }
+
+              // Swipe detection: horizontal movement dominates
+              if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && gallery.length > 1) {
+                if (dx < 0) {
+                  // Swipe left — next
                   const newIndex = (selectedIndex + 1) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 } else {
-                  // 向右滑动 - 上一张
+                  // Swipe right — previous
                   const newIndex = (selectedIndex - 1 + gallery.length) % gallery.length;
                   setSelectedImage(gallery[newIndex]);
                 }
               }
+
+              setLightboxTouchStart(null);
             }}
           />
 
@@ -748,9 +774,11 @@ export default function CollectionDetailPage() {
               </ActionIcon>
             </Group>
           )}
-          
+
           <Text color="dimmed" size="sm" mt="xs" sx={(theme) => ({ opacity: theme.colorScheme === "dark" ? 1 : 0.7 })}>
-            {locale === "zh" ? "双击缩放 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate"}
+            {zoomLevel > 1
+              ? (locale === "zh" ? "点击缩小 · 左右滑动切换" : "Tap to zoom out · Swipe to navigate")
+              : (locale === "zh" ? "双击放大 · 左右滑动切换" : "Double-tap to zoom · Swipe to navigate")}
           </Text>
         </Stack>
       </Modal>

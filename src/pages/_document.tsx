@@ -22,7 +22,8 @@ export default function Document() {
         {/* theme-color 由 _app.tsx 根据暗色/亮色模式动态设置 */}
         <meta name="theme-color" content="#f5f0e9" id="meta-theme-color" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        {/* 默认 black（黑底白字），_app.tsx 会在暗色模式下保持，亮色模式下改为 default */}
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" id="ios-status-bar-style" />
         <meta name="apple-mobile-web-app-title" content="Eastwood" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />

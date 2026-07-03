@@ -182,12 +182,13 @@ export default function ProfileModal({
               onChange={(e) => setFirstName(e.currentTarget.value)}
               required
               autoComplete="given-name"
-              styles={{
+              styles={(theme) => ({
                 input: {
                   minHeight: 48,
                   fontSize: 16,
+                  color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                 },
-              }}
+              })}
             />
             <TextInput
               label={t("auth.lastNameLabel")}
@@ -196,12 +197,13 @@ export default function ProfileModal({
               onChange={(e) => setLastName(e.currentTarget.value)}
               required
               autoComplete="family-name"
-              styles={{
+              styles={(theme) => ({
                 input: {
                   minHeight: 48,
                   fontSize: 16,
+                  color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                 },
-              }}
+              })}
             />
             <TextInput
               label={t("auth.userIdLabel")}
@@ -211,12 +213,13 @@ export default function ProfileModal({
               description={t("auth.userIdDescription")}
               disabled={userIdChangeCount >= 3}
               autoComplete="username"
-              styles={{
+              styles={(theme) => ({
                 input: {
                   minHeight: 48,
                   fontSize: 16,
+                  color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                 },
-              }}
+              })}
             />
             {userIdChangeCount < 3 && (
               <Text size="xs" color="dimmed" sx={{ marginTop: -8 }}>

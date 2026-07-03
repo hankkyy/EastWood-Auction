@@ -107,11 +107,31 @@ export default function HeroSection() {
   const router = useRouter();
   const videoRef = useRef<any>(null);
   const [pause, setPause] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(false);
   const { classes } = useStyles();
   const { t } = useI18n();
   const smallerThan = useMediaQuery("(max-width: 600px)");
 
+  // On mobile, don't auto-play — let user choose to play the video
+  useEffect(() => {
+    if (!smallerThan) {
+      // Desktop: auto-play as before
+      videoRef.current?.play();
+    }
+  }, [smallerThan]);
+
+  useEffect(() => {
+    if (videoEnabled && videoRef.current) {
+      videoRef.current.play();
+      setPause(false);
+    }
+  }, [videoEnabled]);
+
   const pauseVideo = (): void => {
+    if (!videoEnabled) {
+      setVideoEnabled(true);
+      return;
+    }
     if (videoRef.current.paused) {
       videoRef.current.play();
       setPause(false);
@@ -121,18 +141,35 @@ export default function HeroSection() {
     }
   };
 
-  useEffect(() => {
-    videoRef.current?.play();
-  }, []);
-
   return (
     <Box className={classes.wrapper}>
-      <video className={classes.videoBg} autoPlay loop muted ref={videoRef}>
-        <source
-          src={require("../../../public/static/video/walkthrough.mp4")}
-          type="video/mp4"
+      {smallerThan && !videoEnabled ? (
+        /* Mobile static fallback — saves battery & data until user opts in */
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "url(/static/video/hero-fallback.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center bottom",
+          }}
         />
-      </video>
+      ) : (
+        <video
+          className={classes.videoBg}
+          autoPlay={!smallerThan}
+          loop
+          muted
+          playsInline
+          ref={videoRef}
+          style={{ display: videoEnabled || !smallerThan ? "block" : "none" }}
+        >
+          <source
+            src={require("../../../public/static/video/walkthrough.mp4")}
+            type="video/mp4"
+          />
+        </video>
+      )}
       <Box className={classes.overlay}>
         <Box className={classes.content}>
           <h1 className={classes.title}>{t("home.heroTitle")}</h1>
@@ -148,7 +185,9 @@ export default function HeroSection() {
             <Button
               className={classes.playBtn}
               leftIcon={
-                pause ? (
+                !videoEnabled ? (
+                  <IconPlayerPlay size={15} />
+                ) : pause ? (
                   <IconPlayerPlay size={15} />
                 ) : (
                   <IconPlayerPause size={15} />
@@ -156,7 +195,11 @@ export default function HeroSection() {
               }
               onClick={pauseVideo}
             >
-              {pause ? t("home.playVideo") : t("home.pauseVideo")}
+              {!videoEnabled
+                ? (smallerThan ? t("home.playVideo") : t("home.pauseVideo"))
+                : pause
+                  ? t("home.playVideo")
+                  : t("home.pauseVideo")}
             </Button>
           </Box>
         </Box>

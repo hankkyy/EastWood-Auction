@@ -19,6 +19,7 @@ import {
   Paper,
   ScrollArea,
   Stack,
+  Tabs,
   Text,
   Textarea,
   Title,
@@ -85,6 +86,7 @@ export default function InboxPage() {
     label: string;
   } | null>(null);
   const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(null);
+  const [mobileInboxTab, setMobileInboxTab] = useState<string>("pending");
 
   useEffect(() => {
     if (user) {
@@ -1438,97 +1440,71 @@ export default function InboxPage() {
                       touchAction: "pan-y",
                     }}
                   >
-                    <Text size="sm" color="dimmed">
-                      {locale === "zh"
-                        ? "手机端改为单列会话卡片，点击任意卡片可直接展开完整详情和消息记录。"
-                        : "On mobile, conversations are shown as a single-column card list. Tap any card to expand the full details and message thread."}
-                    </Text>
                     {isAdmin ? (
-                      <>
-                        <Paper
-                          p="md"
-                          withBorder
-                          radius="md"
-                          sx={(theme) => ({
-                            borderColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.2)" : "rgba(216, 183, 109, 0.45)",
-                            backgroundColor: theme.colorScheme === "dark" ? "rgba(196,162,85,0.06)" : "rgba(216, 183, 109, 0.06)",
-                          })}
-                        >
-                          <Group position="apart" mb="sm">
-                            <Text weight={800} color="#c4a255">
-                              {locale === "zh" ? "待处理会话" : "Pending conversations"}
-                            </Text>
-                            <Badge color="yellow" variant="light">
-                              {pendingInquiries.length}
-                            </Badge>
-                          </Group>
+                      <Tabs value={mobileInboxTab} onTabChange={setMobileInboxTab}>
+                        <Tabs.List grow>
+                          <Tabs.Tab value="pending">
+                            {locale === "zh" ? "待处理" : "Pending"}
+                            {pendingInquiries.length > 0 && (
+                              <Badge ml={6} size="xs" color="yellow" variant="light">
+                                {pendingInquiries.length}
+                              </Badge>
+                            )}
+                          </Tabs.Tab>
+                          <Tabs.Tab value="processed">
+                            {locale === "zh" ? "已处理" : "Processed"}
+                            {processedInquiries.length > 0 && (
+                              <Badge ml={6} size="xs" color="violet.5" variant="light">
+                                {processedInquiries.length}
+                              </Badge>
+                            )}
+                          </Tabs.Tab>
+                          <Tabs.Tab value="archived">
+                            {locale === "zh" ? "已归档" : "Archived"}
+                            {archivedInquiries.length > 0 && (
+                              <Badge ml={6} size="xs" color="gray" variant="light">
+                                {archivedInquiries.length}
+                              </Badge>
+                            )}
+                          </Tabs.Tab>
+                        </Tabs.List>
+
+                        <Tabs.Panel value="pending" pt="md">
                           <Stack spacing="sm">
                             {pendingInquiries.length ? (
                               pendingInquiries.map(renderInquiryPreviewCard)
                             ) : (
-                              <Text color="dimmed">
+                              <Text color="dimmed" align="center" py="xl">
                                 {locale === "zh" ? "当前没有待处理会话。" : "No pending conversations right now."}
                               </Text>
                             )}
                           </Stack>
-                        </Paper>
+                        </Tabs.Panel>
 
-                        <Paper
-                          p="md"
-                          withBorder
-                          radius="md"
-                          sx={(theme) => ({
-                            borderColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.25)" : "rgba(155, 139, 110, 0.35)",
-                            backgroundColor: theme.colorScheme === "dark" ? "rgba(155,139,110,0.06)" : "rgba(155, 139, 110, 0.05)",
-                          })}
-                        >
-                          <Group position="apart" mb="sm">
-                            <Text weight={800} sx={{ color: "#9b8b6e" }}>
-                              {locale === "zh" ? "已处理会话" : "Processed conversations"}
-                            </Text>
-                            <Badge sx={{ color: "#9b8b6e" }} variant="light">
-                              {processedInquiries.length}
-                            </Badge>
-                          </Group>
+                        <Tabs.Panel value="processed" pt="md">
                           <Stack spacing="sm">
                             {processedInquiries.length ? (
                               processedInquiries.map(renderInquiryPreviewCard)
                             ) : (
-                              <Text color="dimmed">
+                              <Text color="dimmed" align="center" py="xl">
                                 {locale === "zh" ? "当前没有已处理会话。" : "No processed conversations yet."}
                               </Text>
                             )}
                           </Stack>
-                        </Paper>
+                        </Tabs.Panel>
 
-                        <Paper
-                          p="md"
-                          withBorder
-                          radius="md"
-                          sx={{
-                            borderColor: "rgba(160, 160, 160, 0.35)",
-                            backgroundColor: "rgba(160, 160, 160, 0.06)",
-                          }}
-                        >
-                          <Group position="apart" mb="sm">
-                            <Text weight={800} color="dimmed">
-                              {locale === "zh" ? "已归档会话" : "Archived conversations"}
-                            </Text>
-                            <Badge color="gray" variant="light">
-                              {archivedInquiries.length}
-                            </Badge>
-                          </Group>
+                        <Tabs.Panel value="archived" pt="md">
                           <Stack spacing="sm">
                             {archivedInquiries.length ? (
                               archivedInquiries.map(renderInquiryPreviewCard)
                             ) : (
-                              <Text color="dimmed">
+                              <Text color="dimmed" align="center" py="xl">
                                 {locale === "zh" ? "当前没有已归档会话。" : "No archived conversations yet."}
                               </Text>
                             )}
                           </Stack>
-                        </Paper>
-                      </>
+                        </Tabs.Panel>
+                      </Tabs>
                     ) : (
                       <Paper
                         p="md"

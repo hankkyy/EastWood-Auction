@@ -168,6 +168,22 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
       paddingRight: 0,
     },
   },
+  tabsWrapper: {
+    position: "relative",
+
+    [theme.fn.smallerThan("sm")]: {
+      "&::after": {
+        content: "''",
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 8,
+        width: 32,
+        pointerEvents: "none",
+        background: `linear-gradient(to right, transparent, ${theme.colorScheme === "dark" ? "#1e1c19" : theme.colors.violet[0]})`,
+      },
+    },
+  },
   cardLink: {
     display: "block",
     textDecoration: "none",
@@ -209,7 +225,7 @@ const useStyles = createStyles((theme, { shopMode }: { shopMode: boolean }) => (
     },
 
     [theme.fn.smallerThan("sm")]: {
-      height: remValue(220),
+      height: remValue(260),
     },
   },
 
@@ -541,6 +557,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
 
             {/* 藏品列表 - 仅在非管理/上传模式下显示 */}
             {!showManageMode && !showUploadForm && (
+              <Box className={classes.tabsWrapper}>
               <Tabs ref={gridRef} defaultValue="all" className={classes.tabs} variant="outline" onTabChange={() => { setPage(1); setJumpValue(''); }}>
                 <Tabs.List>
                   {categories.map((category) => (
@@ -662,6 +679,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                   );
                 })}
               </Tabs>
+              </Box>
             )}
           </Stack>
         </Container>

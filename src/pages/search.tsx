@@ -15,6 +15,7 @@ import {
   Text,
   TextInput,
   Title,
+  Drawer,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { Wrapper } from "@/layout";
@@ -26,7 +27,7 @@ import {
 } from "@/components/artworkStyles";
 import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
-import { IconArrowRight } from "@tabler/icons-react";
+import { IconArrowRight, IconFilter } from "@tabler/icons-react";
 import { SEO } from "@/components/SEO";
 import Link from "next/link";
 
@@ -113,6 +114,14 @@ export default function SearchPage({ initialData }: SearchPageProps) {
   const [typeFilter, setTypeFilter] = useState<"all" | "collection" | "case">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [saleFilter, setSaleFilter] = useState<"all" | "for-sale" | "not-for-sale">("all");
+  const [filterDrawerOpened, setFilterDrawerOpened] = useState(false);
+
+  // Count active filters for badge
+  const activeFilterCount = [
+    typeFilter !== "all",
+    categoryFilter !== "all",
+    saleFilter !== "all",
+  ].filter(Boolean).length;
 
   // Read query param from URL (set by SearchModal or direct link)
   useEffect(() => {
@@ -123,6 +132,60 @@ export default function SearchPage({ initialData }: SearchPageProps) {
   }, [router.query.q]);
 
   const normalizedQuery = query.trim().toLowerCase();
+
+  // Shared filter panel — rendered inline on desktop, in a Drawer on mobile
+  const renderFilterPanel = () => (
+    <SimpleGrid cols={3} breakpoints={[{ maxWidth: "md", cols: 1 }]}>
+      <Select
+        label={locale === "zh" ? "类型" : "Type"}
+        value={typeFilter}
+        onChange={(value) => setTypeFilter((value as typeof typeFilter) || "all")}
+        withinPortal
+        zIndex={5000}
+        styles={(theme) => ({
+          label: {
+            color: appFieldLabelColor(theme),
+          },
+        })}
+        data={[
+          { value: "all", label: locale === "zh" ? "全部" : "All" },
+          { value: "collection", label: locale === "zh" ? "藏品" : "Collections" },
+          { value: "case", label: locale === "zh" ? "回流案例" : "Return cases" },
+        ]}
+      />
+      <Select
+        label={locale === "zh" ? "分类" : "Category"}
+        value={categoryFilter}
+        onChange={(value) => setCategoryFilter(value || "all")}
+        data={categoryOptions}
+        searchable
+        withinPortal
+        zIndex={5000}
+        styles={(theme) => ({
+          label: {
+            color: appFieldLabelColor(theme),
+          },
+        })}
+      />
+      <Select
+        label={locale === "zh" ? "可售状态" : "Sale status"}
+        value={saleFilter}
+        onChange={(value) => setSaleFilter((value as typeof saleFilter) || "all")}
+        withinPortal
+        zIndex={5000}
+        styles={(theme) => ({
+          label: {
+            color: appFieldLabelColor(theme),
+          },
+        })}
+        data={[
+          { value: "all", label: locale === "zh" ? "全部" : "All" },
+          { value: "for-sale", label: locale === "zh" ? "可售" : "For sale" },
+          { value: "not-for-sale", label: locale === "zh" ? "不可售" : "Not for sale" },
+        ]}
+      />
+    </SimpleGrid>
+  );
 
   const categoryOptions = useMemo(
     () => [
@@ -242,58 +305,79 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     },
                   })}
                 />
-                <SimpleGrid cols={3} breakpoints={[{ maxWidth: "md", cols: 1 }]}>
-                  <Select
-                    label={locale === "zh" ? "类型" : "Type"}
-                    value={typeFilter}
-                    onChange={(value) => setTypeFilter((value as typeof typeFilter) || "all")}
-                    withinPortal
-                    zIndex={5000}
-                    styles={(theme) => ({
-                      label: {
-                        color: appFieldLabelColor(theme),
-                      },
-                    })}
-                    data={[
-                      { value: "all", label: locale === "zh" ? "全部" : "All" },
-                      { value: "collection", label: locale === "zh" ? "藏品" : "Collections" },
-                      { value: "case", label: locale === "zh" ? "回流案例" : "Return cases" },
-                    ]}
-                  />
-                  <Select
-                    label={locale === "zh" ? "分类" : "Category"}
-                    value={categoryFilter}
-                    onChange={(value) => setCategoryFilter(value || "all")}
-                    data={categoryOptions}
-                    searchable
-                    withinPortal
-                    zIndex={5000}
-                    styles={(theme) => ({
-                      label: {
-                        color: appFieldLabelColor(theme),
-                      },
-                    })}
-                  />
-                  <Select
-                    label={locale === "zh" ? "可售状态" : "Sale status"}
-                    value={saleFilter}
-                    onChange={(value) => setSaleFilter((value as typeof saleFilter) || "all")}
-                    withinPortal
-                    zIndex={5000}
-                    styles={(theme) => ({
-                      label: {
-                        color: appFieldLabelColor(theme),
-                      },
-                    })}
-                    data={[
-                      { value: "all", label: locale === "zh" ? "全部" : "All" },
-                      { value: "for-sale", label: locale === "zh" ? "可售" : "For sale" },
-                      { value: "not-for-sale", label: locale === "zh" ? "不可售" : "Not for sale" },
-                    ]}
-                  />
-                </SimpleGrid>
+
+                {/* Desktop: inline filters; Mobile: filter button + drawer */}
+                {isMobile ? (
+                  <Group position="apart" noWrap>
+                    <Text size="sm" color="dimmed">
+                      {activeFilterCount > 0
+                        ? (locale === "zh" ? `${activeFilterCount} 个筛选已启用` : `${activeFilterCount} filter(s) active`)
+                        : (locale === "zh" ? "添加筛选条件" : "Add filters")}
+                    </Text>
+                    <Button
+                      variant={activeFilterCount > 0 ? "filled" : "default"}
+                      color={activeFilterCount > 0 ? "yellow" : undefined}
+                      size="sm"
+                      leftIcon={<IconFilter size={16} />}
+                      rightIcon={
+                        activeFilterCount > 0 ? (
+                          <Badge size="sm" color="dark" variant="filled" sx={{ ml: 6 }}>
+                            {activeFilterCount}
+                          </Badge>
+                        ) : undefined
+                      }
+                      onClick={() => setFilterDrawerOpened(true)}
+                    >
+                      {locale === "zh" ? "筛选" : "Filters"}
+                    </Button>
+                  </Group>
+                ) : (
+                  renderFilterPanel()
+                )}
               </Stack>
             </Card>
+
+            {/* Mobile filter drawer */}
+            <Drawer
+              opened={filterDrawerOpened}
+              onClose={() => setFilterDrawerOpened(false)}
+              title={locale === "zh" ? "筛选条件" : "Filters"}
+              position="bottom"
+              size="100%"
+              withCloseButton
+              padding="md"
+              zIndex={9999}
+              styles={{
+                body: {
+                  paddingBottom: `calc(24px + env(safe-area-inset-bottom, 0px))`,
+                },
+              }}
+            >
+              <Stack spacing="lg">
+                {renderFilterPanel()}
+                <Group position="apart" mt="sm">
+                  <Button
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => {
+                      setTypeFilter("all");
+                      setCategoryFilter("all");
+                      setSaleFilter("all");
+                    }}
+                  >
+                    {locale === "zh" ? "清除筛选" : "Clear filters"}
+                  </Button>
+                  <Button
+                    variant="filled"
+                    color="yellow"
+                    onClick={() => setFilterDrawerOpened(false)}
+                    sx={{ color: "#1b1f24", fontWeight: 700 }}
+                  >
+                    {locale === "zh" ? `查看 ${filtered.length} 条结果` : `View ${filtered.length} results`}
+                  </Button>
+                </Group>
+              </Stack>
+            </Drawer>
 
             <Group position="apart" noWrap={!isMobile}>
               <Text color="dimmed">

@@ -3,6 +3,7 @@ import { ReactNode } from "react";
 import AppFooter from "@/components/AppFooter";
 import FooterData from "@/data/footer.json";
 import TopBar from "@/components/TopBar";
+import BottomNav from "@/components/BottomNav";
 import { Box, rem } from "@mantine/core";
 import { motion } from "framer-motion";
 
@@ -65,6 +66,7 @@ export default function Wrapper({ children }: IProps) {
         id="main-content"
         sx={(theme) => ({
           marginTop: `calc(${rem(104)} + env(safe-area-inset-top, 0px))`,
+          paddingBottom: `calc(${rem(72)} + env(safe-area-inset-bottom, 0px))`,
           [theme.fn.smallerThan("sm")]: {
             marginTop: `calc(${rem(120)} + env(safe-area-inset-top, 0px))`,
           },
@@ -73,6 +75,7 @@ export default function Wrapper({ children }: IProps) {
         {children}
       </Box>
       <AppFooter data={FooterData.data} />
+      <BottomNav />
     </motion.div>
   );
 }
