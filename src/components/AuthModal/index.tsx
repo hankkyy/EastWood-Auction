@@ -216,6 +216,9 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                     fontSize: 16,
                     color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
                   },
+                  innerInput: {
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : theme.colors.dark[0],
+                  },
                 })}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
@@ -320,6 +323,9 @@ export default function AuthModal({ opened, onClose }: AuthModalProps) {
                     minHeight: 48,
                     fontSize: 16,
                     color: theme.colorScheme === "dark" ? "#f0ebe3" : undefined,
+                  },
+                  innerInput: {
+                    color: theme.colorScheme === "dark" ? "#f0ebe3" : theme.colors.dark[0],
                   },
                 })}
               />

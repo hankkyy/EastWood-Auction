@@ -93,7 +93,7 @@ export const theme: MantineThemeOverride = {
     ".mantine-Notification-title, .mantine-Notification-description, .mantine-Notification-closeButton": {
       color: `${appTextColor(theme)} !important`,
     },
-    ".mantine-Input-input, .mantine-Textarea-input, .mantine-Select-input, .mantine-NumberInput-input, .mantine-MultiSelect-input": {
+    ".mantine-Input-input, .mantine-Textarea-input, .mantine-Select-input, .mantine-NumberInput-input, .mantine-MultiSelect-input, .mantine-PasswordInput-innerInput": {
       backgroundColor:
         theme.colorScheme === "dark"
           ? `${appSurfaceBackgroundSubtle(theme)} !important`
@@ -101,7 +101,7 @@ export const theme: MantineThemeOverride = {
       color: `${appTextColor(theme)} !important`,
       borderColor: `${appSurfaceBorder(theme)} !important`,
     },
-    ".mantine-Input-input::placeholder, .mantine-Textarea-input::placeholder, .mantine-Select-input::placeholder, .mantine-NumberInput-input::placeholder, .mantine-MultiSelect-input::placeholder": {
+    ".mantine-Input-input::placeholder, .mantine-Textarea-input::placeholder, .mantine-Select-input::placeholder, .mantine-NumberInput-input::placeholder, .mantine-MultiSelect-input::placeholder, .mantine-PasswordInput-innerInput::placeholder": {
       color: `${appMutedTextColor(theme)} !important`,
       opacity: 1,
     },
