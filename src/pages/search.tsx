@@ -29,6 +29,7 @@ import type { Artwork } from "@/data/artworks";
 import { fetchKnowledgeBaseServer } from "@/features/image-search/artworkServer";
 import { IconArrowRight, IconFilter } from "@tabler/icons-react";
 import { SEO } from "@/components/SEO";
+import { proxyImageUrl } from "@/lib/proxyImage";
 import Link from "next/link";
 
 interface SearchPageProps {
@@ -417,7 +418,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                         })}
                       >
                         <Image
-                          src={item.image}
+                          src={proxyImageUrl(item.image)}
                           alt={getLocalized(locale, item.title, item.titleZh)}
                           fit="contain"
                           height={180}
