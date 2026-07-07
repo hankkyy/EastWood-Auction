@@ -40,6 +40,7 @@ import {
 } from "@tabler/icons-react";
 import { Fragment, useEffect, useState, memo, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 type CasesManagementProps = {
   userId?: string;
@@ -560,11 +561,11 @@ const CasesManagementSection = memo(function CasesManagementSection({
                     >
                       <Box
                         component="img"
-                        src={editImages[editCoverIndex]} 
-                        alt="Cover Preview" 
-                        sx={{ 
-                          maxWidth: "100%", 
-                          maxHeight: "100%", 
+                        src={proxyImageUrl(editImages[editCoverIndex])}
+                        alt="Cover Preview"
+                        sx={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
                           width: "auto",
                           height: "auto",
                           objectFit: "contain",
@@ -609,7 +610,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                         >
                           <Box
                             component="img"
-                            src={imgUrl} 
+                            src={proxyImageUrl(imgUrl)}
                             alt={`Photo ${index + 1}`}
                             onClick={() => handleEditSetCoverImage(index)}
                             sx={{
@@ -796,10 +797,10 @@ const CasesManagementSection = memo(function CasesManagementSection({
                     leftIcon={<IconX size={16} />}
                     sx={{
                       fontWeight: 600,
-                      boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                      boxShadow: '0 2px 8px rgba(196, 162, 85, 0.3)',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                        boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                       },
                       transition: 'all 0.2s ease',
                     }}
@@ -866,7 +867,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                         >
                           <Box
                             component="img"
-                            src={artwork.image}
+                            src={proxyImageUrl(artwork.image)}
                             alt={artwork.titleZh || artwork.title}
                             sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                           />
@@ -901,10 +902,10 @@ const CasesManagementSection = memo(function CasesManagementSection({
                             fullWidth={isMobile}
                             sx={{
                               fontWeight: 600,
-                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              boxShadow: '0 2px 8px rgba(196, 162, 85, 0.3)',
                               '&:hover': {
                                 transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                                boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                               },
                               transition: 'all 0.2s ease',
                             }}
@@ -1023,11 +1024,11 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 >
                   <Box
                     component="img"
-                    src={adminImages[adminCoverIndex]} 
-                    alt="Cover Preview" 
-                    sx={{ 
-                      maxWidth: "100%", 
-                      maxHeight: "100%", 
+                    src={proxyImageUrl(adminImages[adminCoverIndex])}
+                    alt="Cover Preview"
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
                       width: "auto",
                       height: "auto",
                       objectFit: "contain",
@@ -1072,7 +1073,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
                       >
                         <Box
                           component="img"
-                          src={imgUrl} 
+                          src={proxyImageUrl(imgUrl)}
                           alt={`Photo ${index + 1}`}
                           onClick={() => handleSetCoverImage(index)}
                           sx={{
@@ -1246,10 +1247,10 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 sx={{
                   fontWeight: 600,
                   padding: '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                    boxShadow: '0 6px 16px rgba(196, 162, 85, 0.5)',
                   },
                   transition: 'all 0.2s ease',
                 }}
@@ -1265,10 +1266,10 @@ const CasesManagementSection = memo(function CasesManagementSection({
                 sx={{
                   fontWeight: 600,
                   padding: '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                    boxShadow: '0 6px 16px rgba(196, 162, 85, 0.5)',
                   },
                   transition: 'all 0.2s ease',
                 }}

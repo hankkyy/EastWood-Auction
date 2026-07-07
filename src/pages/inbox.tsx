@@ -532,7 +532,7 @@ export default function InboxPage() {
         >
           <Button
             size="xs"
-            color={pendingState.update.isArchived ? "violet.4" : pendingState.update.isProcessed ? "violet.5" : "yellow"}
+            color={pendingState.update.isArchived ? "violet.4" : pendingState.update.isProcessed ? "violet.5" : "violet.7"}
             variant="filled"
             loading={isUpdating}
             disabled={isUpdating}
@@ -614,7 +614,7 @@ export default function InboxPage() {
           <>
         <Button
           size="xs"
-          color={inquiry.is_processed ? "yellow" : "violet.5"}
+          color={inquiry.is_processed ? "violet.6" : "violet.7"}
           variant="filled"
           loading={isUpdating}
           disabled={isUpdating}

@@ -306,7 +306,7 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
     const initials = user.email
       ? user.email.substring(0, 2).toUpperCase()
       : "U";
-    const avatarColor = isAdmin ? "red" : "blue";
+    const avatarColor = isAdmin ? "yellow" : "violet";
 
     if (mobile) {
       return (
@@ -329,7 +329,7 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
                 {user.email}
               </Text>
               {isAdmin && (
-                <Text size="xs" color="red" weight={600} mt={4} sx={{ lineHeight: 1.3 }}>
+                <Text size="xs" color="yellow" weight={600} mt={4} sx={{ lineHeight: 1.3 }}>
                   {t("auth.roleLabel")}: {t("auth.adminRole")}
                 </Text>
               )}
@@ -337,25 +337,16 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
           </Group>
           <Button
             variant="filled"
-            color="yellow"
+            color="violet"
             fullWidth
             onClick={openProfileModal}
-            sx={{
-              color: "#1b1f24",
-              fontWeight: 700,
-              boxShadow: "0 8px 18px rgba(216, 183, 109, 0.28)",
-              "&:hover": {
-                backgroundColor: "#e3c989",
-                boxShadow: "0 10px 22px rgba(216, 183, 109, 0.36)",
-              },
-            }}
           >
             {t("auth.profileTitle")}
           </Button>
           {isAdmin && (
             <Button
               variant="light"
-              color="red"
+              color="violet"
               fullWidth
               onClick={handleAdminClick}
             >
@@ -367,12 +358,6 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
             variant="filled"
             fullWidth
             onClick={() => void logout()}
-            sx={{
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: 'rgba(59, 130, 246, 0.9)',
-              },
-            }}
           >
             {t("auth.logout")}
           </Button>
@@ -440,7 +425,7 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
           >
             <Box
               component="img"
-              src="/eastwood-logo-mark.png"
+              src={`/eastwood-logo-mark.png?v=20250703`}
               alt=""
               className={classes.brandMark}
             />
@@ -464,7 +449,7 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
                 onClick={openProfileModal}
                 aria-label={t("auth.profileTitle")}
               >
-                <Avatar color={isAdmin ? "red" : "blue"} radius="xl" size="sm">
+                <Avatar color={isAdmin ? "yellow" : "violet"} radius="xl" size="sm">
                   {user.email ? user.email.substring(0, 2).toUpperCase() : "U"}
                 </Avatar>
               </UnstyledButton>
@@ -544,7 +529,7 @@ export default function TopNav({ onDrawerToggle }: TopNavProps) {
             <Stack spacing="md">
               <Button
                 variant="light"
-                color="yellow"
+                color="violet"
                 fullWidth
                 size="md"
                 onClick={handleInquiryClick}

@@ -472,7 +472,7 @@ export default function Collections({ initialData = [], shopMode = false }: Coll
                     }
                   }}
                   variant="light"
-                  color="yellow"
+                  color="violet"
                   size="sm"
                 >
                   {locale === "zh" ? "导入模拟数据" : "Seed Mock Data"}

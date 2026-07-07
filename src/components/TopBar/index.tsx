@@ -162,7 +162,7 @@ export default function TopBar() {
             <Button
               size={isMobile ? "sm" : "xs"}
               variant={isMobile ? "subtle" : "light"}
-              color={isMobile ? "gray" : "yellow"}
+              color={isMobile ? "gray" : "violet"}
               onClick={handleInboxClick}
               leftIcon={isMobile ? undefined : <IconInbox size={16} />}
               styles={{
@@ -181,7 +181,7 @@ export default function TopBar() {
           <Button
             size={isMobile ? "sm" : "xs"}
             variant={isMobile ? "subtle" : "light"}
-            color="yellow"
+            color="violet"
             onClick={handleInquiryClick}
             leftIcon={isMobile ? undefined : <IconMessageCircle size={16} />}
             styles={{
@@ -211,7 +211,7 @@ function ThemeToggle() {
   return (
     <ActionIcon
       variant="light"
-      color={isDark ? "yellow" : "gray"}
+      color={isDark ? "violet" : "gray"}
       onClick={() => toggleColorScheme()}
       title={isDark ? "Switch to light" : "Switch to dark"}
       size="lg"

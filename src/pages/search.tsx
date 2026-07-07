@@ -316,7 +316,7 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                     </Text>
                     <Button
                       variant={activeFilterCount > 0 ? "filled" : "default"}
-                      color={activeFilterCount > 0 ? "yellow" : undefined}
+                      color={activeFilterCount > 0 ? "violet" : undefined}
                       size="sm"
                       leftIcon={<IconFilter size={16} />}
                       rightIcon={
@@ -369,9 +369,9 @@ export default function SearchPage({ initialData }: SearchPageProps) {
                   </Button>
                   <Button
                     variant="filled"
-                    color="yellow"
+                    color="violet"
                     onClick={() => setFilterDrawerOpened(false)}
-                    sx={{ color: "#1b1f24", fontWeight: 700 }}
+                    sx={{ color: "#1a1815", fontWeight: 600 }}
                   >
                     {locale === "zh" ? `查看 ${filtered.length} 条结果` : `View ${filtered.length} results`}
                   </Button>

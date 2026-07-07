@@ -36,7 +36,7 @@ export default function Custom404() {
               href="/"
               size="md"
               variant="filled"
-              color="yellow"
+              color="violet"
               sx={{
                 fontWeight: 600,
               }}

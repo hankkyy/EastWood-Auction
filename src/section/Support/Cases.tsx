@@ -434,7 +434,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                       }
                     }}
                     variant="light"
-                    color="yellow"
+                    color="violet"
                     size="sm"
                   >
                     {locale === "zh" ? "导入模拟数据" : "Seed Mock Data"}
@@ -520,11 +520,11 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   >
                     <Box
                       component="img"
-                      src={adminImages[adminCoverIndex]} 
-                      alt="Cover Preview" 
-                      sx={{ 
-                        maxWidth: "100%", 
-                        maxHeight: "100%", 
+                      src={proxyImageUrl(adminImages[adminCoverIndex])}
+                      alt="Cover Preview"
+                      sx={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
                         width: "auto",
                         height: "auto",
                         objectFit: "contain",
@@ -569,7 +569,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                           }}
                           onClick={() => handleSetCoverImage(index)}
                         >
-                          <Box component="img" src={url} alt={`Preview ${index}`} sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                          <Box component="img" src={proxyImageUrl(url)} alt={`Preview ${index}`} sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
                           {adminCoverIndex === index && (
                             <Badge 
                               variant="filled" 
@@ -738,10 +738,10 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
                   sx={{
                     fontWeight: 600,
                     padding: '12px 24px',
-                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                    boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                      boxShadow: '0 6px 16px rgba(196, 162, 85, 0.5)',
                     },
                     transition: 'all 0.2s ease',
                   }}

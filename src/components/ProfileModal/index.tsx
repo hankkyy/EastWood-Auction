@@ -85,7 +85,7 @@ export default function ProfileModal({
   const initials = user.email
     ? user.email.substring(0, 2).toUpperCase()
     : "U";
-  const avatarColor = roleLoading ? "gray" : isAdmin ? "red" : "blue";
+  const avatarColor = roleLoading ? "gray" : isAdmin ? "yellow" : "violet";
   const roleText = roleLoading
     ? locale === "zh"
       ? "正在同步角色"

@@ -40,6 +40,7 @@ import {
 } from "@tabler/icons-react";
 import { Fragment, useEffect, useState, memo, useCallback } from "react";
 import { useRouter } from "next/router";
+import { proxyImageUrl } from "@/lib/proxyImage";
 
 const collectionCategoryOptions = [
   { value: "calligraphy", labelKey: "collections.tabCalligraphy" },
@@ -641,10 +642,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 sx={{
                   fontWeight: 600,
                   padding: '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                    boxShadow: '0 6px 16px rgba(196, 162, 85, 0.5)',
                   },
                   transition: 'all 0.2s ease',
                 }}
@@ -706,7 +707,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       >
                         <Box
                           component="img"
-                          src={artwork.image}
+                          src={proxyImageUrl(artwork.image)}
                           alt={artwork.titleZh || artwork.title}
                           sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                         />
@@ -737,7 +738,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                           >
                             <Box
                               component="img"
-                              src={editImages[editCoverIndex] || editImages[0] || artwork.image}
+                              src={proxyImageUrl(editImages[editCoverIndex] || editImages[0] || artwork.image)}
                               alt={artwork.titleZh || artwork.title}
                               sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
                             />
@@ -772,7 +773,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                               >
                                 <Box
                                   component="img"
-                                  src={img}
+                                  src={proxyImageUrl(img)}
                                   alt={`Image ${index + 1}`}
                                   sx={{
                                     width: "100%",
@@ -967,10 +968,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             leftIcon={<IconX size={16} />}
                             sx={{
                               fontWeight: 600,
-                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              boxShadow: '0 2px 8px rgba(196, 162, 85, 0.3)',
                               '&:hover': {
                                 transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                                boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                               },
                               transition: 'all 0.2s ease',
                             }}
@@ -1024,10 +1025,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                             leftIcon={<IconEdit size={16} />}
                             sx={{
                               fontWeight: 600,
-                              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                              boxShadow: '0 2px 8px rgba(196, 162, 85, 0.3)',
                               '&:hover': {
                                 transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                                boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                               },
                               transition: 'all 0.2s ease',
                             }}
@@ -1137,11 +1138,11 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 >
                   <Box
                     component="img"
-                    src={adminImages[adminCoverIndex]} 
-                    alt="Cover Preview" 
-                    sx={{ 
-                      maxWidth: "100%", 
-                      maxHeight: "100%", 
+                    src={proxyImageUrl(adminImages[adminCoverIndex])}
+                    alt="Cover Preview"
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
                       width: "auto",
                       height: "auto",
                       objectFit: "contain",
@@ -1189,7 +1190,7 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                       >
                         <Box
                           component="img"
-                          src={imgUrl} 
+                          src={proxyImageUrl(imgUrl)}
                           alt={`Photo ${index + 1}`}
                           sx={{
                             width: "100%",
@@ -1396,10 +1397,10 @@ const CollectionsManagementSection = memo(function CollectionsManagementSection(
                 sx={{
                   fontWeight: 600,
                   padding: '12px 24px',
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                  boxShadow: '0 4px 12px rgba(196, 162, 85, 0.4)',
                   '&:hover': {
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 16px rgba(59, 130, 246, 0.5)',
+                    boxShadow: '0 6px 16px rgba(196, 162, 85, 0.5)',
                   },
                   transition: 'all 0.2s ease',
                 }}
