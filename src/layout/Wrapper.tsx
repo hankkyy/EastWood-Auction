@@ -25,25 +25,38 @@ export default function Wrapper({ children }: IProps) {
       transition={{ duration: 0.24, ease: "easeOut" }}
       style={{ minHeight: "100vh" }}
     >
-      {/* Skip-to-content link for keyboard users */}
+      {/* Skip-to-content link for keyboard users — visually hidden until focused */}
       <Box
         component="a"
         href="#main-content"
         sx={(theme) => ({
-          position: "absolute",
-          top: 8,
-          left: 8,
+          position: "fixed",
+          top: 12,
+          left: 12,
           zIndex: 10000,
-          padding: "8px 16px",
+          padding: "10px 18px",
           backgroundColor: "#c4a255",
           color: "#1a1815",
           fontWeight: 700,
           borderRadius: theme.radius.sm,
           textDecoration: "none",
-          transform: "translateY(-120%)",
-          transition: "transform 0.2s",
-          "&:focus": {
-            transform: "translateY(0)",
+          // Visually hidden (clip method) — more reliable than translateY
+          clip: "rect(0, 0, 0, 0)",
+          clipPath: "inset(50%)",
+          width: "1px",
+          height: "1px",
+          margin: "-1px",
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          "&:focus, &:focus-visible": {
+            clip: "auto",
+            clipPath: "none",
+            width: "auto",
+            height: "auto",
+            margin: "0",
+            overflow: "visible",
+            whiteSpace: "normal",
+            boxShadow: `0 4px 16px rgba(196,162,85,0.3)`,
           },
         })}
       >
