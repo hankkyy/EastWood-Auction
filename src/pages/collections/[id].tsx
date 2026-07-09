@@ -299,7 +299,7 @@ export default function CollectionDetailPage() {
                         width: "100%",
                         height: isMobile ? "60vh" : "540px",
                         maxHeight: isMobile ? "70vh" : "72vh",
-                        backgroundImage: `url("${activeImage}")`,
+                        backgroundImage: `url("${proxyImageUrl(activeImage)}")`,
                         backgroundSize: "contain",
                         backgroundRepeat: "no-repeat",
                         backgroundPosition: "center",
@@ -363,7 +363,7 @@ export default function CollectionDetailPage() {
                                 aria-label={`Photo ${index + 1}`}
                                 sx={{
                                   width: "100%", height: "100%",
-                                  backgroundImage: `url("${imageUrl}")`,
+                                  backgroundImage: `url("${proxyImageUrl(imageUrl)}")`,
                                   backgroundSize: "cover",
                                   backgroundPosition: "center",
                                 }}
@@ -643,7 +643,7 @@ export default function CollectionDetailPage() {
                           <Box
                             sx={{
                               height: 160,
-                              backgroundImage: `url("${related.image}")`,
+                              backgroundImage: `url("${proxyImageUrl(related.image)}")`,
                               backgroundSize: "cover",
                               backgroundPosition: "center 15%",
                             }}
