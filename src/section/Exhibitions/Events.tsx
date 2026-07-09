@@ -13,12 +13,12 @@ import { useI18n } from "@/i18n";
 import { proxyImageUrl } from "@/lib/proxyImage";
 
 const data = [
-  ["events.cardOneTitle", "events.dateOngoing", "events.onlineType"],
-  ["events.cardTwoTitle", "events.dateAugust16", "events.currentType"],
-  ["events.cardThreeTitle", "events.dateAugust17October31", "events.onlineType"],
-  ["events.cardFourTitle", "events.dateAugust15October31", "events.currentType"],
-  ["events.cardFiveTitle", "events.dateAugust15October31", "events.currentType"],
-  ["events.cardSixTitle", "events.dateAugust15October31", "events.currentType"],
+  ["events.cardOneTitle", "events.dateJuly25", "events.currentType"],
+  ["events.cardTwoTitle", "events.dateAugust8", "events.onlineType"],
+  ["events.cardThreeTitle", "events.dateAugust22", "events.currentType"],
+  ["events.cardFourTitle", "events.dateSept5", "events.onlineType"],
+  ["events.cardFiveTitle", "events.dateSept20", "events.currentType"],
+  ["events.cardSixTitle", "events.dateOct10", "events.onlineType"],
 ] as const;
 
 const images = [
