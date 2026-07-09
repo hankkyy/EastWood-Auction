@@ -143,14 +143,19 @@ export default function DiscoverSection() {
           { maxWidth: "sm", cols: 1, spacing: "sm" },
         ]}
       >
-        {Array.from({ length: 4 }).map((_, i) => (
+        {[
+          { titleKey: "home.newsTitle1", textKey: "home.newsText1" },
+          { titleKey: "home.newsTitle2", textKey: "home.newsText2" },
+          { titleKey: "home.newsTitle3", textKey: "home.newsText3" },
+          { titleKey: "home.newsTitle4", textKey: "home.newsText4" },
+        ].map((item, i) => (
           <Paper key={`news-item-${i}`} className={classes.card} p={smallerThan ? "md" : "lg"}>
             <Box sx={{ position: "relative", zIndex: 3 }}>
               <Text size="lg" weight={600} mb="md">
-                {t("home.newsTitle")}
+                {t(item.titleKey as any)}
               </Text>
               <Text mb="md" sx={(theme) => ({ color: appMutedTextColor(theme), lineHeight: 1.75 })}>
-                {t("home.newsText")}
+                {t(item.textKey as any)}
               </Text>
               <Button {...buttonProps} onClick={handleDiscoverMore} sx={(theme) => secondaryActionButtonSx(theme)}>
                 {t("home.readMore")}

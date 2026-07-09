@@ -23,39 +23,39 @@ const data = [
     image:
       "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardOneTitle",
-    dateKey: "events.dateOngoing",
-    typeKey: "events.onlineType",
+    dateKey: "events.dateJuly25",
+    typeKey: "events.currentType",
     descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1559494007-9f5847c49d94?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardTwoTitle",
-    dateKey: "events.dateAugust16",
-    typeKey: "events.currentType",
+    dateKey: "events.dateAugust8",
+    typeKey: "events.onlineType",
     descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1608481337062-4093bf3ed404?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardThreeTitle",
-    dateKey: "events.dateAugust17October31",
-    typeKey: "events.onlineType",
+    dateKey: "events.dateAugust22",
+    typeKey: "events.currentType",
     descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1507272931001-fc06c17e4f43?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardFourTitle",
-    dateKey: "events.dateAugust15October31",
-    typeKey: "events.currentType",
+    dateKey: "events.dateSept5",
+    typeKey: "events.onlineType",
     descriptionKey: "events.description",
   },
   {
     image:
       "https://images.unsplash.com/photo-1510798831971-661eb04b3739?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardFiveTitle",
-    dateKey: "events.dateAugust15October31",
+    dateKey: "events.dateSept20",
     typeKey: "events.currentType",
     descriptionKey: "events.description",
   },
@@ -63,8 +63,8 @@ const data = [
     image:
       "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&q=80",
     titleKey: "events.cardSixTitle",
-    dateKey: "events.dateAugust15October31",
-    typeKey: "events.currentType",
+    dateKey: "events.dateOct10",
+    typeKey: "events.onlineType",
     descriptionKey: "events.description",
   },
 ] as const;
