@@ -42,3 +42,7 @@ Thumbs.db
 
 # misc
 *.pem
+
+# Generated sync files
+commit-payloads.jsonl
+sync-commits.sh
