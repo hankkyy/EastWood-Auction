@@ -71,8 +71,17 @@ export default function ProfileModal({
       });
 
       if (result.success) {
+        // Track userId changes for modification limit
+        if (userId && userId !== user.profile?.user_id) {
+          setUserIdChangeCount((prev) => prev + 1);
+        }
         onClose();
+      } else {
+        // Show error feedback — updateProfile already shows notification,
+        // but keep modal open so user can retry
       }
+    } catch (err: any) {
+      // Unexpected errors caught here
     } finally {
       setLoading(false);
     }

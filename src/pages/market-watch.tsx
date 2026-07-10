@@ -31,6 +31,7 @@ import { Wrapper } from "@/layout";
 import { proxyImageUrl } from "@/lib/proxyImage";
 import { useI18n } from "@/i18n";
 import { useAuth } from "@/hooks/useAuth";
+import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/lib/supabase/client";
 import { appMutedTextColor, appSurfaceBackground, appSurfaceBorder, appTextColor } from "@/components/artworkStyles";
 
@@ -138,6 +139,7 @@ export default function MarketWatchPage() {
   const [translating, setTranslating] = useState(false);
   const [translatedMap, setTranslatedMap] = useState<Record<string, string>>({});
   const [showTranslation, setShowTranslation] = useState(false);
+  const [authModalOpened, setAuthModalOpened] = useState(false);
 
   const hasActiveFilters = !!(search || minPrice || maxPrice || locationFilter || conditionFilter || buyingOptionFilter || endingSoonFilter || returnsFilter || minFeedbackFilter);
 
@@ -607,7 +609,7 @@ export default function MarketWatchPage() {
                   </Text>
                   {savedOnly ? (
                     !user ? (
-                      <Button component={Link} href="/login" variant="subtle">
+                      <Button variant="subtle" onClick={() => setAuthModalOpened(true)}>
                         {locale === "zh" ? "去登录 →" : "Log in →"}
                       </Button>
                     ) : null
@@ -728,7 +730,7 @@ export default function MarketWatchPage() {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!user) {
-                              router.push("/login");
+                              setAuthModalOpened(true);
                             }
                           }}
                           sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
@@ -1004,6 +1006,7 @@ export default function MarketWatchPage() {
           </Stack>
         </Container>
       </Wrapper>
+      <AuthModal opened={authModalOpened} onClose={() => setAuthModalOpened(false)} />
     </>
   );
 }

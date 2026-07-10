@@ -128,7 +128,7 @@ export default function SearchModal({ opened, close }: IProps) {
                 </Flex>
                 <Button
                   component={Link}
-                  href="/search"
+                  href="/image-search"
                   onClick={close}
                   leftIcon={<IconPhotoSearch size={18} />}
                   fullWidth={smallerThan}

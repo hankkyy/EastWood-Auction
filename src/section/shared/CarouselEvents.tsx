@@ -11,6 +11,7 @@ import {
   Title,
 } from "@mantine/core";
 import { Carousel, Embla } from "@mantine/carousel";
+import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
 import { IconArrowLeftBar, IconArrowRightBar } from "@tabler/icons-react";
 import EventsCard from "@/components/EventsCard";
@@ -184,7 +185,7 @@ export default function CarouselEventsSection({ title }: IProps) {
         {slides}
       </Carousel>
       <Center mt={smallerThan ? 36 : "xl"}>
-        <Button size="lg" variant="outline" fullWidth={smallerThan}>
+        <Button size="lg" variant="outline" fullWidth={smallerThan} component={Link} href="/exhibitions">
           {t("events.viewAll")}
         </Button>
       </Center>

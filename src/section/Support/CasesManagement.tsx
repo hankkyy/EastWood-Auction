@@ -331,7 +331,7 @@ const CasesManagementSection = memo(function CasesManagementSection({
         listingType: "product",
         caseRecord,
         uploadedBy: userId, // 记录上传者
-        featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // 占位符
+        featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // FIXME: placeholder — visual search skips zero vectors; integrate real embedding API for image matching
       };
 
       const savedArtwork = await saveImportedArtwork(newArtwork);

@@ -189,7 +189,7 @@ export default function AppFooter({ data }: FooterLinksProps) {
         className={classes.link}
         component="a"
         href={link.link}
-        onClick={(event) => event.preventDefault()}
+        href={link.link}
       >
         {translateFooterLabel(link.label)}
       </Text>
@@ -217,27 +217,27 @@ export default function AppFooter({ data }: FooterLinksProps) {
             </Title>
             <Flex gap="sm">
               <Tooltip label="Facebook">
-                <ActionIcon title="facebook" {...actionIconProps}>
+                <ActionIcon title="facebook" component="a" href="https://facebook.com" target="_blank" rel="noopener noreferrer" {...actionIconProps}>
                   <IconBrandFacebook />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Twitter">
-                <ActionIcon title="twitter" {...actionIconProps}>
+                <ActionIcon title="twitter" component="a" href="https://twitter.com" target="_blank" rel="noopener noreferrer" {...actionIconProps}>
                   <IconBrandTwitter />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Instagram">
-                <ActionIcon title="instagram" {...actionIconProps}>
+                <ActionIcon title="instagram" component="a" href="https://instagram.com" target="_blank" rel="noopener noreferrer" {...actionIconProps}>
                   <IconBrandInstagram />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="YouTube">
-                <ActionIcon title="youtube" {...actionIconProps}>
+                <ActionIcon title="youtube" component="a" href="https://youtube.com" target="_blank" rel="noopener noreferrer" {...actionIconProps}>
                   <IconBrandYoutube />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="LinkedIn">
-                <ActionIcon title="linkedin" {...actionIconProps}>
+                <ActionIcon title="linkedin" component="a" href="https://linkedin.com" target="_blank" rel="noopener noreferrer" {...actionIconProps}>
                   <IconBrandLinkedin />
                 </ActionIcon>
               </Tooltip>
@@ -288,13 +288,13 @@ export default function AppFooter({ data }: FooterLinksProps) {
           gap={{ base: "sm", sm: "lg" }}
         >
           <Flex gap="sm" justify="center" align="center" className={classes.legalRow}>
-            <Anchor weight={500} color="violet.7">
+            <Anchor weight={500} color="violet.7" href="/privacy">
               {t("footer.privacy")}
             </Anchor>
-            <Anchor weight={500} color="violet.7">
+            <Anchor weight={500} color="violet.7" href="/cookies">
               {t("footer.cookies")}
             </Anchor>
-            <Anchor weight={500} color="violet.7">
+            <Anchor weight={500} color="violet.7" href="/terms">
               {t("footer.terms")}
             </Anchor>
           </Flex>

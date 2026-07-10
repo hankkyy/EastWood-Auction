@@ -503,6 +503,11 @@ export const searchSimilarArtworks = (
     : queryFeature.signature ?? null;
 
   const rankedResults = collection
+    .filter((artwork) => {
+      // Skip artworks with zero vector (placeholder from admin import)
+      const isZeroVector = artwork.featureVector.every((v) => v === 0);
+      return !isZeroVector;
+    })
     .map((artwork) => {
       const baseScore = vectorSimilarity(queryVector, artwork.featureVector);
       const advanced =

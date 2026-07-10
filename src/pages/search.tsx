@@ -508,6 +508,6 @@ export const getStaticProps: GetStaticProps<SearchPageProps> = async () => {
     };
   } catch (error) {
     console.error("Failed to fetch search data:", error);
-    throw error;
+    return { props: { initialData: [] }, revalidate: 60 };
   }
 };

@@ -68,12 +68,9 @@ export const theme: MantineThemeOverride = {
     },
     // Card surfaces use dark[1] in dark mode instead of Mantine's default
     // dark[7] (#c4bfb3) which gives only 2.2:1 contrast with dimmed text.
-    // NOT applied to all Paper (would break Menu/Tooltip dropdowns).
+    // Individual Paper variants are styled below — global .mantine-Paper-root
+    // is intentionally skipped because it breaks Menu/Tooltip dropdowns.
     ".mantine-Card-root": {
-      backgroundColor: `${appSurfaceBackground(theme)} !important`,
-      color: `${appTextColor(theme)} !important`,
-    },
-    ".mantine-Paper-root": {
       backgroundColor: `${appSurfaceBackground(theme)} !important`,
       color: `${appTextColor(theme)} !important`,
     },

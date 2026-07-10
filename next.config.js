@@ -47,7 +47,9 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.vercel-analytics.com https://translate.google.com https://translate.googleapis.com",
+              process.env.NODE_ENV === "production"
+                ? "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://*.vercel-analytics.com https://translate.google.com https://translate.googleapis.com"
+                : "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://*.vercel-analytics.com https://translate.google.com https://translate.googleapis.com",
               "worker-src 'self'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",

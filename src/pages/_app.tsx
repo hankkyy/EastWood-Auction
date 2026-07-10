@@ -166,12 +166,14 @@ export default function App({ Component, pageProps }: AppProps) {
  * so notifications don't overlap the fixed TopBar + TopNav header.
  */
 function ResponsiveNotifications() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    setIsMobile(mq.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);

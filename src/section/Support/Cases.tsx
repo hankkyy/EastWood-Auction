@@ -75,7 +75,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
     if (gridRef.current) {
       gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [page]);
+  }, [page, cases.length]);
 
  // ✅ 新增管理模式状态
   
@@ -353,7 +353,7 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
         listingType: "product",
         caseRecord,
         uploadedBy: user.id, // 记录上传者
-        featureVector: [0, 0, 0, 0, 0, 0, 0, 0],
+        featureVector: [0, 0, 0, 0, 0, 0, 0, 0], // FIXME: placeholder — visual search skips zero vectors; integrate real embedding API for image matching
       };
 
       const savedArtwork = await saveImportedArtwork(newArtwork);

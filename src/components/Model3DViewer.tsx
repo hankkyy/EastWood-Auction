@@ -272,7 +272,7 @@ export function ThreeDBadge({ className }: { className?: string }) {
         fontSize: 10,
         fontWeight: 700,
         color: '#fff',
-        background: 'rgba(59, 130, 246, 0.85)',
+        background: 'rgba(196, 162, 85, 0.85)',
         padding: '2px 7px',
         borderRadius: 999,
         lineHeight: 1.2,

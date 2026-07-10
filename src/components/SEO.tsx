@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useI18n } from "@/i18n";
 
 export interface SEOProps {
   title: string;
@@ -14,6 +15,7 @@ const DEFAULT_IMAGE = "/eastwood-logo.png";
 
 export function SEO({ title, description, image, noindex }: SEOProps) {
   const router = useRouter();
+  const { locale } = useI18n();
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
   const ogImage = image || DEFAULT_IMAGE;
   const absoluteImage = ogImage.startsWith("http") ? ogImage : `${BASE_URL}${ogImage}`;

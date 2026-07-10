@@ -67,7 +67,7 @@ export default function Wrapper({ children }: IProps) {
         sx={(theme) => ({
           position: "fixed",
           top: 0,
-          zIndex: 2,
+          zIndex: 100,
           width: "100%",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",

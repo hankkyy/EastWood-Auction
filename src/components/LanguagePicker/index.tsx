@@ -93,7 +93,7 @@ export default function LanguagePicker({ mobile = false }: LanguagePickerProps) 
               key={item.code}
               size="sm"
               variant={active ? "filled" : "subtle"}
-              color={active ? "yellow" : "gray"}
+              color={active ? "violet" : "gray"}
               onClick={() => setLocale(item.code)}
               leftIcon={
                 <span

@@ -45,6 +45,6 @@ export const getStaticProps: GetStaticProps<ShopPageProps> = async () => {
     };
   } catch (error) {
     console.error("Failed to fetch shop data:", error);
-    throw error;
+    return { props: { initialData: [] }, revalidate: 60 };
   }
 };

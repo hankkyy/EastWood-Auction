@@ -37,6 +37,6 @@ export const getStaticProps: GetStaticProps<SupportPageProps> = async () => {
     };
   } catch (error) {
     console.error("Failed to fetch support data:", error);
-    throw error;
+    return { props: { initialData: [] }, revalidate: 60 };
   }
 };
