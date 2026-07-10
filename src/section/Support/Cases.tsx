@@ -71,12 +71,6 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
   const ITEMS_PER_PAGE = 15;
   const gridRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (gridRef.current) {
-      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [page, cases.length]);
-
  // ✅ 新增管理模式状态
   
   // ✅ 监听路由变化，当进入主页面时重置所有模式状态
@@ -219,6 +213,13 @@ export default function CasesSection({ initialData = [] }: CasesSectionProps) {
       return true;
     });
   }, [items]);
+
+  // 数据加载完成后自动滚动到案例网格
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [page, cases.length]);
 
   // Pagination
   const totalPages = Math.ceil(cases.length / ITEMS_PER_PAGE);
