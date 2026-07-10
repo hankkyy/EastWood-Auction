@@ -189,7 +189,6 @@ export default function AppFooter({ data }: FooterLinksProps) {
         className={classes.link}
         component="a"
         href={link.link}
-        href={link.link}
       >
         {translateFooterLabel(link.label)}
       </Text>
