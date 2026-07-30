@@ -2,7 +2,7 @@
 
 A luxury antique auction platform — browse Chinese porcelain, jade, paintings, bronze, and scholar objects online. Bilingual (EN/ZH), with a client-side visual search engine for finding antiques by photo.
 
-**[Live Demo](https://eastwood-auction.vercel.app)** · **[Technical Report](docs/arxiv-technical-report.md)** · **[Blog Post (中文)](docs/technical-blog-post.md)**
+**[Live Demo](https://eastwood-auction.vercel.app)** · **[Blog Post](https://hankzhang.us/posts/client-side-visual-search/)** · **[arXiv Paper](https://github.com/hankkyy/eastwood-paper)**
 
 <p align="center">
   <img src="public/eastwood-logo.png" alt="Eastwood Auction" width="280">
@@ -73,7 +73,7 @@ The centerpiece of Eastwood Auction — find antiques by uploading a photo inste
 - **Hybrid architecture**: client-side matching (<10ms) for instant results; server-side pgvector fallback for large catalogs
 - **Zero server cost for search**: all feature extraction and scoring runs in the browser
 
-Read the full technical report: [docs/arxiv-technical-report.md](docs/arxiv-technical-report.md)
+Read the full technical write-up: [Blog Post](https://hankzhang.us/posts/client-side-visual-search/)
 
 ### Bilingual Design
 
@@ -163,8 +163,8 @@ src/
 
 ## Documentation
 
-- **[Technical Report](docs/arxiv-technical-report.md)** — Full paper on the visual search engine design
-- **[Blog Post (中文)](docs/technical-blog-post.md)** — Engineering deep-dive in Chinese
+- **[Blog Post](https://hankzhang.us/posts/client-side-visual-search/)** — Engineering deep-dive (中文)
+- **[arXiv Paper](https://github.com/hankkyy/eastwood-paper)** — Academic paper (LaTeX + PDF)
 - **[Design System](CLAUDE.md)** — Color tokens, component patterns, mobile hierarchy
 - **[Database Schema](supabase/schema.sql)** — PostgreSQL schema with pgvector
 - **[iOS App](ios/EastwoodApp/)** — SwiftUI native app source
